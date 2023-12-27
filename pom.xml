@@ -7,7 +7,7 @@
     <build>
         <resources>
             <resource>
-                <directory>res</directory>
+                <directory>res/debug</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>

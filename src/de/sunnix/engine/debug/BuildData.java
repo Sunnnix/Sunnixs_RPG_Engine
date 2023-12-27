@@ -1,4 +1,4 @@
-package de.sunnix.sunlundra;
+package de.sunnix.engine.debug;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,7 @@ public class BuildData {
 
     static {
         var map = new HashMap<String, String>();
-        try(var file = BuildData.class.getResourceAsStream("/project.properties")) {
+        try(var file = BuildData.class.getResourceAsStream("/debug/project.properties")) {
             var data = new String(file.readAllBytes()).split("\n");
             for(var s : data){
                 if(s.startsWith("#"))
