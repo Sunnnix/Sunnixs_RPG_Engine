@@ -7,10 +7,14 @@
     <build>
         <resources>
             <resource>
-                <directory>res/debug</directory>
+                <directory>res</directory>
                 <filtering>true</filtering>
             </resource>
+            <resource>
+                <directory>libs</directory>
+            </resource>
         </resources>
+        <sourceDirectory>src</sourceDirectory>
     </build>
 
     <groupId>de.sunnix</groupId>
@@ -77,13 +81,6 @@
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
             <version>3.2</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>compile</scope>
         </dependency>
         <!-- JOGG for OGG Files -->
         <dependency>

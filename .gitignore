@@ -39,3 +39,4 @@ build/
 
 ### Internal files ###
 *.log.*
+out/
