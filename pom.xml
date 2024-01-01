@@ -27,7 +27,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lwjgl.version>3.3.3</lwjgl.version>
         <joml.version>1.10.5</joml.version>
-        <lwjgl3-awt.version>0.1.8</lwjgl3-awt.version>
     </properties>
 
     <profiles>
@@ -148,11 +147,6 @@
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjglx</groupId>
-            <artifactId>lwjgl3-awt</artifactId>
-            <version>${lwjgl3-awt.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

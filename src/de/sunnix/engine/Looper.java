@@ -1,5 +1,9 @@
 package de.sunnix.engine;
 
+import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,10 +13,18 @@ public class Looper {
 
     private Looper(){}
 
-    private static List<Runnable> loopListener = new LinkedList<>();
+    private static final List<LoopSubscriber> listeners = new ArrayList<>();
+    private static final List<LoopSubscriber> subscriber = new ArrayList<>();
+    private static final List<String> unsubscriber = new LinkedList<>();
 
-    static void subscribeLoop(Runnable runnable){
-        loopListener.add(runnable);
+    static void subscribe(@NonNull String id, int period, Runnable runnable){
+        if(runnable == null)
+            return;
+        subscriber.add(new LoopSubscriber(id, period, runnable));
+    }
+
+    static void unsubscribe(String id){
+        unsubscriber.add(id);
     }
 
     static void loop(){
@@ -33,14 +45,30 @@ public class Looper {
                     }
                 continue;
             }
-
-            loopListener.forEach(Runnable::run);
-
             lastTime = currentTime;
+
+            if(subscriber.size() > 0){
+                listeners.addAll(subscriber);
+                subscriber.clear();
+                listeners.sort(Comparator.comparing(LoopSubscriber::period));
+            }
+            if(unsubscriber.size() > 0) {
+                unsubscriber.forEach(id -> listeners.removeIf(s -> s.ID.equals(id)));
+                unsubscriber.clear();
+            }
+            listeners.forEach(LoopSubscriber::run);
 
             glfwSwapBuffers(Core.getWindow());
             glfwPollEvents();
         }
+    }
+
+    private record LoopSubscriber(@NonNull String ID, int period, Runnable runnable){
+
+        public void run(){
+            runnable.run();
+        }
+
     }
 
 }

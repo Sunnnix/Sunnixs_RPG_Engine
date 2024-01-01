@@ -5,6 +5,7 @@ import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.graphics.Window;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -56,6 +57,8 @@ public class Core {
         validate(State.PRE_INIT);
         current_state = State.INITED;
 
+        BuildData.create();
+
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
 
@@ -77,6 +80,8 @@ public class Core {
 
         window = builder.build();
 
+        InputManager.process(window); // Create InputManager Keys
+
         createCapabilities();
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -96,7 +101,8 @@ public class Core {
     public static void start(){
         validate(State.WINDOW_CREATED);
 
-        Looper.subscribeLoop(generateFPS());
+        subscribeLoop("fps_generator", 0, generateFPS());
+        subscribeLoop("input_process", 0, () -> InputManager.process(window));
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
@@ -112,13 +118,17 @@ public class Core {
         vsync = on;
     }
 
-    public static void subscribeLoop(Runnable runnable){
-        Looper.subscribeLoop(runnable);
+    public static void subscribeLoop(@NonNull String id, int period, Runnable runnable){
+        Looper.subscribe(id, period, runnable);
+    }
+
+    public static void unsubscribeLoop(String id){
+        Looper.unsubscribe(id);
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     private static Runnable generateFPS(){
-        var maximumListSize = 60 * 2;
+        var maximumListSize = 60 * 4;
         var fpsList = new ArrayList<Double>(maximumListSize);
         var wrapper = new Object(){ double latestTime = glfwGetTime(); };
         return () -> {

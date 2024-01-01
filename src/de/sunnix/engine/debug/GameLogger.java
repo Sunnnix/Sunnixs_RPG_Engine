@@ -1,5 +1,6 @@
 package de.sunnix.engine.debug;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.logging.*;
 
@@ -16,7 +17,13 @@ public final class GameLogger{
         log.addHandler(cHandler);
 
         try{
-            var fHandler = new FileHandler("game.log", (int)(50 * Math.pow(10, 6)), 2, true);
+            var logDir = BuildData.getData("log_directory", "");
+            if(!logDir.endsWith("/"))
+                logDir += '/';
+            var directory = new File(logDir);
+            if(!directory.exists())
+                directory.mkdir();
+            var fHandler = new FileHandler( logDir + "game.log", (int)(50 * Math.pow(1024, 2)), 10, true);
             fHandler.setFormatter(new Formatter(false));
             log.addHandler(fHandler);
         } catch (Exception e){
