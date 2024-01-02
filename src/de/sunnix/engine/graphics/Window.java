@@ -1,13 +1,20 @@
 package de.sunnix.engine.graphics;
 
+import de.sunnix.engine.ILoggable;
+import de.sunnix.engine.debug.BuildData;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 
+import javax.imageio.ImageIO;
+
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.glViewport;
+
+import static de.sunnix.engine.util.Utils.*;
+import static org.lwjgl.opengl.GL11.*;
 
 public class Window {
 
@@ -15,7 +22,7 @@ public class Window {
 
     @Accessors(chain = true)
     @Setter
-    public static class WindowBuilder{
+    public static class WindowBuilder implements ILoggable {
 
         @Setter(AccessLevel.NONE)
         private String title;
@@ -46,6 +53,9 @@ public class Window {
                 throw new RuntimeException("No window could be created!");
             glfwMakeContextCurrent(window);
 
+            // Icon
+            loadWindowIcon(window);
+
             // Callbacks
             if(sizeCallback != null)
                 glfwSetWindowSizeCallback(window, sizeCallback);
@@ -55,6 +65,26 @@ public class Window {
             return window;
         }
 
+        private void loadWindowIcon(long window){
+            try (var stream = requireNonNull(getClass().getResourceAsStream("/assets/textures/icon/" + BuildData.getData("icon")), "Stream was null, no icon file!")){
+                var image = ImageIO.read(stream);
+                var iWidth = image.getWidth();
+                var iHeight = image.getHeight();
+                var buffer = getImagePixelsAsBuffer(image);
+
+                try (final var images = GLFWImage.create(1)) {
+                    images.get(0).set(iWidth, iHeight, buffer);
+                    glfwSetWindowIcon(window, images);
+                }
+            } catch (Exception e){
+                logError(e);
+            }
+        }
+
+        @Override
+        public String getCallerName() {
+            return "WindowBuilder";
+        }
     }
 
 }

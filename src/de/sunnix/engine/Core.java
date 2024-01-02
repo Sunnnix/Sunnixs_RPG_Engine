@@ -1,7 +1,6 @@
 package de.sunnix.engine;
 
 import de.sunnix.engine.debug.BuildData;
-import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.graphics.Window;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,6 +13,8 @@ import java.util.function.Consumer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.*;
 import static org.lwjgl.opengl.GL11.*;
+
+import static de.sunnix.engine.debug.GameLogger.*;
 
 public class Core {
 
@@ -63,10 +64,10 @@ public class Core {
             throw new IllegalStateException("GLFW could not be initialized");
 
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            GameLogger.logException("UncaughtExceptionHandler", throwable);
+            logException("UncaughtExceptionHandler", throwable);
             System.exit(1);
         });
-        GameLogger.logI("Core", "Inited Core " + BuildData.getData("name") + " Version: " + BuildData.getData("version"));
+        logI("Core", "Inited Core " + BuildData.getData("name") + " Version: " + BuildData.getData("version"));
     }
 
     public static void createWindow(String title, int width, int height, Consumer<Window.WindowBuilder> windowBuilder){
@@ -101,15 +102,21 @@ public class Core {
     public static void start(){
         validate(State.WINDOW_CREATED);
 
-        subscribeLoop("fps_generator", 0, generateFPS());
+        subscribeLoop("fps_generator", 0, createGenFPSFunction());
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
         current_state = State.STARTED;
-        GameLogger.logI("Core", "Game started!");
+
+        var error = glGetError();
+        if(error != GL_NO_ERROR){
+            logE("Core", "GL_ERROR: " + error);
+        }
+
+        logI("Core", "Game started!");
         Looper.loop();
-        GameLogger.logI("Core", "Game stopped!");
+        logI("Core", "Game stopped!");
     }
 
     public static void setVsync(boolean on){
@@ -127,7 +134,7 @@ public class Core {
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private static Runnable generateFPS(){
+    private static Runnable createGenFPSFunction(){
         var maximumListSize = 60 * 4;
         var fpsList = new ArrayList<Double>(maximumListSize);
         var wrapper = new Object(){ double latestTime = glfwGetTime(); };
