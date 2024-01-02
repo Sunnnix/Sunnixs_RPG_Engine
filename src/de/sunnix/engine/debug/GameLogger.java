@@ -34,26 +34,19 @@ public final class GameLogger{
     }
 
     public static void logI(String caller, String msg){
-        var record = new LogRecord(Level.INFO, msg);
-        record.setLoggerName(caller);
-        logger.log(record);
+        logger.log(new CustomLogRecord(caller, Level.INFO, msg));
     }
 
     public static void logW(String caller, String msg){
-        var record = new LogRecord(Level.WARNING, msg);
-        record.setLoggerName(caller);
-        logger.log(record);
+        logger.log(new CustomLogRecord(caller, Level.WARNING, msg));
     }
 
     public static void logE(String caller, String msg){
-        var record = new LogRecord(Level.SEVERE, msg);
-        record.setLoggerName(caller);
-        logger.log(record);
+        logger.log(new CustomLogRecord(caller, Level.SEVERE, msg));
     }
 
     public static void logException(String caller, Throwable throwable){
-        var record = new LogRecord(Level.SEVERE, "");
-        record.setLoggerName(caller);
+        var record = new CustomLogRecord(caller, Level.SEVERE, "");
         record.setThrown(throwable);
         logger.log(record);
     }
@@ -78,7 +71,7 @@ public final class GameLogger{
         @Override
         public String format(LogRecord record) {
             String formatted;
-            var prefix = "[" + dateFormat.format(record.getMillis()) + "][" + record.getLoggerName() + "][" + record.getLevel().getName() + "]: ";
+            var prefix = "[" + dateFormat.format(record.getMillis()) + "][" + ((CustomLogRecord)record).caller + "][" + record.getLevel().getName() + "]: ";
             if(record.getThrown() != null)
                 formatted = createThrownString(prefix, record.getThrown(), false);
             else
@@ -114,6 +107,16 @@ public final class GameLogger{
                 sb.append(createThrownString(prefix, thrown.getCause(), true));
             sb.deleteCharAt(sb.length() - 1);
             return sb.toString();
+        }
+    }
+
+    private static class CustomLogRecord extends LogRecord{
+
+        public final String caller;
+
+        public CustomLogRecord(String caller, Level level, String msg) {
+            super(level, msg);
+            this.caller = caller;
         }
     }
 
