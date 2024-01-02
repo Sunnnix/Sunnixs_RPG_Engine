@@ -125,12 +125,26 @@ public class Core {
         vsync = on;
     }
 
+    /**
+     * the runnable is called every loop
+     */
     public static void subscribeLoop(@NonNull String id, int period, Runnable runnable){
         Looper.subscribe(id, period, runnable);
     }
 
     public static void unsubscribeLoop(String id){
         Looper.unsubscribe(id);
+    }
+
+    /**
+     * the listener is called if a key of the InputManager is pressed or released
+     */
+    public static void subscribeInputManager(@NonNull String id, int period, InputManager.InputListener listener){
+        InputManager.subscribe(id, period, listener);
+    }
+
+    public static void unsubscribeInputManager(String id){
+        InputManager.unsubscribe(id);
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")

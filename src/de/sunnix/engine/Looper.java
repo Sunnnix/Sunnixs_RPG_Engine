@@ -47,19 +47,23 @@ public class Looper {
             }
             lastTime = currentTime;
 
-            if(subscriber.size() > 0){
-                listeners.addAll(subscriber);
-                subscriber.clear();
-                listeners.sort(Comparator.comparing(LoopSubscriber::period));
-            }
-            if(unsubscriber.size() > 0) {
-                unsubscriber.forEach(id -> listeners.removeIf(s -> s.ID.equals(id)));
-                unsubscriber.clear();
-            }
+            checkSubscribers();
             listeners.forEach(LoopSubscriber::run);
 
             glfwSwapBuffers(Core.getWindow());
             glfwPollEvents();
+        }
+    }
+
+    private static void checkSubscribers(){
+        if(subscriber.size() > 0){
+            listeners.addAll(subscriber);
+            subscriber.clear();
+            listeners.sort(Comparator.comparing(LoopSubscriber::period));
+        }
+        if(unsubscriber.size() > 0) {
+            unsubscriber.forEach(id -> listeners.removeIf(s -> s.ID.equals(id)));
+            unsubscriber.clear();
         }
     }
 

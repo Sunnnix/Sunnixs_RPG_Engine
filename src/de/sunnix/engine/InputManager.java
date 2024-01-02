@@ -1,9 +1,13 @@
 package de.sunnix.engine;
 
+import lombok.NonNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWGamepadState;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -12,6 +16,10 @@ public class InputManager {
 	private static final LinkedList<Key> keys = new LinkedList<>();
 	private static final LinkedList<Button> buttons = new LinkedList<>();
 	private static final LinkedList<Axis> axes = new LinkedList<>();
+
+	private static final List<InputSubscriber> listeners = new ArrayList<>();
+	private static final List<InputSubscriber> subscriber = new ArrayList<>();
+	private static final List<String> unsubscriber = new LinkedList<>();
 
 	// *********************************************************** //
 	//							Keyboard						   //
@@ -146,7 +154,38 @@ public class InputManager {
 				}
 			}
 		}
+		checkSubscribers();
+		if(listeners.size() > 0)
+			keys.forEach(k -> {
+				if(!k.startPressed() && !k.startRelease())
+					return;
+				for(var l : listeners)
+					if(l.onInput(k.keyCode, k.pressed))
+						break;
+			});
     }
+
+	private static void checkSubscribers(){
+		if(subscriber.size() > 0){
+			listeners.addAll(subscriber);
+			subscriber.clear();
+			listeners.sort(Comparator.comparing(InputSubscriber::period));
+		}
+		if(unsubscriber.size() > 0) {
+			unsubscriber.forEach(id -> listeners.removeIf(s -> s.ID.equals(id)));
+			unsubscriber.clear();
+		}
+	}
+
+	static void subscribe(@NonNull String id, int period, InputListener listener){
+		if(listener == null)
+			return;
+		subscriber.add(new InputSubscriber(id, period, listener));
+	}
+
+	static void unsubscribe(String id){
+		unsubscriber.add(id);
+	}
 
     public static class Key {
 		
@@ -264,6 +303,25 @@ public class InputManager {
 
 		public float getDown(){
 			return getRight();
+		}
+
+	}
+
+	public interface InputListener {
+
+		/**
+		 * @param keycode keycode from input
+		 * @param pressed is key pressed
+		 * @return event consumed
+		 */
+		boolean onInput(int keycode, boolean pressed);
+
+	}
+
+	private record InputSubscriber(@NonNull String ID, int period, InputListener listener){
+
+		public boolean onInput(int keycode, boolean pressed){
+			return listener.onInput(keycode, pressed);
 		}
 
 	}
