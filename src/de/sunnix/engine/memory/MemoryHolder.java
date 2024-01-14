@@ -12,7 +12,9 @@ public abstract class MemoryHolder {
     public final void freeMemory(){
         free();
         MemoryHandler.remove(this);
-    };
+    }
+
+    public abstract boolean created();
 
     protected abstract MemoryCategory getMemoryCategory();
 

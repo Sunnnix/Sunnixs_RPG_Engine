@@ -1,5 +1,6 @@
 package de.sunnix.engine.graphics;
 
+import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 public class Texture extends MemoryHolder {
     private static int latestActiveTexture = -1;
 
-    protected final int textureID;
+    protected int textureID;
     @Getter
     protected final int width, height;
 
@@ -27,7 +28,7 @@ public class Texture extends MemoryHolder {
             this.width = image.getWidth();
             this.height = image.getHeight();
             var buffer = getImagePixelsAsBuffer(image);
-            this.textureID = genTexture(buffer, width, height);
+            ContextQueue.addQueue(() -> this.textureID = genTexture(buffer, width, height));
         } catch (Exception e) {
             throw new RuntimeException(String.format("Loading texture %s failed!", path), e);
         }
@@ -87,6 +88,10 @@ public class Texture extends MemoryHolder {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    @Override
+    public boolean created() {
+        return textureID != 0;
+    }
 
     @Override
     protected MemoryCategory getMemoryCategory() {

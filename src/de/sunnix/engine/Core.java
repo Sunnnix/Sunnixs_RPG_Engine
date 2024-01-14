@@ -2,6 +2,7 @@ package de.sunnix.engine;
 
 import de.sunnix.engine.debug.BuildData;
 import de.sunnix.engine.graphics.Window;
+import de.sunnix.engine.memory.ContextQueue;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -10,11 +11,10 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import static de.sunnix.engine.debug.GameLogger.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.*;
 import static org.lwjgl.opengl.GL11.*;
-
-import static de.sunnix.engine.debug.GameLogger.*;
 
 public class Core {
 
@@ -25,7 +25,7 @@ public class Core {
     private static State current_state = State.PRE_INIT;
 
     @Getter
-    private static boolean power_safe_mode = false;
+    private static boolean power_safe_mode = true;
 
     @Getter
     private static double unstable_fps;
@@ -103,6 +103,7 @@ public class Core {
         validate(State.WINDOW_CREATED);
 
         subscribeLoop("fps_generator", 0, createGenFPSFunction());
+        subscribeLoop("context_queue", 0, ContextQueue::runQueueOnMain);
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
 
         glfwMakeContextCurrent(window);
@@ -147,7 +148,6 @@ public class Core {
         InputManager.unsubscribe(id);
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     private static Runnable createGenFPSFunction(){
         var maximumListSize = 60 * 4;
         var fpsList = new ArrayList<Double>(maximumListSize);
@@ -158,7 +158,7 @@ public class Core {
             if(fpsList.size() >= maximumListSize)
                 fpsList.remove(0);
             fpsList.add(unstable_fps);
-            fps = fpsList.stream().mapToDouble(d -> d).average().getAsDouble();
+            fps = fpsList.stream().mapToDouble(d -> d).average().orElse(0d);
             wrapper.latestTime = currentTime;
         };
     }

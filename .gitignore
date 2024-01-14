@@ -42,3 +42,5 @@ build/
 *.log
 out/
 logs/
+/res/test/
+/src/de/sunnix/sunlundra/

@@ -6,6 +6,9 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * An overview of all allocated MemoryHolder's to see, what how much of what category of memory are loaded
+ */
 public class MemoryHandler {
 
     private MemoryHandler() {}
