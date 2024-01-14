@@ -39,5 +39,6 @@ build/
 
 ### Internal files ###
 *.log.*
+*.log
 out/
 logs/

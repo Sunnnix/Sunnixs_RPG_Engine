@@ -9,11 +9,7 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 
-import javax.imageio.ImageIO;
-
 import static org.lwjgl.glfw.GLFW.*;
-
-import static de.sunnix.engine.util.Utils.*;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Window {
@@ -66,18 +62,15 @@ public class Window {
         }
 
         private void loadWindowIcon(long window){
-            try (var stream = requireNonNull(getClass().getResourceAsStream("/assets/textures/icon/" + BuildData.getData("icon")), "Stream was null, no icon file!")){
-                var image = ImageIO.read(stream);
-                var iWidth = image.getWidth();
-                var iHeight = image.getHeight();
-                var buffer = getImagePixelsAsBuffer(image);
-
-                try (final var images = GLFWImage.create(1)) {
-                    images.get(0).set(iWidth, iHeight, buffer);
+            try {
+                var image = Texture.loadImage("/assets/textures/icon/" + BuildData.getData("icon"));
+                var buffer = Texture.getImagePixelsAsBuffer(image);
+                try(var images = GLFWImage.create(1)){
+                    images.get(0).set(image.getWidth() , image.getHeight(), buffer);
                     glfwSetWindowIcon(window, images);
                 }
             } catch (Exception e){
-                logError(e);
+                logError(new RuntimeException("Error loading window icon", e));
             }
         }
 
