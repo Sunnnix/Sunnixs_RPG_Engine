@@ -89,7 +89,7 @@ public class Texture extends MemoryHolder {
     }
 
     @Override
-    public boolean created() {
+    public boolean isValid() {
         return textureID != 0;
     }
 

@@ -63,6 +63,22 @@ public class MemoryHandler {
         return String.format("%s:%02d:%02d.%03d", hours, minutes, seconds, millis);
     }
 
+    /**
+     * Frees all resources.
+     * Causes crash if not called in main thread
+     */
+    public static void freeAll() {
+        records.values().forEach(list -> {
+            // prevent ConcurrentModificationException
+            var it = list.iterator();
+            while(it.hasNext()) {
+                var record = it.next();
+                it.remove();
+                record.memoryHolder.freeMemory();
+            }
+        });
+    }
+
     private record MemoryHolderRecord(String time, MemoryCategory category, String info, MemoryHolder memoryHolder){
 
         @Override

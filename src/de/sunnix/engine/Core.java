@@ -3,6 +3,7 @@ package de.sunnix.engine;
 import de.sunnix.engine.debug.BuildData;
 import de.sunnix.engine.graphics.Window;
 import de.sunnix.engine.memory.ContextQueue;
+import de.sunnix.engine.memory.MemoryHandler;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -117,6 +118,8 @@ public class Core {
 
         logI("Core", "Game started!");
         Looper.loop();
+        logI("Core", "Game stopping!");
+        MemoryHandler.freeAll();
         logI("Core", "Game stopped!");
     }
 

@@ -14,7 +14,7 @@ public abstract class MemoryHolder {
         MemoryHandler.remove(this);
     }
 
-    public abstract boolean created();
+    public abstract boolean isValid();
 
     protected abstract MemoryCategory getMemoryCategory();
 
