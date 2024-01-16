@@ -17,28 +17,37 @@ public class Looper {
     private static final List<LoopSubscriber> subscriber = new ArrayList<>();
     private static final List<String> unsubscriber = new LinkedList<>();
 
-    static void subscribe(@NonNull String id, int period, Runnable runnable){
+    static void subscribe(@NonNull String id, int period, Runnable runnable) {
         if(runnable == null)
             return;
         subscriber.add(new LoopSubscriber(id, period, runnable));
     }
 
-    static void unsubscribe(String id){
+    static void unsubscribe(String id) {
         unsubscriber.add(id);
     }
 
-    static void loop(){
+    /**
+     * The GameLoop starts when this function is started.<br>
+     * In this a while loop is executed until the function glfwWindowShouldClose returns true.<br>
+     * In this function the fps are limited to the set fps of the core and offers an additional possibility
+     * to relieve the CPU by the powersafemode in exchange of a small inaccuracy of the fps.<br>
+     * For each frame, all listeners are executed by period.
+     */
+    static void loop() {
         double lastTime = glfwGetTime();
+
+        double powerSafeDelay = .968; // designed for 60 fps
 
         while (!glfwWindowShouldClose(Core.getWindow())) {
             double targetFrameTime = 1.0 / Core.getWindow_targetFPS();
             double currentTime = glfwGetTime();
-            if(currentTime - lastTime < targetFrameTime * (Core.isPower_safe_mode() ? .95 : 1)) {
-                if(Core.isPower_safe_mode() && currentTime - lastTime < (targetFrameTime * .95) * .99)
+            if (currentTime - lastTime < targetFrameTime * (Core.isPower_safe_mode() ? powerSafeDelay : 1)) {
+                if (Core.isPower_safe_mode() && currentTime - lastTime < (targetFrameTime * powerSafeDelay) * .99)
                     try {
-                        var delay = (targetFrameTime * .95 - (currentTime - lastTime)) * .01;
-                        var milli = (int)(delay * 1000);
-                        var nano = (int)((delay * 1000 - milli) * 1000000);
+                        var delay = (targetFrameTime * powerSafeDelay - (currentTime - lastTime)) * .01;
+                        var milli = (int) (delay * 1000);
+                        var nano = (int) ((delay * 1000 - milli) * 1000000);
                         Thread.sleep(milli, nano);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
