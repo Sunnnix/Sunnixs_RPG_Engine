@@ -1,11 +1,13 @@
 package de.sunnix.engine.graphics;
 
+import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import lombok.Getter;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,11 +18,13 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class Texture extends MemoryHolder {
+
+    public static final Texture MISSING_IMAGE = new Texture();
     private static int latestActiveTexture = -1;
 
     protected int textureID;
     @Getter
-    protected final int width, height;
+    protected int width, height;
 
     public Texture(String path) {
         try {
@@ -30,7 +34,28 @@ public class Texture extends MemoryHolder {
             var buffer = getImagePixelsAsBuffer(image);
             ContextQueue.addQueue(() -> this.textureID = genTexture(buffer, width, height));
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Loading texture %s failed!", path), e);
+            textureID = MISSING_IMAGE.textureID;
+            width = MISSING_IMAGE.width;
+            height = MISSING_IMAGE.height;
+            GameLogger.logException("Texture", new RuntimeException(String.format("Loading texture %s failed!", path), e));
+        }
+    }
+
+    private Texture(){
+        try {
+            var image = new BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB);
+            var g = image.getGraphics();
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, 2, 2);
+            g.setColor(Color.MAGENTA);
+            g.fillRect(1, 0, 1, 1);
+            g.fillRect(0, 1, 1, 1);
+            this.width = 2;
+            this.height = 2;
+            var buffer = getImagePixelsAsBuffer(image);
+            ContextQueue.addQueue(() -> this.textureID = genTexture(buffer, width, height));
+        } catch (Exception e){
+            throw new RuntimeException("Default 'missing texture' can't be created!", e);
         }
     }
 
@@ -64,8 +89,8 @@ public class Texture extends MemoryHolder {
         glBindTexture(GL_TEXTURE_2D, id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
         return id;

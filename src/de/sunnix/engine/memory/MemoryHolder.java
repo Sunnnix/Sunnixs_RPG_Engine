@@ -22,4 +22,8 @@ public abstract class MemoryHolder {
 
     protected abstract void free();
 
+    @Override
+    public String toString() {
+        return String.format("%s%s - %s -- (%s)", isValid() ? "" : "INVALID ", getMemoryInfo(), getMemoryCategory(), super.toString());
+    }
 }

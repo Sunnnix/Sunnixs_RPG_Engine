@@ -89,6 +89,7 @@ public class Core {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
+        glFrontFace(GL_CW);
         current_state = State.WINDOW_CREATED;
     }
 
@@ -102,6 +103,7 @@ public class Core {
 
     public static void start(){
         validate(State.WINDOW_CREATED);
+        current_state = State.STARTED;
 
         subscribeLoop("fps_generator", 0, createGenFPSFunction());
         subscribeLoop("context_queue", 0, ContextQueue::runQueueOnMain);
@@ -109,7 +111,6 @@ public class Core {
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
-        current_state = State.STARTED;
 
         var error = glGetError();
         if(error != GL_NO_ERROR){

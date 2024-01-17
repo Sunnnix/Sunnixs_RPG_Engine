@@ -1,5 +1,6 @@
 package de.sunnix.engine;
 
+import de.sunnix.engine.util.Utils;
 import lombok.NonNull;
 
 import java.util.ArrayList;
@@ -61,6 +62,8 @@ public class Looper {
 
             glfwSwapBuffers(Core.getWindow());
             glfwPollEvents();
+
+            Utils.checkForOpenGLErrors("Looper");
         }
     }
 

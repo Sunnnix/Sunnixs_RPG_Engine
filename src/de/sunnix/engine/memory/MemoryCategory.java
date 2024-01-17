@@ -2,6 +2,6 @@ package de.sunnix.engine.memory;
 
 public enum MemoryCategory {
 
-    SHADER, TEXTURE
+    SHADER, BUFFER, MESH, RENDER_OBJECT, TEXTURE
 
 }

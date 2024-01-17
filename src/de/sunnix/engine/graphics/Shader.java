@@ -76,6 +76,14 @@ public class Shader extends MemoryHolder {
         return shaderID;
     }
 
+    public void bind(){
+        glUseProgram(id);
+    }
+
+    public void unbind(){
+        glUseProgram(0);
+    }
+
     @Override
     public boolean isValid() {
         return id != 0;
