@@ -1,10 +1,14 @@
 package de.sunnix.engine.graphics;
 
+import de.sunnix.engine.Core;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -22,13 +26,24 @@ public abstract class RenderObject extends MemoryHolder {
     }
 
     public void render(){
-        if(shader != null)
-            shader.bind();
+        var pos = getPos();
+        var size = getSize();
+        shader.bind();
         if(texture != null)
             texture.bind(0);
         mesh.bind();
+        var model = new Matrix4f().translate(pos.x, pos.y, 0).scale(size.x * Core.getPixel_scale(), size.y * Core.getPixel_scale(), 1);
+        var view = Camera.getView();
+        var proj = Camera.getProjection();
+        var mat = proj.mul(view, new Matrix4f());
+        mat.mul(model, mat);
+        shader.uniformMat4(shader.getUNIFORM_PROJECTION(), mat.get(new float[16]));
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
     }
+
+    public abstract Vector3f getPos();
+
+    public abstract Vector2f getSize();
 
     @Override
     public boolean isValid() {

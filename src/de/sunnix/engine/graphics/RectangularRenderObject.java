@@ -1,6 +1,12 @@
 package de.sunnix.engine.graphics;
 
+import de.sunnix.engine.Core;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+
 public class RectangularRenderObject extends RenderObject{
+
+    protected Vector3f pos = new Vector3f();
 
     public RectangularRenderObject() {
         super(genMesh());
@@ -29,4 +35,13 @@ public class RectangularRenderObject extends RenderObject{
         ));
     }
 
+    @Override
+    public Vector3f getPos() {
+        return pos;
+    }
+
+    @Override
+    public Vector2f getSize() {
+        return new Vector2f(Core.TILE_WIDTH);
+    }
 }

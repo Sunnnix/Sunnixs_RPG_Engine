@@ -28,7 +28,10 @@ public class Window {
 
         private boolean resizable;
 
-        private GLFWWindowSizeCallbackI sizeCallback = (win, w, h) -> glViewport(0, 0, w, h);
+        private GLFWWindowSizeCallbackI sizeCallback = (win, w, h) -> {
+            glViewport(0, 0, w, h);
+            Camera.getSize().set(w, h);
+        };
         private GLFWWindowFocusCallbackI focusCallback;
 
         public WindowBuilder(String title, int width, int height){
@@ -51,6 +54,8 @@ public class Window {
 
             // Icon
             loadWindowIcon(window);
+
+            Camera.getSize().set(width, height);
 
             // Callbacks
             if(sizeCallback != null)

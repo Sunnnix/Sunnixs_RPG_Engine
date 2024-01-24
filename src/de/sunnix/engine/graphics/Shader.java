@@ -4,6 +4,7 @@ import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
+import lombok.Getter;
 
 import java.util.Objects;
 
@@ -11,6 +12,9 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class Shader extends MemoryHolder {
     private int id;
+
+    @Getter
+    private int UNIFORM_PROJECTION;
 
     public Shader(String shaderPath) {
         loadShaders(shaderPath);
@@ -37,6 +41,8 @@ public class Shader extends MemoryHolder {
                         throw new Exception("Shader Program Linking Failed: " + glGetProgramInfoLog(id));
 
                     id = program;
+
+                    UNIFORM_PROJECTION = getUniformLocation(this, "projection");
                 } catch (Exception e) {
                     GameLogger.logException("Shader", new RuntimeException("Problem creating shader", e));
                     if (program != 0)
@@ -82,6 +88,14 @@ public class Shader extends MemoryHolder {
 
     public void unbind(){
         glUseProgram(0);
+    }
+
+    public static int getUniformLocation(Shader shader, String name){
+        return glGetUniformLocation(shader.id, name);
+    }
+
+    public void uniformMat4(int location, float[] mat){
+        glUniformMatrix4fv(location, false, mat);
     }
 
     @Override

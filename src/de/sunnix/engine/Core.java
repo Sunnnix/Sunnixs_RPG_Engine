@@ -1,6 +1,7 @@
 package de.sunnix.engine;
 
 import de.sunnix.engine.debug.BuildData;
+import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryHandler;
@@ -46,7 +47,8 @@ public class Core {
     @Getter
     private static boolean vsync = true;
     @Setter
-    private static double pixel_scale = 2;
+    @Getter
+    private static float pixel_scale = 2;
 
     // *************************************************************** //
 
@@ -108,6 +110,7 @@ public class Core {
         subscribeLoop("fps_generator", 0, createGenFPSFunction());
         subscribeLoop("context_queue", 0, ContextQueue::runQueueOnMain);
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
+        subscribeLoop("camera", 1, Camera::process);
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
