@@ -16,6 +16,7 @@ public class Shader extends MemoryHolder {
     @Getter
     private int UNIFORM_PROJECTION;
 
+
     public Shader(String shaderPath) {
         loadShaders(shaderPath);
     }
@@ -116,6 +117,10 @@ public class Shader extends MemoryHolder {
     @Override
     protected void free() {
         glDeleteProgram(id);
+    }
+
+    public static Shader genDefaultShader(){
+        return new Shader("/data/shader/default_shader");
     }
 
 }
