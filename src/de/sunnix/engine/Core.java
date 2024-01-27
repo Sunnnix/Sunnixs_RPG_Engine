@@ -34,6 +34,14 @@ public class Core {
     @Getter
     private static double fps;
 
+    @Getter
+    @Setter
+    private static boolean useProfiler;
+
+    @Getter
+    @Setter
+    private static boolean exit_on_close = true;
+
     // *************************************************************** //
     //                        Window properties                        //
     // *************************************************************** //
@@ -124,7 +132,10 @@ public class Core {
         Looper.loop();
         logI("Core", "Game stopping!");
         MemoryHandler.freeAll();
+        glfwTerminate();
         logI("Core", "Game stopped!");
+        if(exit_on_close)
+            System.exit(0);
     }
 
     public static void setVsync(boolean on){

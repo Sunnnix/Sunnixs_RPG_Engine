@@ -1,5 +1,6 @@
 package de.sunnix.engine;
 
+import de.sunnix.engine.debug.profiler.Profiler;
 import de.sunnix.engine.util.Utils;
 import lombok.NonNull;
 
@@ -57,13 +58,25 @@ public class Looper {
             }
             lastTime = currentTime;
 
+            var profilerStart = System.nanoTime();
+
             checkSubscribers();
-            listeners.forEach(LoopSubscriber::run);
+            if(Core.isUseProfiler()) {
+                listeners.forEach(s -> {
+                    var start = System.nanoTime();
+                    s.run();
+                    Profiler.profile(s.ID, System.nanoTime() - start);
+                });
+            } else
+                listeners.forEach(LoopSubscriber::run);
 
             glfwSwapBuffers(Core.getWindow());
             glfwPollEvents();
 
             Utils.checkForOpenGLErrors("Looper");
+
+            if(Core.isUseProfiler())
+                Profiler.profileTotal(System.nanoTime() - profilerStart);
         }
     }
 
