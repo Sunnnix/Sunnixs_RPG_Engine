@@ -28,8 +28,8 @@ public class Profiler {
     }
 
     public static void profile(String id, long time){
-        var list = data.computeIfAbsent(id, s -> new ArrayList<>(precision));
         editList(() -> {
+            var list = data.computeIfAbsent(id, s -> new ArrayList<>(precision));
             list.add(time);
             var diff = list.size() - precision;
             if(diff > 1){
@@ -74,22 +74,24 @@ public class Profiler {
                                 int i = 0;
                             };
                             while (this.isShowing()) {
-                                editList(() -> {
-                                    totalTime.setData(totalData);
-                                    data.entrySet().forEach(e -> {
-                                        monitors.computeIfAbsent(e.getKey(), s -> {
-                                            var monitor = (Monitor) root.add(new Monitor(s));
-                                            root.revalidate();
-                                            return monitor;
-                                        }).setData(e.getValue());
-                                        if(wrapper.i++ % 82 == 0){
-                                            root.removeAll();
-                                            root.add(totalTime);
-                                            monitors.values().stream().sorted(Comparator.comparing(Monitor::getAvr).reversed()).forEach(root::add);
-                                            root.revalidate();
-                                            root.repaint();
-                                        } else
-                                            root.repaint();
+                                SwingUtilities.invokeLater(() -> {
+                                    editList(() -> {
+                                        totalTime.setData(totalData);
+                                        data.entrySet().forEach(e -> {
+                                            monitors.computeIfAbsent(e.getKey(), s -> {
+                                                var monitor = (Monitor) root.add(new Monitor(s));
+                                                root.revalidate();
+                                                return monitor;
+                                            }).setData(e.getValue());
+                                            if(wrapper.i++ % 82 == 0){
+                                                root.removeAll();
+                                                root.add(totalTime);
+                                                monitors.values().stream().sorted(Comparator.comparing(Monitor::getAvr).reversed()).forEach(root::add);
+                                                root.revalidate();
+                                                root.repaint();
+                                            } else
+                                                root.repaint();
+                                        });
                                     });
                                 });
                                 Thread.sleep(33);
