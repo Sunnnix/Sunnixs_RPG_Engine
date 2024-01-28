@@ -11,11 +11,13 @@ import java.util.Objects;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Shader extends MemoryHolder {
+
+    public static final Shader DEFAULT_SHADER = genDefaultShader();
+
     private int id;
 
     @Getter
     private int UNIFORM_PROJECTION;
-
 
     public Shader(String shaderPath) {
         loadShaders(shaderPath);

@@ -1,6 +1,8 @@
 package de.sunnix.engine;
 
 import de.sunnix.engine.debug.BuildData;
+import de.sunnix.engine.ecs.World;
+import de.sunnix.engine.ecs.components.BaseComponent;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
 import de.sunnix.engine.memory.ContextQueue;
@@ -9,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -27,6 +30,7 @@ public class Core {
     private static State current_state = State.PRE_INIT;
 
     @Getter
+    @Setter
     private static boolean power_safe_mode = true;
 
     @Getter
@@ -60,6 +64,11 @@ public class Core {
 
     // *************************************************************** //
 
+    @Getter
+    private static World world;
+    @Getter
+    private static final Vector3f backgroundColor = new Vector3f(0.7f, 0.7f, 0.7f);
+
     private static void validate(State expected){
         if(expected != current_state)
             throw new IllegalStateException(String.format("The current state is %s but state %s was expected", current_state, expected));
@@ -70,6 +79,9 @@ public class Core {
         current_state = State.INITED;
 
         BuildData.create();
+        BaseComponent.registerComponents(BaseComponent.class.getPackageName());
+
+        world = new World();
 
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
@@ -132,6 +144,7 @@ public class Core {
         Looper.loop();
         logI("Core", "Game stopping!");
         MemoryHandler.freeAll();
+        world.onDestroy();
         glfwTerminate();
         logI("Core", "Game stopped!");
         if(exit_on_close)

@@ -18,15 +18,14 @@ public abstract class RenderObject extends MemoryHolder {
 
     @Setter(value = AccessLevel.NONE)
     protected Mesh mesh;
-    protected Shader shader;
+    protected Shader shader = Shader.DEFAULT_SHADER;
     protected Texture texture;
 
     public RenderObject(Mesh mesh){
         this.mesh = mesh;
     }
 
-    public void render(){
-        var pos = getPos();
+    public void render(Vector3f pos){
         var size = getSize();
         shader.bind();
         if(texture != null)
@@ -40,8 +39,6 @@ public abstract class RenderObject extends MemoryHolder {
         shader.uniformMat4(shader.getUNIFORM_PROJECTION(), mat.get(new float[16]));
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
     }
-
-    public abstract Vector3f getPos();
 
     public abstract Vector2f getSize();
 

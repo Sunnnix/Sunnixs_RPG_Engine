@@ -6,8 +6,6 @@ import org.joml.Vector3f;
 
 public class RectangularRenderObject extends RenderObject{
 
-    protected Vector3f pos = new Vector3f();
-
     public RectangularRenderObject() {
         super(genMesh());
     }
@@ -33,11 +31,6 @@ public class RectangularRenderObject extends RenderObject{
                 },
                 2
         ));
-    }
-
-    @Override
-    public Vector3f getPos() {
-        return pos;
     }
 
     @Override
