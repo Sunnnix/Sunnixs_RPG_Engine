@@ -132,6 +132,8 @@ public class Profiler {
         Color lineColor;
         Color backColor;
 
+        boolean showFPS;
+
         Monitor(){
             this.name = "Total Time";
             lineColor = Color.WHITE;
@@ -140,6 +142,7 @@ public class Profiler {
             setMaximumSize(new Dimension(12000, 80));
             setMinimumSize(new Dimension(200, 80));
             setPreferredSize(new Dimension(200, 80));
+            showFPS = true;
         }
 
         Monitor(String name){
@@ -197,7 +200,12 @@ public class Profiler {
             g.drawLine(0, getHeight() - (int)twoThirdPixels, getWidth(), getHeight() - (int)twoThirdPixels);
             g.setFont(new Font("Comic Sans", Font.BOLD, 20));
             g.drawString(name, 5, 20);
-            var s = String.format("%.3f ms", (int)(avr / 1000) / 1000f);
+            String s;
+            if(showFPS) {
+                var ms = (int) (avr / 1000) / 1000f;
+                s = String.format("%s FPS | %.3f ms", (int)(1 / (ms / 1000)), ms);
+            } else
+                s = String.format("%.3f ms", (int)(avr / 1000) / 1000f);
             g.drawString(s, getWidth() - 5 - g.getFontMetrics().stringWidth(s), 20);
         }
     }

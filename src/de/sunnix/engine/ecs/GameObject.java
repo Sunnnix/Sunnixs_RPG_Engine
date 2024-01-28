@@ -4,6 +4,7 @@ import de.sunnix.engine.Core;
 import de.sunnix.engine.ecs.components.BaseComponent;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
+import de.sunnix.engine.stage.GameplayState;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3f;
@@ -36,7 +37,7 @@ public class GameObject extends MemoryHolder {
     public GameObject(){
         this.ID = (long)((Math.random() * Long.MAX_VALUE * 2) - Long.MAX_VALUE);
         this.name = "Entity " + Long.toHexString(ID);
-        Core.getWorld().addEntity(this);
+        ((GameplayState)Core.GameState.GAMEPLAY.state).getWorld().addEntity(this);
     }
 
     public final <T extends BaseComponent> T getComponent(Class<T> componentType){

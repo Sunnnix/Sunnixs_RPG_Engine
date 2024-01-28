@@ -82,6 +82,7 @@ public class Looper {
 
     private static void checkSubscribers(){
         if(subscriber.size() > 0){
+            listeners.removeIf(list -> subscriber.stream().anyMatch(sub -> sub.ID.equals(list.ID)));
             listeners.addAll(subscriber);
             subscriber.clear();
             listeners.sort(Comparator.comparing(LoopSubscriber::period));

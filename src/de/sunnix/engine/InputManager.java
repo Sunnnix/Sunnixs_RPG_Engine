@@ -157,10 +157,8 @@ public class InputManager {
 		checkSubscribers();
 		if(listeners.size() > 0)
 			keys.forEach(k -> {
-				if(!k.startPressed() && !k.startRelease())
-					return;
 				for(var l : listeners)
-					if(l.onInput(k.keyCode, k.pressed))
+					if(l.onInput(k.keyCode, k.time == 0, k.pressed, k.time))
 						break;
 			});
     }
@@ -314,14 +312,14 @@ public class InputManager {
 		 * @param pressed is key pressed
 		 * @return event consumed
 		 */
-		boolean onInput(int keycode, boolean pressed);
+		boolean onInput(int keycode, boolean changed, boolean pressed, int time);
 
 	}
 
 	private record InputSubscriber(@NonNull String ID, int period, InputListener listener){
 
-		public boolean onInput(int keycode, boolean pressed){
-			return listener.onInput(keycode, pressed);
+		public boolean onInput(int keycode, boolean changed, boolean pressed, int time){
+			return listener.onInput(keycode, changed, pressed, time);
 		}
 
 	}

@@ -11,11 +11,7 @@ public class World {
     private List<GameObject> gameObjects = new ArrayList<>();
     private List<GameObject> gameObjectsToAdd = new ArrayList<>();
 
-    public World(){
-        Core.subscribeLoop("update", 1, this::update);
-        Core.subscribeLoop("render", 2, this::render);
-        Core.subscribeLoop("postUpdate", 3, this::postUpdate);
-    }
+    public World(){}
 
     public void addEntity(GameObject entity){
         gameObjectsToAdd.add(entity);
@@ -37,9 +33,6 @@ public class World {
     }
 
     public void onDestroy(){
-        Core.unsubscribeLoop("update");
-        Core.unsubscribeLoop("render");
-        Core.unsubscribeLoop("postUpdate");
     }
 
 }

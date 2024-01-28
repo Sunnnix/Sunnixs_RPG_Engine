@@ -1,12 +1,15 @@
 package de.sunnix.engine;
 
 import de.sunnix.engine.debug.BuildData;
-import de.sunnix.engine.ecs.World;
 import de.sunnix.engine.ecs.components.BaseComponent;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryHandler;
+import de.sunnix.engine.stage.GameplayState;
+import de.sunnix.engine.stage.IState;
+import de.sunnix.engine.stage.IntroState;
+import de.sunnix.engine.stage.MainMenuState;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -23,11 +26,24 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Core {
 
-    private enum State{
+    private enum CoreStage {
         PRE_INIT, INITED, WINDOW_CREATED, STARTED
     }
 
-    private static State current_state = State.PRE_INIT;
+    public enum GameState {
+        INTRO(new IntroState()), MAIN_MENU(new MainMenuState()), GAMEPLAY(new GameplayState());
+
+        public final IState state;
+        GameState(IState state){
+            this.state = state;
+        }
+    }
+
+    private static CoreStage current_stage = CoreStage.PRE_INIT;
+    @Getter
+    private static GameState current_game_state = GameState.INTRO;
+    @Setter
+    private static GameState next_game_state = GameState.INTRO;
 
     @Getter
     @Setter
@@ -65,23 +81,19 @@ public class Core {
     // *************************************************************** //
 
     @Getter
-    private static World world;
-    @Getter
     private static final Vector3f backgroundColor = new Vector3f(0.7f, 0.7f, 0.7f);
 
-    private static void validate(State expected){
-        if(expected != current_state)
-            throw new IllegalStateException(String.format("The current state is %s but state %s was expected", current_state, expected));
+    private static void validate(CoreStage expected){
+        if(expected != current_stage)
+            throw new IllegalStateException(String.format("The current stage is %s but stage %s was expected", current_stage, expected));
     }
 
     public static void init(){
-        validate(State.PRE_INIT);
-        current_state = State.INITED;
+        validate(CoreStage.PRE_INIT);
+        current_stage = CoreStage.INITED;
 
         BuildData.create();
         BaseComponent.registerComponents(BaseComponent.class.getPackageName());
-
-        world = new World();
 
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
@@ -94,7 +106,7 @@ public class Core {
     }
 
     public static void createWindow(String title, int width, int height, Consumer<Window.WindowBuilder> windowBuilder){
-        validate(State.INITED);
+        validate(CoreStage.INITED);
 
         var builder = new Window.WindowBuilder(title, width, height);
         if(windowBuilder != null)
@@ -112,7 +124,7 @@ public class Core {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CW);
-        current_state = State.WINDOW_CREATED;
+        current_stage = CoreStage.WINDOW_CREATED;
     }
 
     public static void createWindow(String title, int width, int height){
@@ -124,13 +136,15 @@ public class Core {
     }
 
     public static void start(){
-        validate(State.WINDOW_CREATED);
-        current_state = State.STARTED;
+        validate(CoreStage.WINDOW_CREATED);
+        current_stage = CoreStage.STARTED;
 
         subscribeLoop("fps_generator", 0, createGenFPSFunction());
         subscribeLoop("context_queue", 0, ContextQueue::runQueueOnMain);
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
-        subscribeLoop("camera", 1, Camera::process);
+        subscribeLoop("update", 1, Core::update);
+        subscribeLoop("render", 2, Core::render);
+        subscribeLoop("postUpdate", 3, Core::postUpdate);
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
@@ -143,16 +157,42 @@ public class Core {
         logI("Core", "Game started!");
         Looper.loop();
         logI("Core", "Game stopping!");
+        unsubscribeLoop("fps_generator");
+        unsubscribeLoop("context_queue");
+        unsubscribeLoop("input_process");
+        unsubscribeLoop("update");
+        unsubscribeLoop("render");
+        unsubscribeLoop("postUpdate");
         MemoryHandler.freeAll();
-        world.onDestroy();
         glfwTerminate();
         logI("Core", "Game stopped!");
         if(exit_on_close)
             System.exit(0);
     }
 
+    private static void update(){
+        Camera.process();
+        current_game_state.state.update();
+    }
+
+    private static void render(){
+        var bgc = Core.getBackgroundColor();
+        glClearColor(bgc.x, bgc.y, bgc.z, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        current_game_state.state.render();
+    }
+
+    private static void postUpdate(){
+        current_game_state.state.postUpdate();
+        if(next_game_state != current_game_state){
+            current_game_state.state.onStop();
+            next_game_state.state.onStart();
+            current_game_state = next_game_state;
+        }
+    }
+
     public static void setVsync(boolean on){
-        if(current_state == State.WINDOW_CREATED || current_state == State.STARTED)
+        if(current_stage == CoreStage.WINDOW_CREATED || current_stage == CoreStage.STARTED)
             glfwSwapInterval(on ? 1 : 0);
         vsync = on;
     }
