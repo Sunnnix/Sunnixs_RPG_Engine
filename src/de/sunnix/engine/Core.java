@@ -4,6 +4,7 @@ import de.sunnix.engine.debug.BuildData;
 import de.sunnix.engine.ecs.components.BaseComponent;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
+import de.sunnix.engine.graphics.gui.GUIManager;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryHandler;
 import de.sunnix.engine.stage.GameplayState;
@@ -180,6 +181,7 @@ public class Core {
         glClearColor(bgc.x, bgc.y, bgc.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         current_game_state.state.render();
+        GUIManager.render();
     }
 
     private static void postUpdate(){

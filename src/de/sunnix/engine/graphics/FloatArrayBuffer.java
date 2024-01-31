@@ -8,13 +8,15 @@ import static org.lwjgl.opengl.GL30.*;
 public class FloatArrayBuffer extends MemoryHolder {
 
     @Getter
-    private final int size;
+    private final int pattern;
     private int id;
+    private int latestBufferSize;
 
     private float[] _array;
 
     public FloatArrayBuffer(float[] array, int pattern){
-        this.size = array.length / pattern;
+        this.pattern = pattern;
+        this.latestBufferSize = array.length;
         _array = array;
     }
 
@@ -27,10 +29,19 @@ public class FloatArrayBuffer extends MemoryHolder {
         id = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, _array, GL_STATIC_DRAW);
-        var pattern = _array.length / size;
         glVertexAttribPointer(location, pattern, GL_FLOAT, false, pattern * Float.BYTES, 0);
         glEnableVertexAttribArray(location);
         _array = null; // free space
+    }
+
+    public void changeBuffer(float[] buffer) {
+        glBindBuffer(GL_ARRAY_BUFFER, id);
+        if(buffer.length <= latestBufferSize)
+            glBufferSubData(GL_ARRAY_BUFFER, 0, buffer);
+        else {
+            latestBufferSize = buffer.length;
+            glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+        }
     }
 
     @Override
@@ -52,4 +63,5 @@ public class FloatArrayBuffer extends MemoryHolder {
     protected void free() {
         glDeleteBuffers(id);
     }
+
 }

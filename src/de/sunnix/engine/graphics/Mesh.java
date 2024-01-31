@@ -12,19 +12,21 @@ public class Mesh extends MemoryHolder {
     private int vertexArray;
     private int elementBuffer;
     @Getter
-    private final int vertexCount;
-    private final FloatArrayBuffer[] vertices;
+    private int vertexCount;
+    private int vertexMaxCount; // how large is the buffer of openGL
+    private final FloatArrayBuffer[] buffers;
 
-    public Mesh(int[] indices, FloatArrayBuffer... vertices) {
-        this.vertices = vertices;
-        this.vertexCount = indices.length;
+    public Mesh(int[] indices, FloatArrayBuffer... buffers) {
+        this.buffers = buffers;
+        this.vertexMaxCount = this.vertexCount = indices.length;
 
         ContextQueue.addQueue(() -> {
             vertexArray = glGenVertexArrays();
             glBindVertexArray(vertexArray);
 
-            for (int i = 0; i < vertices.length; i++)
-                vertices[i].init(i);
+            for (int i = 0; i < buffers.length; i++) {
+                buffers[i].init(i);
+            }
 
             elementBuffer = glGenBuffers();
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
@@ -32,6 +34,21 @@ public class Mesh extends MemoryHolder {
 
             unbind();
         });
+    }
+
+    public void changeIndices(int[] indices) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+        if(indices.length <= vertexMaxCount)
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices);
+        else {
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+            vertexMaxCount = indices.length;
+        }
+        vertexCount = indices.length;
+    }
+
+    public void changeBuffer(int location, float[] buffer) {
+        buffers[location].changeBuffer(buffer);
     }
 
     public void bind(){
@@ -59,9 +76,10 @@ public class Mesh extends MemoryHolder {
 
     @Override
     protected void free() {
-        for(var v : vertices)
+        for(var v : buffers)
             v.freeMemory();
         glDeleteBuffers(elementBuffer);
         glDeleteVertexArrays(vertexArray);
     }
+
 }

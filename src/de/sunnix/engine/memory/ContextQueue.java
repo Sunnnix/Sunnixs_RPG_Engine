@@ -1,5 +1,7 @@
 package de.sunnix.engine.memory;
 
+import de.sunnix.engine.debug.GameLogger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +26,10 @@ public class ContextQueue {
      */
     public static void runQueueOnMain() {
         synchronized (queue) {
-            queue.forEach(Runnable::run);
-            queue.clear();
+            if(queue.size() > 0) {
+                queue.forEach(Runnable::run);
+                queue.clear();
+            }
         }
     }
 
