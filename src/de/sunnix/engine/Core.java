@@ -1,6 +1,9 @@
 package de.sunnix.engine;
 
 import de.sunnix.engine.debug.BuildData;
+import de.sunnix.engine.debug.FPSGenerator;
+import de.sunnix.engine.debug.GLDebugPrintStream;
+import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.ecs.components.BaseComponent;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
@@ -11,18 +14,19 @@ import de.sunnix.engine.stage.GameplayState;
 import de.sunnix.engine.stage.IState;
 import de.sunnix.engine.stage.IntroState;
 import de.sunnix.engine.stage.MainMenuState;
+import de.sunnix.engine.util.Utils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GLUtil;
 
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import static de.sunnix.engine.debug.GameLogger.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL.*;
+import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Core {
@@ -45,6 +49,8 @@ public class Core {
     private static GameState current_game_state = GameState.INTRO;
     @Setter
     private static GameState next_game_state = GameState.INTRO;
+
+    private static boolean gl_debug_enabled;
 
     @Getter
     @Setter
@@ -106,10 +112,15 @@ public class Core {
         logI("Core", "Inited Core " + BuildData.getData("name") + " Version: " + BuildData.getData("version"));
     }
 
+    public static void enableGL_debug(boolean enable){
+        validate(CoreStage.INITED);
+        gl_debug_enabled = enable;
+    }
+
     public static void createWindow(String title, int width, int height, Consumer<Window.WindowBuilder> windowBuilder){
         validate(CoreStage.INITED);
 
-        var builder = new Window.WindowBuilder(title, width, height);
+        var builder = new Window.WindowBuilder(title, width, height, gl_debug_enabled);
         if(windowBuilder != null)
             windowBuilder.accept(builder);
 
@@ -120,11 +131,15 @@ public class Core {
         InputManager.process(window); // Create InputManager Keys
 
         createCapabilities();
+        if(gl_debug_enabled)
+            GLUtil.setupDebugMessageCallback(new GLDebugPrintStream());
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CW);
+
+        glfwSetErrorCallback((err, msg) -> GameLogger.logE("Core", String.format("%s: %s", Utils.getGLErrorString(err), msg)));
         current_stage = CoreStage.WINDOW_CREATED;
     }
 
@@ -140,7 +155,7 @@ public class Core {
         validate(CoreStage.WINDOW_CREATED);
         current_stage = CoreStage.STARTED;
 
-        subscribeLoop("fps_generator", 0, createGenFPSFunction());
+        subscribeLoop("fps_generator", 0, Core::calculateFPS);
         subscribeLoop("context_queue", 0, ContextQueue::runQueueOnMain);
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
         subscribeLoop("update", 1, Core::update);
@@ -156,7 +171,11 @@ public class Core {
         }
 
         logI("Core", "Game started!");
-        Looper.loop();
+        try {
+            Looper.loop();
+        } catch (Exception e){
+            logException("Core", e);
+        }
         logI("Core", "Game stopping!");
         unsubscribeLoop("fps_generator");
         unsubscribeLoop("context_queue");
@@ -221,19 +240,10 @@ public class Core {
         InputManager.unsubscribe(id);
     }
 
-    private static Runnable createGenFPSFunction(){
-        var maximumListSize = 60 * 4;
-        var fpsList = new ArrayList<Double>(maximumListSize);
-        var wrapper = new Object(){ double latestTime = glfwGetTime(); };
-        return () -> {
-            var currentTime = glfwGetTime();
-            unstable_fps = 1.0 / (currentTime - wrapper.latestTime);
-            if(fpsList.size() >= maximumListSize)
-                fpsList.remove(0);
-            fpsList.add(unstable_fps);
-            fps = fpsList.stream().mapToDouble(d -> d).average().orElse(0d);
-            wrapper.latestTime = currentTime;
-        };
+    private static void calculateFPS() {
+        var data = FPSGenerator.run();
+        unstable_fps = data[0];
+        fps = data[1];
     }
 
 }

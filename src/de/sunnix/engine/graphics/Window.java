@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
+import org.lwjgl.opengl.GLUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -26,6 +27,9 @@ public class Window {
         @Setter(AccessLevel.NONE)
         private int width, height;
 
+        @Setter(AccessLevel.NONE)
+        private boolean gl_debug_enabled;
+
         private boolean resizable;
 
         private GLFWWindowSizeCallbackI sizeCallback = (win, w, h) -> {
@@ -34,15 +38,20 @@ public class Window {
         };
         private GLFWWindowFocusCallbackI focusCallback;
 
-        public WindowBuilder(String title, int width, int height){
+        public WindowBuilder(String title, int width, int height, boolean gl_debug_enabled){
             this.title = title;
             this.width = width;
             this.height = height;
+            this.gl_debug_enabled = gl_debug_enabled;
         }
 
         public long build(){
             // Set hints
             glfwDefaultWindowHints();
+
+            if(gl_debug_enabled)
+                glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+
             glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
             glfwWindowHint(GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
 

@@ -51,6 +51,10 @@ public final class GameLogger{
         logger.log(record);
     }
 
+    public static void log(CustomLogRecord record){
+        logger.log(record);
+    }
+
     private GameLogger() {}
 
     private static class Formatter extends SimpleFormatter {
@@ -110,7 +114,7 @@ public final class GameLogger{
         }
     }
 
-    private static class CustomLogRecord extends LogRecord{
+    public static class CustomLogRecord extends LogRecord{
 
         public final String caller;
 

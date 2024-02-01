@@ -18,16 +18,17 @@ import static org.lwjgl.opengl.GL11.*;
 public class Text extends MemoryHolder {
 
     private static final float POINT_IN_PIXEL = 1.33f;
-    private static Shader shader = new Shader("/data/shader/text_shader");
+    private static final Shader shader = new Shader("/data/shader/text_shader");
 
     private String text;
     @Getter
-    private Vector2f position = new Vector2f();
-    private float size = 18;
-    private Font font = Font.FONT;
+    private final Vector2f position = new Vector2f();
+    private float size = 24;
+    private Font font = Font.COMIC_SANS;
     private byte fontStyle = Font.STYLE_NORMAL;
     private final Vector4f color = new Vector4f(1);
     private int width;
+    private int rows;
 
     private boolean genShadow = true;
 
@@ -41,12 +42,14 @@ public class Text extends MemoryHolder {
         this.fontStyle = (byte) style;
         this.color.set(r, g, b, a);
         this.genShadow = shadow;
+        GUIManager.add(this);
         prepare();
     }
 
     public Text(String text, int x, int y){
         this.text = text;
         this.position.set(x, y);
+        GUIManager.add(this);
         prepare();
     }
 
@@ -141,6 +144,8 @@ public class Text extends MemoryHolder {
             i++;
         }
 
+        this.rows = row + 1;
+
         if(mesh == null)
             this.mesh = new Mesh(indices,
                     new FloatArrayBuffer(vertices, 2),
@@ -163,7 +168,7 @@ public class Text extends MemoryHolder {
         var tex = font.getTexture(fontStyle);
         var sX = 1f / tex.getWidth();
         var sY = 1f / tex.getHeight();
-        var shadowShift = .06f;
+        var shadowShift = .045f;
 
         var cLength = (int) text.chars().filter(c -> c != '\n').count() * 2;
 
@@ -262,6 +267,8 @@ public class Text extends MemoryHolder {
 
             i++;
         }
+
+        this.rows = row + 1;
 
         if(mesh == null)
             this.mesh = new Mesh(indices,
@@ -398,7 +405,7 @@ public class Text extends MemoryHolder {
     }
 
     public float getHeight(){
-        return POINT_IN_PIXEL * size;
+        return POINT_IN_PIXEL * rows * size;
     }
 
     @Override
@@ -418,6 +425,7 @@ public class Text extends MemoryHolder {
 
     @Override
     protected void free() {
-        mesh.freeMemory();
+        if(mesh != null)
+            mesh.freeMemory();
     }
 }

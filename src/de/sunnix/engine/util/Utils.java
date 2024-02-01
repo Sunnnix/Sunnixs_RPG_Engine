@@ -13,7 +13,7 @@ public class Utils {
         }
     }
 
-    private static String getGLErrorString(int error) {
+    public static String getGLErrorString(int error) {
         return switch (error) {
             case GL_NO_ERROR -> "No Error";
             case GL_INVALID_ENUM -> "Invalid Enum";
