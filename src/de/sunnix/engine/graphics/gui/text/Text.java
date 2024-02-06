@@ -1,10 +1,12 @@
 package de.sunnix.engine.graphics.gui.text;
 
+import de.sunnix.engine.Core;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.FloatArrayBuffer;
 import de.sunnix.engine.graphics.Mesh;
 import de.sunnix.engine.graphics.Shader;
 import de.sunnix.engine.graphics.gui.GUIManager;
+import de.sunnix.engine.graphics.gui.IGUIComponent;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
@@ -13,61 +15,49 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+import java.util.function.Consumer;
+
 import static org.lwjgl.opengl.GL11.*;
 
-public class Text extends MemoryHolder {
+public class Text extends MemoryHolder implements IGUIComponent {
 
     private static final float POINT_IN_PIXEL = 1.33f;
     private static final Shader shader = new Shader("/data/shader/text_shader");
 
+    @Getter
     private String text;
     @Getter
-    private final Vector2f position = new Vector2f();
-    private float size = 24;
+    private final Vector2f pos = new Vector2f();
+    private float size = 12;
     private Font font = Font.COMIC_SANS;
     private byte fontStyle = Font.STYLE_NORMAL;
     private final Vector4f color = new Vector4f(1);
-    private int width;
+    private double point_in_pixel_width;
     private int rows;
 
-    private boolean genShadow = true;
+    private boolean drawShadow = true;
 
     private Mesh mesh;
 
-    public Text(String text, int x, int y, float size, Font font, int style, float r, float g, float b, float a, boolean shadow){
+    public Text(String text, Consumer<TextChanger> edit){
         this.text = text;
-        this.position.set(x, y);
-        this.size = size;
-        this.font = font;
-        this.fontStyle = (byte) style;
-        this.color.set(r, g, b, a);
-        this.genShadow = shadow;
+        var tc = new TextChanger();
+        edit.accept(tc);
+        if(!tc.commit())
+            prepare();
         GUIManager.add(this);
-        prepare();
     }
 
-    public Text(String text, int x, int y){
-        this.text = text;
-        this.position.set(x, y);
-        GUIManager.add(this);
-        prepare();
-    }
-
-    public Text(String text, int x, int y, float size, byte style){
-        this.text = text;
-        this.position.set(x, y);
-        this.size = size;
-        this.fontStyle = style;
-        GUIManager.add(this);
-        prepare();
+    public Text(String text){
+        this(text, e -> {});
     }
 
     private void prepare(){
-        if(genShadow){
+        if(drawShadow){
             prepareWithShadow();
             return;
         }
-        float minX = 0, maxX, minY = 0, maxY;
+        float minX = 0, maxX, minY = -POINT_IN_PIXEL * (1 - font.cut_vertical_spacing), maxY;
         var tex = font.getTexture(fontStyle);
         var sX = 1f / tex.getWidth();
         var sY = 1f / tex.getHeight();
@@ -88,6 +78,7 @@ public class Text extends MemoryHolder {
             var c = text.charAt(ci);
             if(c == '\n'){
                 minX = 0;
+                minY -= POINT_IN_PIXEL  * (1 - font.cut_vertical_spacing);
                 row++;
                 continue;
             }
@@ -100,13 +91,13 @@ public class Text extends MemoryHolder {
             maxY = POINT_IN_PIXEL + minY;
 
             vertices[i * 8] = minX;
-            vertices[i * 8 + 1] = minY - row * POINT_IN_PIXEL;
+            vertices[i * 8 + 1] = minY;
             vertices[i * 8 + 2] = minX;
-            vertices[i * 8 + 3] = maxY - row * POINT_IN_PIXEL;
+            vertices[i * 8 + 3] = maxY;
             vertices[i * 8 + 4] = maxX;
-            vertices[i * 8 + 5] = maxY - row * POINT_IN_PIXEL;
+            vertices[i * 8 + 5] = maxY;
             vertices[i * 8 + 6] = maxX;
-            vertices[i * 8 + 7] = minY - row * POINT_IN_PIXEL;
+            vertices[i * 8 + 7] = minY;
 
             minX += ((float) glyph.xAdvance() / glyph.height()) * POINT_IN_PIXEL;
             if (minX > nextWidth)
@@ -144,7 +135,8 @@ public class Text extends MemoryHolder {
             i++;
         }
 
-        this.rows = row + 1;
+        if(!text.isEmpty())
+            this.rows = row + 1;
 
         if(mesh == null)
             this.mesh = new Mesh(indices,
@@ -160,11 +152,11 @@ public class Text extends MemoryHolder {
             });
         }
 
-        this.width = (int)(nextWidth * size);
+        this.point_in_pixel_width = nextWidth;
     }
 
     private void prepareWithShadow(){
-        float minX = 0, maxX, minY = 0, maxY;
+        float minX = 0, maxX, minY = -POINT_IN_PIXEL * (1 - font.cut_vertical_spacing), maxY;
         var tex = font.getTexture(fontStyle);
         var sX = 1f / tex.getWidth();
         var sY = 1f / tex.getHeight();
@@ -177,7 +169,7 @@ public class Text extends MemoryHolder {
         var textures = new float[8 * cLength];
         var indices = new int[6 * cLength];
 
-        var nextWidth = 0;
+        var nextWidth = 0d;
 
         var row = 0;
 
@@ -186,6 +178,7 @@ public class Text extends MemoryHolder {
             var c = text.charAt(ci);
             if(c == '\n'){
                 minX = 0;
+                minY -= POINT_IN_PIXEL  * (1 - font.cut_vertical_spacing);
                 row++;
                 continue;
             }
@@ -198,27 +191,27 @@ public class Text extends MemoryHolder {
             maxY = POINT_IN_PIXEL + minY;
 
             vertices[i * 16] = minX + shadowShift;
-            vertices[i * 16 + 1] = minY - row * POINT_IN_PIXEL - shadowShift;
+            vertices[i * 16 + 1] = minY - shadowShift;
             vertices[i * 16 + 2] = minX + shadowShift;
-            vertices[i * 16 + 3] = maxY - row * POINT_IN_PIXEL - shadowShift;
+            vertices[i * 16 + 3] = maxY - shadowShift;
             vertices[i * 16 + 4] = maxX + shadowShift;
-            vertices[i * 16 + 5] = maxY - row * POINT_IN_PIXEL - shadowShift;
+            vertices[i * 16 + 5] = maxY - shadowShift;
             vertices[i * 16 + 6] = maxX + shadowShift;
-            vertices[i * 16 + 7] = minY - row * POINT_IN_PIXEL - shadowShift;
+            vertices[i * 16 + 7] = minY - shadowShift;
 
             // shadow
             vertices[i * 16 + 8] = minX;
-            vertices[i * 16 + 9] = minY - row * POINT_IN_PIXEL;
+            vertices[i * 16 + 9] = minY;
             vertices[i * 16 + 10] = minX;
-            vertices[i * 16 + 11] = maxY - row * POINT_IN_PIXEL;
+            vertices[i * 16 + 11] = maxY;
             vertices[i * 16 + 12] = maxX;
-            vertices[i * 16 + 13] = maxY - row * POINT_IN_PIXEL;
+            vertices[i * 16 + 13] = maxY;
             vertices[i * 16 + 14] = maxX;
-            vertices[i * 16 + 15] = minY - row * POINT_IN_PIXEL;
+            vertices[i * 16 + 15] = minY;
 
             minX += ((float) glyph.xAdvance() / glyph.height()) * POINT_IN_PIXEL;
             if (minX > nextWidth)
-                nextWidth = (int) minX;
+                nextWidth = minX;
 
             for (int j = 0; j < 4; j++) {
                 colors[i * 32 + j * 4] = 0;
@@ -268,7 +261,8 @@ public class Text extends MemoryHolder {
             i++;
         }
 
-        this.rows = row + 1;
+        if(!text.isEmpty())
+            this.rows = row + 1;
 
         if(mesh == null)
             this.mesh = new Mesh(indices,
@@ -284,128 +278,65 @@ public class Text extends MemoryHolder {
             });
         }
 
-        this.width = (int)(nextWidth * size);
+        this.point_in_pixel_width = nextWidth;
     }
 
-    public void setText(String text){
-        if(text == null)
-            text = "null";
-        if(this.text.equals(text))
-            return;
-        this.text = text;
-        prepare();
+    /**
+     * get a TextChanger to set changes and commit all changes together
+     */
+    public Text change(Consumer<TextChanger> edit){
+        var tc = new TextChanger();
+        edit.accept(tc);
+        tc.commit();
+        return this;
     }
 
-    public void setFont(Font font){
-        if(this.font.equals(font))
-            return;
-        this.font = font;
-        prepare();
-    }
-
-    public void setColor(float r, float g, float b, float a){
-        if(color.equals(r, g, b, a))
-            return;
-        color.set(r, g, b, a);
-        prepare();
-    }
-
-    public void setFontStyle(int style){
-        if(this.fontStyle == style)
-            return;
-        this.fontStyle = (byte) style;
-        prepare();
-    }
-
-    public void setSize(float newSize){
+    public Text setSize(float newSize){
         this.size = newSize;
+        return this;
     }
 
-    public void changeData(String text, Font font, float r, float b, float g, float a){
-        boolean nT = false, nF = false, nC = false;
-        if(text == null)
-            text = "null";
-        if(!this.text.equals(text)){
-            nT = true;
-            this.text = text;
-        }
-        if(this.font.equals(font)){
-            nF = true;
-            this.font = font;
-        }
-        if(color.equals(r, g, b, a)){
-            nC = true;
-            color.set(r, g, b, a);
-        }
-        if(nT || nF || nC)
-            prepare();
+    public Text setPos(Vector2f vec2){
+        pos.set(vec2);
+        return this;
     }
 
-    public void changeData(String text, Font font){
-        boolean nT = false, nF = false;
-        if(text == null)
-            text = "null";
-        if(!this.text.equals(text)){
-            nT = true;
-            this.text = text;
-        }
-        if(this.font.equals(font)){
-            nF = true;
-            this.font = font;
-        }
-        if(nT || nF)
-            prepare();
+    public Text setPos(double x, double y){
+        pos.set(x, y);
+        return this;
     }
 
-    public void changeData(String text, float r, float b, float g, float a){
-        boolean nT = false, nC = false;
-        if(text == null)
-            text = "null";
-        if(!this.text.equals(text)){
-            nT = true;
-            this.text = text;
-        }
-        if(color.equals(r, g, b, a)){
-            nC = true;
-            color.set(r, g, b, a);
-        }
-        if(nT || nC)
-            prepare();
+    public Text addPos(Vector2f vec2){
+        pos.add(vec2);
+        return this;
     }
 
-    public void changeData(Font font, float r, float b, float g, float a){
-        boolean nF = false, nC = false;
-        if(this.font.equals(font)){
-            nF = true;
-            this.font = font;
-        }
-        if(color.equals(r, g, b, a)){
-            nC = true;
-            color.set(r, g, b, a);
-        }
-        if(nF || nC)
-            prepare();
+    public Text addPos(double x, double y){
+        pos.add((float)x, (float)y);
+        return this;
     }
 
+    @Override
     public void render(){
         if(!isValid())
             return;
         shader.bind();
         mesh.bind();
         font.getTexture(fontStyle).bind(0);
-        var model = new Matrix4f().translate(position.x, position.y, 0).scale(size, size, 1);
+        var model = new Matrix4f().translate(pos.x, Camera.getSize().y - pos.y, 0).scale(size, size, 1);
         var proj = Camera.getProjection();
         var mat = proj.mul(model, new Matrix4f());
-        shader.uniformMat4(shader.getUNIFORM_PROJECTION(), mat.get(new float[16]));
+        shader.uniformMat4("projection", mat.get(new float[16]));
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+        mesh.unbind();
     }
 
     public float getWidth(){
-        return width * size;
+        return (float)(point_in_pixel_width * size);
     }
 
     public float getHeight(){
-        return POINT_IN_PIXEL * rows * size;
+        return (POINT_IN_PIXEL * rows * size) * (1 - font.cut_vertical_spacing);
     }
 
     @Override
@@ -427,5 +358,62 @@ public class Text extends MemoryHolder {
     protected void free() {
         if(mesh != null)
             mesh.freeMemory();
+    }
+
+    public class TextChanger {
+
+        private TextChanger(){}
+
+        private boolean dirty;
+
+        public TextChanger setText(String text){
+            if(text == null)
+                text = "null";
+            if(Text.this.text.equals(text))
+                return this;
+            dirty = true;
+            Text.this.text = text;
+            return this;
+        }
+
+        public TextChanger setColor(float r, float g, float b, float a){
+            if(Text.this.color.equals(r, g, b, a))
+                return this;
+            dirty = true;
+            Text.this.color.set(r, g, b, a);
+            return this;
+        }
+
+        public TextChanger setFont(Font font){
+            if(Text.this.font.equals(font))
+                return this;
+            dirty = true;
+            Text.this.font = font;
+            return this;
+        }
+
+        public TextChanger setFontStyle(int style){
+            if(Text.this.fontStyle == style)
+                return this;
+            dirty = true;
+            Text.this.fontStyle = (byte) style;
+            return this;
+        }
+
+        public TextChanger setDrawShadow(boolean drawShadow){
+            if(Text.this.drawShadow == drawShadow)
+                return this;
+            dirty = true;
+            Text.this.drawShadow = drawShadow;
+            return this;
+        }
+
+        private boolean commit(){
+            if(!dirty)
+                return false;
+            Text.this.prepare();
+            return true;
+        }
+
     }
 }

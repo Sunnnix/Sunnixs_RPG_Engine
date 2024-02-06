@@ -130,7 +130,6 @@ public class Core {
 
         InputManager.process(window); // Create InputManager Keys
 
-        createCapabilities();
         if(gl_debug_enabled)
             GLUtil.setupDebugMessageCallback(new GLDebugPrintStream());
         glEnable(GL_BLEND);
@@ -156,11 +155,11 @@ public class Core {
         current_stage = CoreStage.STARTED;
 
         subscribeLoop("fps_generator", 0, Core::calculateFPS);
-        subscribeLoop("context_queue", 0, ContextQueue::runQueueOnMain);
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
         subscribeLoop("update", 1, Core::update);
-        subscribeLoop("render", 2, Core::render);
-        subscribeLoop("postUpdate", 3, Core::postUpdate);
+        subscribeLoop("context_queue", 2, ContextQueue::runQueueOnMain);
+        subscribeLoop("render", 3, Core::render);
+        subscribeLoop("postUpdate", 4, Core::postUpdate);
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);

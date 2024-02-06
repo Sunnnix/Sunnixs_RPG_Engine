@@ -42,6 +42,7 @@ public class FloatArrayBuffer extends MemoryHolder {
             latestBufferSize = buffer.length;
             glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
         }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     @Override

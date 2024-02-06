@@ -27,4 +27,8 @@ public class Utils {
         };
     }
 
+    public static boolean bitcheck(int flag, int check){
+        return (flag & check) == check;
+    }
+
 }

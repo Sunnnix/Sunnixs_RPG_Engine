@@ -36,8 +36,9 @@ public abstract class RenderObject extends MemoryHolder {
         var proj = Camera.getProjection();
         var mat = proj.mul(view, new Matrix4f());
         mat.mul(model, mat);
-        shader.uniformMat4(shader.getUNIFORM_PROJECTION(), mat.get(new float[16]));
+        shader.uniformMat4("projection", mat.get(new float[16]));
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+        mesh.unbind();
     }
 
     public abstract Vector2f getSize();

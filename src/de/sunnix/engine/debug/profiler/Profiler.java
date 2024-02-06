@@ -66,7 +66,7 @@ public class Profiler {
                 }
 
                 void observer(){
-                    Thread.startVirtualThread(() -> {
+                    new Thread(() -> {
                         GameLogger.logI("PofilerObserver", "Profiler Started");
                         try {
                             root.add(totalTime);
@@ -104,7 +104,7 @@ public class Profiler {
                             this.dispose();
                         }
                         GameLogger.logI("PofilerObserver", "Profiler Stopped");
-                    });
+                    }).start();
                 }
 
             };

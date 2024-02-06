@@ -1,6 +1,7 @@
 package de.sunnix.engine.graphics.gui.text;
 
 import de.sunnix.engine.graphics.Texture;
+import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,12 +20,14 @@ public class Font {
     public static final byte STYLE_ITALIC = 0b01;
     public static final byte STYLE_BOLD = 0b10;
 
+    public final float cut_vertical_spacing;
     private final Texture tex_normal;
     private Texture tex_italic, tex_bold, tex_italic_bold;
     private final Map<Character, Glyph> glyphs_normal;
     private Map<Character, Glyph> glyphs_italic, glyphs_bold, glyphs_italic_bold;
 
-    public Font(String fontPath) {
+    public Font(String fontPath, float cut_vertical_spacing) {
+        this.cut_vertical_spacing = cut_vertical_spacing;
         glyphs_normal = loadFontData(fontPath);
         tex_normal = new Texture(fontPath + ".png");
         // italic
@@ -51,6 +54,10 @@ public class Font {
             glyphs_italic_bold = glyphs_normal;
             tex_italic_bold = tex_normal;
         }
+    }
+
+    public Font(String fontPath){
+        this(fontPath, .2f);
     }
 
     private Map<Character, Glyph> loadFontData(String fontFntPath) {

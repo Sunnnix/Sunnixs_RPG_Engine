@@ -6,6 +6,8 @@ import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -15,9 +17,7 @@ public class Shader extends MemoryHolder {
     public static final Shader DEFAULT_SHADER = genDefaultShader();
 
     private int id;
-
-    @Getter
-    private int UNIFORM_PROJECTION;
+    private Map<String, Integer> uniformLocations = new HashMap<>();
 
     public Shader(String shaderPath) {
         loadShaders(shaderPath);
@@ -45,7 +45,7 @@ public class Shader extends MemoryHolder {
 
                     id = program;
 
-                    UNIFORM_PROJECTION = getUniformLocation(this, "projection");
+                    getUniformLocation("projection");
                 } catch (Exception e) {
                     GameLogger.logException("Shader", new RuntimeException("Problem creating shader", e));
                     if (program != 0)
@@ -93,12 +93,16 @@ public class Shader extends MemoryHolder {
         glUseProgram(0);
     }
 
-    public static int getUniformLocation(Shader shader, String name){
+    private static int getUniformLocation(Shader shader, String name){
         return glGetUniformLocation(shader.id, name);
     }
 
-    public void uniformMat4(int location, float[] mat){
-        glUniformMatrix4fv(location, false, mat);
+    private int getUniformLocation(String name){
+        return uniformLocations.computeIfAbsent(name, k -> getUniformLocation(this, k));
+    }
+
+    public void uniformMat4(String name, float[] mat){
+        glUniformMatrix4fv(getUniformLocation(name), false, mat);
     }
 
     @Override

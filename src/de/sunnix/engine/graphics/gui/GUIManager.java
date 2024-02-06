@@ -8,15 +8,19 @@ import java.util.List;
 
 public class GUIManager {
 
-    static List<Text> texts = new ArrayList<Text>();
+    static final List<IGUIComponent> components = new ArrayList<>();
 
     public static void render(){
         GL11.glDisable(GL11.GL_DEPTH_TEST);
-        texts.forEach(Text::render);
+        synchronized (components) {
+            components.forEach(IGUIComponent::render);
+        }
         GL11.glEnable(GL11.GL_DEPTH_TEST);
     }
 
-    public static void add(Text text) {
-        texts.add(text);
+    public static void add(IGUIComponent component) {
+        synchronized (components) {
+            components.add(component);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package de.sunnix.engine.graphics;
 
+import de.sunnix.engine.Core;
 import de.sunnix.engine.ILoggable;
 import de.sunnix.engine.debug.BuildData;
 import lombok.AccessLevel;
@@ -11,6 +12,7 @@ import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 import org.lwjgl.opengl.GLUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Window {
@@ -34,7 +36,7 @@ public class Window {
 
         private GLFWWindowSizeCallbackI sizeCallback = (win, w, h) -> {
             glViewport(0, 0, w, h);
-            Camera.getSize().set(w, h);
+            Camera.getSize().set(w / Core.getPixel_scale(), h / Core.getPixel_scale());
         };
         private GLFWWindowFocusCallbackI focusCallback;
 
@@ -61,10 +63,12 @@ public class Window {
                 throw new RuntimeException("No window could be created!");
             glfwMakeContextCurrent(window);
 
+            createCapabilities();
+
             // Icon
             loadWindowIcon(window);
 
-            Camera.getSize().set(width, height);
+            Camera.getSize().set(width / Core.getPixel_scale(), height / Core.getPixel_scale());
 
             // Callbacks
             if(sizeCallback != null)
@@ -79,10 +83,9 @@ public class Window {
             try {
                 var image = Texture.loadImage("/assets/textures/icon/" + BuildData.getData("icon"));
                 var buffer = Texture.getImagePixelsAsBuffer(image);
-                try(var images = GLFWImage.create(1)){
-                    images.get(0).set(image.getWidth() , image.getHeight(), buffer);
-                    glfwSetWindowIcon(window, images);
-                }
+                var images = GLFWImage.create(1);
+                images.get(0).set(image.getWidth() , image.getHeight(), buffer);
+                glfwSetWindowIcon(window, images);
             } catch (Exception e){
                 logError(new RuntimeException("Error loading window icon", e));
             }

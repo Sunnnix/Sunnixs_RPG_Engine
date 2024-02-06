@@ -45,6 +45,7 @@ public class Mesh extends MemoryHolder {
             vertexMaxCount = indices.length;
         }
         vertexCount = indices.length;
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     public void changeBuffer(int location, float[] buffer) {
