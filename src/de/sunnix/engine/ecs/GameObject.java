@@ -1,7 +1,7 @@
 package de.sunnix.engine.ecs;
 
 import de.sunnix.engine.Core;
-import de.sunnix.engine.ecs.components.BaseComponent;
+import de.sunnix.engine.ecs.components.Component;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import de.sunnix.engine.stage.GameplayState;
@@ -16,8 +16,8 @@ import java.util.Map;
 
 public class GameObject extends MemoryHolder {
 
-    private final Map<Class<? extends BaseComponent>, BaseComponent> components = new HashMap<>();
-    private final List<BaseComponent> newComponents = new ArrayList<>();
+    private final Map<Class<? extends Component>, Component> components = new HashMap<>();
+    private final List<Component> newComponents = new ArrayList<>();
 
     @Getter
     private final long ID; // TODO prevent duplicates by World impl.
@@ -40,22 +40,22 @@ public class GameObject extends MemoryHolder {
         ((GameplayState)Core.GameState.GAMEPLAY.state).getWorld().addEntity(this);
     }
 
-    public final <T extends BaseComponent> T getComponent(Class<T> componentType){
+    public final <T extends Component> T getComponent(Class<T> componentType){
         return componentType.cast(components.get(componentType));
     }
 
-    public final <T extends BaseComponent> void addComponent(T component){
+    public final <T extends Component> void addComponent(T component){
         components.put(component.getClass(), component);
         newComponents.add(component);
     }
 
-    public final <T extends BaseComponent> void removeComponent(Class<T> componentType){
+    public final <T extends Component> void removeComponent(Class<T> componentType){
         components.remove(componentType);
     }
 
     public void update(){
         if(newComponents.size() > 0){
-            newComponents.forEach(BaseComponent::init);
+            newComponents.forEach(c -> c.init(this));
             newComponents.clear();
         }
     }
@@ -66,7 +66,7 @@ public class GameObject extends MemoryHolder {
 
     @Override
     public boolean isValid() {
-        return components.values().stream().allMatch(BaseComponent::isValid);
+        return components.values().stream().allMatch(Component::isValid);
     }
 
     @Override
@@ -81,6 +81,6 @@ public class GameObject extends MemoryHolder {
 
     @Override
     protected void free() {
-        components.values().forEach(BaseComponent::freeMemory);
+        components.values().forEach(Component::freeMemory);
     }
 }

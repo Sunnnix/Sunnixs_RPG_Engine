@@ -6,7 +6,14 @@ public class TextureRenderObject extends RectangularRenderObject{
 
     public TextureRenderObject(Texture texture){
         setTexture(texture);
-        size.set(texture.getWidth(), texture.getHeight());
+    }
+
+    public void setTexture(Texture tex){
+        super.setTexture(texture);
+        if(tex == null)
+            size.set(0);
+        else
+            size.set(texture.getWidth(), texture.getHeight());
     }
 
     private Vector2f size = new Vector2f();

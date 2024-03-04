@@ -132,4 +132,5 @@ public class Texture extends MemoryHolder {
     public void free() {
         glDeleteTextures(textureID);
     }
+
 }

@@ -4,12 +4,14 @@ import de.sunnix.engine.debug.BuildData;
 import de.sunnix.engine.debug.FPSGenerator;
 import de.sunnix.engine.debug.GLDebugPrintStream;
 import de.sunnix.engine.debug.GameLogger;
-import de.sunnix.engine.ecs.components.BaseComponent;
+import de.sunnix.engine.ecs.components.Component;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
 import de.sunnix.engine.graphics.gui.GUIManager;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryHandler;
+import de.sunnix.engine.registry.CoreRegistry;
+import de.sunnix.engine.registry.Registry;
 import de.sunnix.engine.stage.GameplayState;
 import de.sunnix.engine.stage.IState;
 import de.sunnix.engine.stage.IntroState;
@@ -31,8 +33,8 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Core {
 
-    private enum CoreStage {
-        PRE_INIT, INITED, WINDOW_CREATED, STARTED
+    public enum CoreStage {
+        PRE_INIT, INITED, WINDOW_CREATED, STARTING, STARTED
     }
 
     public enum GameState {
@@ -44,7 +46,8 @@ public class Core {
         }
     }
 
-    private static CoreStage current_stage = CoreStage.PRE_INIT;
+    @Getter
+    private static CoreStage current_core_stage = CoreStage.PRE_INIT;
     @Getter
     private static GameState current_game_state = GameState.INTRO;
     @Setter
@@ -90,17 +93,16 @@ public class Core {
     @Getter
     private static final Vector3f backgroundColor = new Vector3f(0.7f, 0.7f, 0.7f);
 
-    private static void validate(CoreStage expected){
-        if(expected != current_stage)
-            throw new IllegalStateException(String.format("The current stage is %s but stage %s was expected", current_stage, expected));
+    public static void validateCoreStage(CoreStage expected){
+        if(expected != current_core_stage)
+            throw new IllegalStateException(String.format("The current stage is %s but stage %s was expected", current_core_stage, expected));
     }
 
     public static void init(){
-        validate(CoreStage.PRE_INIT);
-        current_stage = CoreStage.INITED;
+        validateCoreStage(CoreStage.PRE_INIT);
+        current_core_stage = CoreStage.INITED;
 
         BuildData.create();
-        BaseComponent.registerComponents(BaseComponent.class.getPackageName());
 
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
@@ -113,12 +115,12 @@ public class Core {
     }
 
     public static void enableGL_debug(boolean enable){
-        validate(CoreStage.INITED);
+        validateCoreStage(CoreStage.INITED);
         gl_debug_enabled = enable;
     }
 
     public static void createWindow(String title, int width, int height, Consumer<Window.WindowBuilder> windowBuilder){
-        validate(CoreStage.INITED);
+        validateCoreStage(CoreStage.INITED);
 
         var builder = new Window.WindowBuilder(title, width, height, gl_debug_enabled);
         if(windowBuilder != null)
@@ -139,7 +141,7 @@ public class Core {
         glFrontFace(GL_CW);
 
         glfwSetErrorCallback((err, msg) -> GameLogger.logE("Core", String.format("%s: %s", Utils.getGLErrorString(err), msg)));
-        current_stage = CoreStage.WINDOW_CREATED;
+        current_core_stage = CoreStage.WINDOW_CREATED;
     }
 
     public static void createWindow(String title, int width, int height){
@@ -151,8 +153,10 @@ public class Core {
     }
 
     public static void start(){
-        validate(CoreStage.WINDOW_CREATED);
-        current_stage = CoreStage.STARTED;
+        validateCoreStage(CoreStage.WINDOW_CREATED);
+        current_core_stage = CoreStage.STARTING;
+
+        Registry.registerAll();
 
         subscribeLoop("fps_generator", 0, Core::calculateFPS);
         subscribeLoop("input_process", 0, () -> InputManager.process(window));
@@ -169,6 +173,7 @@ public class Core {
             logE("Core", "GL_ERROR: " + error);
         }
 
+        current_core_stage = CoreStage.STARTED;
         logI("Core", "Game started!");
         try {
             Looper.loop();
@@ -212,7 +217,7 @@ public class Core {
     }
 
     public static void setVsync(boolean on){
-        if(current_stage == CoreStage.WINDOW_CREATED || current_stage == CoreStage.STARTED)
+        if(current_core_stage == CoreStage.WINDOW_CREATED || current_core_stage == CoreStage.STARTED)
             glfwSwapInterval(on ? 1 : 0);
         vsync = on;
     }
