@@ -1,6 +1,5 @@
 package de.sunnix.game.components;
 
-import de.sunnix.engine.ecs.components.RenderComponent;
 import de.sunnix.engine.registry.Registry;
 
 public class Components {

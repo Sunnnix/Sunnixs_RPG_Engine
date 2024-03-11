@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -19,10 +20,12 @@ public class Looper {
     private static final List<LoopSubscriber> subscriber = new ArrayList<>();
     private static final List<String> unsubscriber = new LinkedList<>();
 
-    static void subscribe(@NonNull String id, int period, Runnable runnable) {
-        if(runnable == null)
+    private static int ticks;
+
+    static void subscribe(@NonNull String id, int period, Consumer<Integer> onTick) {
+        if(onTick == null)
             return;
-        subscriber.add(new LoopSubscriber(id, period, runnable));
+        subscriber.add(new LoopSubscriber(id, period, onTick));
     }
 
     static void unsubscribe(String id) {
@@ -60,6 +63,8 @@ public class Looper {
 
             var profilerStart = System.nanoTime();
 
+            ticks++;
+
             checkSubscribers();
             if(Core.isUseProfiler()) {
                 listeners.forEach(s -> {
@@ -93,10 +98,10 @@ public class Looper {
         }
     }
 
-    private record LoopSubscriber(@NonNull String ID, int period, Runnable runnable){
+    private record LoopSubscriber(@NonNull String ID, int period, Consumer<Integer> runnable){
 
         public void run(){
-            runnable.run();
+            runnable.accept(ticks);
         }
 
     }

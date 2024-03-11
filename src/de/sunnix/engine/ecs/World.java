@@ -4,11 +4,13 @@ import de.sunnix.engine.Core;
 import de.sunnix.engine.ecs.systems.RenderSystem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class World {
 
-    private List<GameObject> gameObjects = new ArrayList<>();
+    private Map<Long, GameObject> gameObjects = new HashMap<>();
     private List<GameObject> gameObjectsToAdd = new ArrayList<>();
 
     public World(){}
@@ -18,7 +20,7 @@ public class World {
     }
 
     public void update(){
-        gameObjects.forEach(GameObject::update);
+        gameObjects.values().forEach(GameObject::update);
     }
 
     public void render(){
@@ -27,9 +29,9 @@ public class World {
 
     public void postUpdate(){
         gameObjectsToAdd.forEach(GameObject::update);
-        gameObjects.addAll(gameObjectsToAdd);
+        gameObjectsToAdd.forEach(o -> gameObjects.put(o.getID(), o));
         gameObjectsToAdd.clear();
-        gameObjects.removeIf(GameObject::isToDelete);
+        gameObjects.values().stream().filter(GameObject::isToDelete).forEach(o -> gameObjects.remove(o.getID()));
     }
 
     public void onDestroy(){

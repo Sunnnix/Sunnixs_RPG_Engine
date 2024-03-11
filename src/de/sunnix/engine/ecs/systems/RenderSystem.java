@@ -6,6 +6,6 @@ import de.sunnix.engine.ecs.components.RenderComponent;
 public class RenderSystem {
 
     public static void renderObjects() {
-        ComponentManager.getComponentList(RenderComponent.class).forEach(RenderComponent::render);
+//        ComponentManager.getComponentList(RenderComponent.class).forEach(RenderComponent::render);
     }
 }

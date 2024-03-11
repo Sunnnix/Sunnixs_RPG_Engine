@@ -158,12 +158,12 @@ public class Core {
 
         Registry.registerAll();
 
-        subscribeLoop("fps_generator", 0, Core::calculateFPS);
-        subscribeLoop("input_process", 0, () -> InputManager.process(window));
-        subscribeLoop("update", 1, Core::update);
-        subscribeLoop("context_queue", 2, ContextQueue::runQueueOnMain);
-        subscribeLoop("render", 3, Core::render);
-        subscribeLoop("postUpdate", 4, Core::postUpdate);
+        subscribeLoop("fps_generator", 0, ticks -> calculateFPS());
+        subscribeLoop("input_process", 0, ticks -> InputManager.process(window));
+        subscribeLoop("update", 1, ticks -> update());
+        subscribeLoop("context_queue", 2, ticks ->  ContextQueue.runQueueOnMain());
+        subscribeLoop("render", 3, ticks -> render());
+        subscribeLoop("postUpdate", 4, ticks -> postUpdate());
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
@@ -225,8 +225,8 @@ public class Core {
     /**
      * the runnable is called every loop
      */
-    public static void subscribeLoop(@NonNull String id, int period, Runnable runnable){
-        Looper.subscribe(id, period, runnable);
+    public static void subscribeLoop(@NonNull String id, int period, Consumer<Integer> onTick){
+        Looper.subscribe(id, period, onTick);
     }
 
     public static void unsubscribeLoop(String id){

@@ -8,39 +8,39 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class GeneratorRegistrar<T> {
+public class GeneratorRegistrar<T extends ISavable> {
 
-    protected Map<String, Tuple.Tuple2<Class<?>, Supplier<T>>> objects = new HashMap<>();
+    protected Map<String, Supplier<T>> objects = new HashMap<>();
+    protected Map<Class<? extends T>, String> dataIDList = new HashMap<>();
 
     @Setter
-    public Tuple.Tuple2<Class<?>, Supplier<T>> defaultValue;
+    public Supplier<T> defaultValue;
 
     public GeneratorRegistrar(Supplier<T> defaultValue){
-        this.defaultValue = Tuple.create(null, defaultValue);
+        this.defaultValue = defaultValue;
     }
 
-    public void register(String registryName, Class<?> clazz, Supplier<T> object){
+    public void register(String registryName, Class<? extends T> clazz, Supplier<T> generator){
         Core.validateCoreStage(Core.CoreStage.STARTING);
-        this.objects.put(registryName, Tuple.create(clazz, object));
+        this.objects.put(registryName, generator);
+        this.dataIDList.put(clazz, registryName);
     }
 
-    public void register(Tuple.Tuple3<String, Class<?>, Supplier<T>>... objects){
+    public void register(Tuple.Tuple3<String, Class<? extends T>, Supplier<T>>... objects){
         Core.validateCoreStage(Core.CoreStage.STARTING);
         for(var object : objects)
-            this.objects.put(object.t1(), Tuple.create(object.t2(), object.t3()));
+            this.register(object.t1(), object.t2(), object.t3());
     }
 
-    public T get(String registryName) {
-        return this.objects.getOrDefault(registryName, defaultValue).t2().get();
+    public T create(String registryName) {
+        return objects.getOrDefault(registryName, defaultValue).get();
     }
 
     public String getRegistryNameOf(T object){
-        var clazz = object.getClass();
-        for(var entry: this.objects.entrySet()){
-            if(entry.getValue().t1().equals(clazz))
-                return entry.getKey();
-        }
-        return null;
+        var key = dataIDList.get(object.getClass());
+        if(key == null)
+            throw new NullPointerException("object unknown");
+        return key;
     }
 
 }
