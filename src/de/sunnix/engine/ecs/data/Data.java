@@ -3,8 +3,8 @@ package de.sunnix.engine.ecs.data;
 import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.ecs.GameData;
 import de.sunnix.engine.ecs.GameObject;
+import de.sunnix.sdso.DataSaveObject;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -43,5 +43,9 @@ public abstract class Data<T> {
             }
         }
     }
+
+    public abstract void save(GameObject go, DataSaveObject dso);
+
+    public abstract void load(GameObject go, DataSaveObject dso);
 
 }

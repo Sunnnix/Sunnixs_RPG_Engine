@@ -5,7 +5,6 @@ import de.sunnix.engine.debug.GameLogger;
 import de.sunnix.engine.ecs.components.Component;
 import de.sunnix.engine.ecs.data.Data;
 import de.sunnix.engine.ecs.data.IntData;
-import de.sunnix.engine.ecs.data.StringData;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import de.sunnix.engine.stage.GameplayState;
@@ -17,10 +16,9 @@ import java.util.*;
 
 public class GameObject extends MemoryHolder {
 
-    private static Map<String, Data<Object>> dataHolder = new HashMap<>();
+    private static final Map<String, Data<Object>> dataHolder = new HashMap<>();
 
     private final Map<Class<? extends Component>, Component> components = new HashMap<>();
-    private final List<Component> newComponents = new ArrayList<>();
 
     @Getter
     private final long ID; // TODO prevent duplicates by World impl.
@@ -37,6 +35,8 @@ public class GameObject extends MemoryHolder {
     @GameData(key = "test")
     public static final IntData TEST = new IntData("test", 0);
 
+    @Getter
+    private boolean inited;
     /**
      * If marked as deleted, this component will be removed at the end of the loop
      */
@@ -55,6 +55,14 @@ public class GameObject extends MemoryHolder {
         ((GameplayState)Core.GameState.GAMEPLAY.state).getWorld().addEntity(this);
     }
 
+    public GameObject init(){
+        if(!inited) {
+            this.components.values().forEach(c -> c.init(this));
+            this.inited = true;
+        }
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getData(String key) {
         return (T) data.get(key);
@@ -70,8 +78,11 @@ public class GameObject extends MemoryHolder {
     }
 
     public final <T extends Component> void addComponent(T component){
+        if(inited){
+            GameLogger.logW("GameObject", "Can't add component to initialized GameObject");
+            return;
+        }
         components.put(component.getClass(), component);
-        newComponents.add(component);
     }
 
     public final <T extends Component> void removeComponent(Class<T> componentType){
@@ -79,10 +90,8 @@ public class GameObject extends MemoryHolder {
     }
 
     public void update(){
-        if(newComponents.size() > 0){
-            newComponents.forEach(c -> c.init(this));
-            newComponents.clear();
-        }
+        if(!inited)
+            return;
     }
 
     public void setToDelete() {

@@ -2,17 +2,23 @@ package de.sunnix.engine.ecs.components;
 
 import de.sunnix.engine.ecs.ComponentManager;
 import de.sunnix.engine.ecs.GameObject;
-import de.sunnix.engine.graphics.Texture;
+import de.sunnix.engine.ecs.data.Data;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
-import de.sunnix.engine.registry.ISavable;
 import de.sunnix.engine.registry.Registry;
 import de.sunnix.sdso.DataSaveObject;
 
-public abstract class Component extends MemoryHolder implements ISavable {
+import java.util.HashMap;
+import java.util.Map;
+
+public abstract class Component extends MemoryHolder {
 
     public static RenderComponent RENDER = new RenderComponent();
+
+    private final Map<String, Data<Object>> dataHolder = new HashMap<>();
     protected GameObject parent;
+
+    private boolean firstInit = true;
 
     public static void registerComponents(){
         var registrar = Registry.COMPONENT;
@@ -21,7 +27,12 @@ public abstract class Component extends MemoryHolder implements ISavable {
 
     public void init(GameObject parent){
         this.parent = parent;
+        if(firstInit){
+            firstInit = false;
+            Data.registerDataToMap(getClass(), dataHolder);
+        }
         ComponentManager.addComponent(this);
+        dataHolder.forEach((k, d) -> d.init(parent));
     }
 
     @Override
@@ -42,16 +53,11 @@ public abstract class Component extends MemoryHolder implements ISavable {
     @Override
     protected void free() {}
 
-    Texture tex;
-
-    @Override
-    public void save(DataSaveObject dso) {
-        dso.putString("component", Registry.COMPONENT.getRegistryNameOf(this));
-        dso.putString("texture", Registry.TEXTURE.getRegistryNameOf(tex));
+    public void save(GameObject go, DataSaveObject dso) {
+        dataHolder.values().forEach(data -> data.save(go, dso));
     }
 
-    @Override
-    public void load(DataSaveObject dso) {
-        tex = Registry.TEXTURE.get(dso.getString("texture", null));
+    public void load(GameObject go, DataSaveObject dso) {
+        dataHolder.values().forEach(data -> data.load(go, dso));
     }
 }
