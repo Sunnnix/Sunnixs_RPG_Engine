@@ -1,6 +1,6 @@
 package de.sunnix.engine.memory;
 
-import de.sunnix.engine.util.Pair;
+import de.sunnix.engine.util.Tuple;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -41,9 +41,9 @@ public class MemoryHandler {
         return records.get(category).size();
     }
 
-    public static List<Pair<MemoryCategory, Integer>> getSizesWithCategories(){
+    public static List<Tuple.Tuple2<MemoryCategory, Integer>> getSizesWithCategories(){
         return records.entrySet().stream()
-                .map(entry -> new Pair<>(entry.getKey(), entry.getValue().size()))
+                .map(entry -> Tuple.create(entry.getKey(), entry.getValue().size()))
                 .collect(Collectors.toList());
     }
 

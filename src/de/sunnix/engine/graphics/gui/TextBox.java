@@ -1,20 +1,20 @@
 package de.sunnix.engine.graphics.gui;
 
-import de.sunnix.engine.Core;
-import de.sunnix.engine.graphics.*;
+import de.sunnix.engine.graphics.Camera;
+import de.sunnix.engine.graphics.FloatArrayBuffer;
+import de.sunnix.engine.graphics.Mesh;
+import de.sunnix.engine.graphics.Shader;
 import de.sunnix.engine.graphics.gui.text.Text;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
-import de.sunnix.engine.util.Utils;
 import lombok.Getter;
 import org.joml.Matrix4f;
 
+import static de.sunnix.engine.util.Utils.bitcheck;
 import static org.lwjgl.opengl.GL11.*;
-import static de.sunnix.engine.util.Utils.*;
+import static de.sunnix.engine.graphics.gui.GUITextures.*;
 
 public class TextBox extends MemoryHolder implements IGUIComponent {
-
-    private static Texture tex = new Texture("/assets/textures/gui/message_box.png");
 
     /** Text Alignment */
     public static final int
@@ -37,6 +37,7 @@ public class TextBox extends MemoryHolder implements IGUIComponent {
 
     public TextBox(String text, int x, int y, int width, int height, int textAlignment) {
         GUIManager.add(this);
+        var tex = TEXTBOX;
         var tW = tex.getWidth() / 3;
         var tH = tex.getHeight() / 3;
         this.text = new Text(text);
@@ -83,6 +84,8 @@ public class TextBox extends MemoryHolder implements IGUIComponent {
 
         var xPix = 1f / width;
         var yPix = 1f / height;
+
+        var tex = TEXTBOX;
 
         var cPX = tex.getWidth() / 3f;
         var cPY = tex.getHeight() / 3f;
@@ -254,7 +257,7 @@ public class TextBox extends MemoryHolder implements IGUIComponent {
             return;
         Shader.DEFAULT_SHADER.bind();
         mesh.bind();
-        tex.bind(0);
+        TEXTBOX.bind(0);
         var model = new Matrix4f().translate(x, Camera.getSize().y - y - height, 0).scale(width, height, 1);
         var proj = Camera.getProjection();
         var mat = proj.mul(model, new Matrix4f());

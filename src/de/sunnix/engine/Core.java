@@ -4,13 +4,11 @@ import de.sunnix.engine.debug.BuildData;
 import de.sunnix.engine.debug.FPSGenerator;
 import de.sunnix.engine.debug.GLDebugPrintStream;
 import de.sunnix.engine.debug.GameLogger;
-import de.sunnix.engine.ecs.components.Component;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.Window;
 import de.sunnix.engine.graphics.gui.GUIManager;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryHandler;
-import de.sunnix.engine.registry.CoreRegistry;
 import de.sunnix.engine.registry.Registry;
 import de.sunnix.engine.stage.GameplayState;
 import de.sunnix.engine.stage.IState;
@@ -22,13 +20,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.opengl.GLUtil;
 
 import java.util.function.Consumer;
 
 import static de.sunnix.engine.debug.GameLogger.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Core {
@@ -52,6 +50,8 @@ public class Core {
     private static GameState current_game_state = GameState.INTRO;
     @Setter
     private static GameState next_game_state = GameState.INTRO;
+
+    private static GLFWErrorCallbackI errorCallback;
 
     private static boolean gl_debug_enabled;
 
@@ -91,7 +91,7 @@ public class Core {
     // *************************************************************** //
 
     @Getter
-    private static final Vector3f backgroundColor = new Vector3f(0.7f, 0.7f, 0.7f);
+    private static final Vector3f backgroundColor = new Vector3f(0f, 0f, 0f);
 
     public static void validateCoreStage(CoreStage expected){
         if(expected != current_core_stage)
@@ -103,6 +103,8 @@ public class Core {
         current_core_stage = CoreStage.INITED;
 
         BuildData.create();
+
+        errorCallback = glfwSetErrorCallback((err, msg) -> GameLogger.logE("Core", String.format("%s: %s", Utils.getGLErrorString(err), msg)));
 
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
@@ -140,7 +142,6 @@ public class Core {
         glCullFace(GL_BACK);
         glFrontFace(GL_CW);
 
-        glfwSetErrorCallback((err, msg) -> GameLogger.logE("Core", String.format("%s: %s", Utils.getGLErrorString(err), msg)));
         current_core_stage = CoreStage.WINDOW_CREATED;
     }
 
@@ -156,6 +157,7 @@ public class Core {
         validateCoreStage(CoreStage.WINDOW_CREATED);
         current_core_stage = CoreStage.STARTING;
 
+        Setup.init();
         Registry.registerAll();
 
         subscribeLoop("fps_generator", 0, ticks -> calculateFPS());
@@ -223,7 +225,7 @@ public class Core {
     }
 
     /**
-     * the runnable is called every loop
+     * the consumer is called every loop
      */
     public static void subscribeLoop(@NonNull String id, int period, Consumer<Integer> onTick){
         Looper.subscribe(id, period, onTick);

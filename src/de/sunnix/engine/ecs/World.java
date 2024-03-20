@@ -1,7 +1,10 @@
 package de.sunnix.engine.ecs;
 
-import de.sunnix.engine.Core;
+import de.sunnix.engine.ecs.components.Component;
+import de.sunnix.engine.ecs.components.RenderComponent;
 import de.sunnix.engine.ecs.systems.RenderSystem;
+import de.sunnix.game.textures.Textures;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +16,21 @@ public class World {
     private Map<Long, GameObject> gameObjects = new HashMap<>();
     private List<GameObject> gameObjectsToAdd = new ArrayList<>();
 
+    @Getter
+    private GameObject player;
+
+    private boolean inited;
+
     public World(){}
+
+    public void init(){
+        if(inited)
+            return;
+        player = new GameObject();
+        player.addComponent(Component.RENDER);
+        player.init();
+        RenderComponent.TEXTURE.set(player, Textures.TEST);
+    }
 
     public void addEntity(GameObject entity){
         gameObjectsToAdd.add(entity);

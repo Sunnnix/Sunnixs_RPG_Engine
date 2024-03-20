@@ -7,7 +7,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class FPSGenerator{
 
-    private static final int maximumListSize = 60 * 4;
+    private static final int maximumListSize = 60;
     private static final List<Double> fpsList = new ArrayList<>(maximumListSize);
     private static double latestTime = 0;
 

@@ -1,35 +1,65 @@
 package de.sunnix.engine.graphics.gui.text;
 
-import de.sunnix.engine.Core;
 import de.sunnix.engine.graphics.Camera;
 import de.sunnix.engine.graphics.FloatArrayBuffer;
 import de.sunnix.engine.graphics.Mesh;
 import de.sunnix.engine.graphics.Shader;
 import de.sunnix.engine.graphics.gui.GUIManager;
 import de.sunnix.engine.graphics.gui.IGUIComponent;
+import de.sunnix.engine.graphics.gui.SpeechBox;
 import de.sunnix.engine.memory.ContextQueue;
 import de.sunnix.engine.memory.MemoryCategory;
 import de.sunnix.engine.memory.MemoryHolder;
 import lombok.Getter;
+import lombok.Setter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Text extends MemoryHolder implements IGUIComponent {
 
+    public static char ARROW_RIGHT = (char) 310;
+    public static char ARROW_LEFT = (char) 311;
+    public static char ARROW_UP = (char) 312;
+    public static char ARROW_DOWN = (char) 313;
+    public static char XBOX_X = (char) 314;
+    public static char XBOX_Y = (char) 315;
+    public static char XBOX_B = (char) 316;
+    public static char XBOX_A = (char) 317;
+    public static char PS_RECT = (char) 318;
+    public static char PS_TRI = (char) 319;
+    public static char PS_CIR = (char) 320;
+    public static char PS_X = (char) 321;
+    public static char CURSOR_0 = (char) 322;
+    public static char CURSOR_1 = (char) 323;
+    public static char CURSOR_2 = (char) 324;
+    public static char CURSOR_3 = (char) 325;
+
+    /**
+     * Stops the text of the {@link SpeechBox} and waits for input
+     */
+    public static char STOP_TOKEN = (char) 326;
     private static final float POINT_IN_PIXEL = 1.33f;
     private static final Shader shader = new Shader("/data/shader/text_shader");
+
+    @Getter
+    @Setter
+    private static Font defaultFont = Font.COMIC_SANS;
 
     @Getter
     private String text;
     @Getter
     private final Vector2f pos = new Vector2f();
     private float size = 12;
-    private Font font = Font.COMIC_SANS;
+    private Font font = defaultFont;
     private byte fontStyle = Font.STYLE_NORMAL;
     private final Vector4f color = new Vector4f(1);
     private double point_in_pixel_width;
@@ -38,6 +68,11 @@ public class Text extends MemoryHolder implements IGUIComponent {
     private boolean drawShadow = true;
 
     private Mesh mesh;
+
+    private List<Character> exceptionalCharColoring = Collections.EMPTY_LIST;
+
+    @Setter
+    private boolean printMesh;
 
     public Text(String text, Consumer<TextChanger> edit){
         this.text = text;
@@ -50,6 +85,16 @@ public class Text extends MemoryHolder implements IGUIComponent {
 
     public Text(String text){
         this(text, e -> {});
+    }
+
+    public Text(boolean addToManager, Consumer<TextChanger> edit){
+        this.text = "";
+        var tc = new TextChanger();
+        edit.accept(tc);
+        if(!tc.commit())
+            prepare();
+        if(addToManager)
+            GUIManager.add(this);
     }
 
     private void prepare(){
@@ -69,7 +114,7 @@ public class Text extends MemoryHolder implements IGUIComponent {
         var textures = new float[8 * cLength];
         var indices = new int[6 * cLength];
 
-        var nextWidth = 0;
+        var nextWidth = 0d;
 
         var row = 0;
 
@@ -101,12 +146,18 @@ public class Text extends MemoryHolder implements IGUIComponent {
 
             minX += ((float) glyph.xAdvance() / glyph.height()) * POINT_IN_PIXEL;
             if (minX > nextWidth)
-                nextWidth = (int) minX;
+                nextWidth = minX;
 
             for (int j = 0; j < 4; j++) {
-                colors[i * 16 + j * 4] = color.x;
-                colors[i * 16 + j * 4 + 1] = color.y;
-                colors[i * 16 + j * 4 + 2] = color.z;
+                if(exceptionalCharColoring.contains(c)) {
+                    colors[i * 16 + j * 4] = 1;
+                    colors[i * 16 + j * 4 + 1] = 1;
+                    colors[i * 16 + j * 4 + 2] = 1;
+                } else {
+                    colors[i * 16 + j * 4] = color.x;
+                    colors[i * 16 + j * 4 + 1] = color.y;
+                    colors[i * 16 + j * 4 + 2] = color.z;
+                }
                 colors[i * 16 + j * 4 + 3] = color.w;
             }
 
@@ -135,8 +186,7 @@ public class Text extends MemoryHolder implements IGUIComponent {
             i++;
         }
 
-        if(!text.isEmpty())
-            this.rows = row + 1;
+        this.rows = row + 1;
 
         if(mesh == null)
             this.mesh = new Mesh(indices,
@@ -153,6 +203,13 @@ public class Text extends MemoryHolder implements IGUIComponent {
         }
 
         this.point_in_pixel_width = nextWidth;
+        if(printMesh) {
+            System.out.println("Mesh ===============================================");
+            System.out.println("Vertices: " + Arrays.toString(vertices));
+            System.out.println("Colors: " + Arrays.toString(colors));
+            System.out.println("Textures: " + Arrays.toString(textures));
+            System.out.println("====================================================");
+        }
     }
 
     private void prepareWithShadow(){
@@ -217,12 +274,18 @@ public class Text extends MemoryHolder implements IGUIComponent {
                 colors[i * 32 + j * 4] = 0;
                 colors[i * 32 + j * 4 + 1] = 0;
                 colors[i * 32 + j * 4 + 2] = 0;
-                colors[i * 32 + j * 4 + 3] = .7f;
+                colors[i * 32 + j * 4 + 3] = .7f * color.w;
             }
             for (int j = 0; j < 4; j++) {
-                colors[i * 32 + 16 + j * 4] = color.x;
-                colors[i * 32 + 16 + j * 4 + 1] = color.y;
-                colors[i * 32 + 16 + j * 4 + 2] = color.z;
+                if(exceptionalCharColoring.contains(c)) {
+                    colors[i * 32 + 16 + j * 4] = 1;
+                    colors[i * 32 + 16 + j * 4 + 1] = 1;
+                    colors[i * 32 + 16 + j * 4 + 2] = 1;
+                } else {
+                    colors[i * 32 + 16 + j * 4] = color.x;
+                    colors[i * 32 + 16 + j * 4 + 1] = color.y;
+                    colors[i * 32 + 16 + j * 4 + 2] = color.z;
+                }
                 colors[i * 32 + 16 + j * 4 + 3] = color.w;
             }
 
@@ -261,8 +324,7 @@ public class Text extends MemoryHolder implements IGUIComponent {
             i++;
         }
 
-        if(!text.isEmpty())
-            this.rows = row + 1;
+        this.rows = row + 1;
 
         if(mesh == null)
             this.mesh = new Mesh(indices,
@@ -279,6 +341,13 @@ public class Text extends MemoryHolder implements IGUIComponent {
         }
 
         this.point_in_pixel_width = nextWidth;
+        if(printMesh) {
+            System.out.println("Mesh ===============================================");
+            System.out.println("Vertices: " + Arrays.toString(vertices));
+            System.out.println("Colors: " + Arrays.toString(colors));
+            System.out.println("Textures: " + Arrays.toString(textures));
+            System.out.println("====================================================");
+        }
     }
 
     /**
@@ -337,6 +406,10 @@ public class Text extends MemoryHolder implements IGUIComponent {
 
     public float getHeight(){
         return (POINT_IN_PIXEL * rows * size) * (1 - font.cut_vertical_spacing);
+    }
+
+    public float[] getColor(){
+        return new float[] { color.x, color.y, color.z, color.w };
     }
 
     @Override
@@ -405,6 +478,25 @@ public class Text extends MemoryHolder implements IGUIComponent {
                 return this;
             dirty = true;
             Text.this.drawShadow = drawShadow;
+            return this;
+        }
+
+        public TextChanger setExceptionalColoringChars(int... chars){
+            exceptionalCharColoring = Arrays.stream(chars).mapToObj(i -> (char) i).toList();
+            dirty = true;
+            return this;
+        }
+
+        /**
+         * @param from inclusive
+         * @param to exclusive
+         */
+        public TextChanger setExceptionalColoringChars(int from, int to){
+            var l = new ArrayList<Character>();
+            for (int i = from; i < to; i++)
+                l.add((char)i);
+            exceptionalCharColoring = l;
+            dirty = true;
             return this;
         }
 

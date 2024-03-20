@@ -25,12 +25,14 @@ public class GameObject extends MemoryHolder {
 
     private Map<String, Object> data = new HashMap<>();
 
-//    public static Data<Vector3f> position = new Data<>("position", Vector3f::new);
     @Getter
     private Vector3f position = new Vector3f();
     @Getter
     @Setter
     private String name;
+    @Getter
+    @Setter
+    private float z_pos; // graphical Z-Buffer
 
     @GameData(key = "test")
     public static final IntData TEST = new IntData("test", 0);
@@ -85,13 +87,11 @@ public class GameObject extends MemoryHolder {
         components.put(component.getClass(), component);
     }
 
-    public final <T extends Component> void removeComponent(Class<T> componentType){
-        components.remove(componentType);
-    }
-
     public void update(){
-        if(!inited)
+        if(!inited) {
+            GameLogger.logI("GameObject", "Object " + name + " updated without initialisation!");
             return;
+        }
     }
 
     public void setToDelete() {

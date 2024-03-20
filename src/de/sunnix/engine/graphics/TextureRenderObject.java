@@ -9,7 +9,7 @@ public class TextureRenderObject extends RectangularRenderObject{
     }
 
     public void setTexture(Texture tex){
-        super.setTexture(texture);
+        super.setTexture(tex);
         if(tex == null)
             size.set(0);
         else

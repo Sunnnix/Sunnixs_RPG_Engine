@@ -1,7 +1,6 @@
 package de.sunnix.engine.graphics.gui.text;
 
 import de.sunnix.engine.graphics.Texture;
-import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +15,7 @@ public class Font {
     public static final Font TIMES_NEW_ROMAN = new Font("/data/font/tnr/tnr");
     public static final Font CASCADIA_CODE = new Font("/data/font/cc/cc");
     public static final Font AGENCY_FB = new Font("/data/font/afb/afb");
+    public static Font ALUNDRA_FONT = new Font("/data/font/af/Alundra Font", 0);
     public static final byte STYLE_NORMAL = 0b00;
     public static final byte STYLE_ITALIC = 0b01;
     public static final byte STYLE_BOLD = 0b10;

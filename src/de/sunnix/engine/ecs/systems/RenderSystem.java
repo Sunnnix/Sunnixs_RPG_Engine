@@ -1,11 +1,19 @@
 package de.sunnix.engine.ecs.systems;
 
-import de.sunnix.engine.ecs.ComponentManager;
-import de.sunnix.engine.ecs.components.RenderComponent;
+import de.sunnix.engine.ecs.GameObject;
+import de.sunnix.engine.ecs.components.Component;
+
+import java.util.ArrayList;
 
 public class RenderSystem {
 
+    private static ArrayList<GameObject> objects = new ArrayList<>();
+
     public static void renderObjects() {
-//        ComponentManager.getComponentList(RenderComponent.class).forEach(RenderComponent::render);
+        objects.forEach(Component.RENDER::render);
+    }
+
+    public static void addGO(GameObject go) {
+        objects.add(go);
     }
 }

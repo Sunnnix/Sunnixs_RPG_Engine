@@ -1,0 +1,352 @@
+// SPACE
+char id=32   x=0      y=0      width=1      height=16      xoffset=0    yoffset=0    xadvance=4
+// !
+char id=33   x=16      y=0      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// "
+char id=34   x=32      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// #
+char id=35   x=48      y=0      width=12      height=16      xoffset=0    yoffset=0    xadvance=12 
+// $
+char id=36   x=64      y=0      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// %
+char id=37   x=80      y=0      width=12      height=16      xoffset=0    yoffset=0    xadvance=12 
+// &
+char id=38   x=96      y=0      width=11      height=16      xoffset=0    yoffset=0    xadvance=11 
+// '
+char id=30   x=112      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// (
+char id=40   x=128      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// )
+char id=41   x=144      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// *
+char id=42   x=160      y=0      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// +
+char id=43   x=176      y=0      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ,
+char id=44   x=192      y=0      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// -
+char id=45   x=208      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// .
+char id=46   x=224      y=0      width=4      height=16      xoffset=0    yoffset=0    xadvance=4 
+// /
+char id=47   x=240      y=0      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// 0
+char id=48   x=0      y=16      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// 1
+char id=49   x=16      y=16      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// 2
+char id=50   x=32      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 3
+char id=51   x=48      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 4
+char id=52   x=64      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 5
+char id=53   x=80      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 6
+char id=54   x=96      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 7
+char id=55   x=112      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 8
+char id=56   x=128      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// 9
+char id=57   x=144      y=16      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// :
+char id=58   x=160      y=16      width=4      height=16      xoffset=0    yoffset=0    xadvance=4 
+// ;
+char id=59   x=176      y=16      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// <
+char id=60   x=192      y=16      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// =
+char id=61   x=208      y=16      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// >
+char id=62   x=224      y=16      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// ?
+char id=63   x=240      y=16      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// @
+char id=64   x=0      y=32      width=12      height=16      xoffset=0    yoffset=0    xadvance=12 
+// A
+char id=65   x=16      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// B
+char id=66   x=32      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// C
+char id=67   x=48      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// D
+char id=68   x=64      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// E
+char id=69   x=80      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// F
+char id=70   x=96      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// G
+char id=71   x=112      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// H
+char id=72   x=128      y=32      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// I
+char id=73   x=144      y=32      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// J
+char id=74   x=160      y=32      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// K
+char id=75   x=176      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// L
+char id=76   x=192      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// M
+char id=77   x=208      y=32      width=13      height=16      xoffset=0    yoffset=0    xadvance=13 
+// N
+char id=78   x=224      y=32      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// O
+char id=79   x=240      y=32      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// P
+char id=80   x=0      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Q
+char id=81   x=16      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// R
+char id=82   x=32      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// S
+char id=83   x=48      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// T
+char id=84   x=64      y=48      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// U
+char id=85   x=80      y=48      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// V
+char id=86   x=96      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// W
+char id=87   x=112      y=48      width=13      height=16      xoffset=0    yoffset=0    xadvance=13 
+// X
+char id=88   x=128      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Y
+char id=89   x=144      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Z
+char id=90   x=160      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// [
+char id=91   x=176      y=48      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// \
+char id=92   x=192      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ]
+char id=93   x=208      y=48      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// ^
+char id=94   x=224      y=48      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// _
+char id=95   x=240      y=48      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// `
+char id=96   x=0      y=64      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// a
+char id=97   x=16      y=64      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// b
+char id=98   x=32      y=64      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// c
+char id=99   x=48      y=64      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// d
+char id=100   x=64      y=64      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// e
+char id=101   x=80      y=64      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// f
+char id=102   x=96      y=64      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// g
+char id=103   x=112      y=64      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// h
+char id=104   x=128      y=64      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// i
+char id=105   x=144      y=64      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// j
+char id=106   x=160      y=64      width=5      height=16      xoffset=0    yoffset=0    xadvance=5 
+// k
+char id=107   x=176      y=64      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// l
+char id=108   x=192      y=64      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// m
+char id=109   x=208      y=64      width=13      height=16      xoffset=0    yoffset=0    xadvance=13 
+// n
+char id=110   x=224      y=64      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// o
+char id=111   x=240      y=64      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// p
+char id=112   x=0      y=80      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// q
+char id=113   x=16      y=80      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// r
+char id=114   x=32      y=80      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// s
+char id=115   x=48      y=80      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// t
+char id=116   x=64      y=80      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// u
+char id=117   x=80      y=80      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// v
+char id=118   x=96      y=80      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// w
+char id=119   x=112      y=80      width=13      height=16      xoffset=0    yoffset=0    xadvance=13 
+// x
+char id=120   x=128      y=80      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// y
+char id=121   x=144      y=80      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// z
+char id=122   x=160      y=80      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// {
+char id=123   x=176      y=80      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// |
+char id=124   x=192      y=80      width=4      height=16      xoffset=0    yoffset=0    xadvance=4 
+// }
+char id=125   x=208      y=80      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// ~
+char id=126   x=224      y=80      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+
+// Á
+char id=192   x=0      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// À
+char id=193   x=16      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Â
+char id=194   x=32      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ã
+char id=195   x=48      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ä
+char id=196   x=64      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Å
+char id=197   x=80      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Æ
+char id=198   x=96      y=96      width=14      height=16      xoffset=0    yoffset=0    xadvance=14 
+// Ç
+char id=199   x=112      y=96      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// È
+char id=200   x=128      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// É
+char id=201   x=144      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ê
+char id=202   x=160      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ë
+char id=203   x=176      y=96      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Í
+char id=204   x=192      y=96      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// Ì
+char id=205   x=208      y=96      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// Î
+char id=206   x=224      y=96      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// Ï
+char id=207   x=240      y=96      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// Ð
+char id=208   x=0      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ñ
+char id=209   x=16      y=112      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// Ò
+char id=210   x=32      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ó
+char id=211   x=48      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ô
+char id=212   x=64      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Õ
+char id=213   x=80      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ö
+char id=214   x=96      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ×
+char id=215   x=112      y=112      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// Ø
+char id=216   x=128      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Ù
+char id=217   x=144      y=112      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// Ú
+char id=218   x=160      y=112      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// Û
+char id=219   x=176      y=112      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// Ü
+char id=220   x=192      y=112      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// Ý
+char id=221   x=208      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// Þ
+char id=222   x=224      y=112      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ß
+char id=223   x=240      y=112      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// à
+char id=224   x=0      y=128      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// á
+char id=225   x=16      y=128      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// â
+char id=226   x=32      y=128      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ã
+char id=227   x=48      y=128      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ä
+char id=228   x=64      y=128     width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// å
+char id=229   x=80      y=128     width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// æ
+char id=230   x=96      y=128     width=11      height=16      xoffset=0    yoffset=0    xadvance=11 
+// ç
+char id=231   x=112      y=128      width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// è
+char id=232   x=128      y=128     width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// é
+char id=233   x=144      y=128     width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// ê
+char id=234   x=160      y=128     width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// ë
+char id=235   x=176      y=128     width=7      height=16      xoffset=0    yoffset=0    xadvance=7 
+// ì
+char id=236   x=192      y=128     width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// í
+char id=237   x=208      y=128     width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// î
+char id=238   x=224      y=128     width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// ï
+char id=239   x=240      y=128     width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+// ð
+char id=240   x=0      y=144      width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ñ
+char id=241   x=16      y=144      width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ò
+char id=242   x=32      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ó
+char id=243   x=48      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ô
+char id=244   x=64      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// õ
+char id=245   x=80      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ö
+char id=246   x=96      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ÷
+char id=247   x=112      y=144      width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// ø
+char id=248   x=128      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// ù
+char id=249   x=144      y=144     width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// ú
+char id=250   x=160      y=144     width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// û
+char id=251   x=176      y=144     width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// ü
+char id=252   x=192      y=144     width=10      height=16      xoffset=0    yoffset=0    xadvance=10 
+// ý
+char id=253   x=208      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+// þ
+char id=254   x=224      y=144     width=9      height=16      xoffset=0    yoffset=0    xadvance=9 
+// ÿ
+char id=255   x=240      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
+
+// Arrow Right
+char id=310   x=0      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
+// Arrow Left
+char id=311   x=16      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Arrow Up
+char id=312   x=32      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Arrow Down
+char id=313   x=48      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton XBOX X
+char id=314   x=64      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton XBOX Y
+char id=315   x=80      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton XBOX B
+char id=316   x=96      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton XBOX A
+char id=317   x=112      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton PS Rect
+char id=318   x=128      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton PS Tri
+char id=319   x=144      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton PS Cir
+char id=320   x=160      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Buton PS X
+char id=321   x=176      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Cursor 1
+char id=322   x=192      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Cursor 2
+char id=323   x=208      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+// Cursor 3
+char id=324   x=224      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
+// Cursor 4
+char id=325   x=240      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 

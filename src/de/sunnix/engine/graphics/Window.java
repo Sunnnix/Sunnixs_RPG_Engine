@@ -9,11 +9,13 @@ import lombok.experimental.Accessors;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
-import org.lwjgl.opengl.GLUtil;
+
+import java.awt.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
@@ -58,8 +60,8 @@ public class Window {
             glfwWindowHint(GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
 
             // Create and bind
-            var window = glfwCreateWindow(width, height, title, 0, 0);
-            if (window == 0)
+            var window = glfwCreateWindow(width, height, title, NULL, NULL);
+            if (window == NULL)
                 throw new RuntimeException("No window could be created!");
             glfwMakeContextCurrent(window);
 
@@ -67,6 +69,9 @@ public class Window {
 
             // Icon
             loadWindowIcon(window);
+
+            var dim = Toolkit.getDefaultToolkit().getScreenSize();
+            glfwSetWindowPos(window, dim.width / 2 - width / 2, dim.height / 2 - height / 2);
 
             Camera.getSize().set(width / Core.getPixel_scale(), height / Core.getPixel_scale());
 
