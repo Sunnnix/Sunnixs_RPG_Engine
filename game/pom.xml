@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>de.sunnix</groupId>
+        <artifactId>Sunlundra</artifactId>
+        <version>INDEV 1.0</version>
+    </parent>
+
+    <groupId>de.sunnix.sunlundra</groupId>
+    <artifactId>game</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>de.sunnix.sunlundra</groupId>
+            <artifactId>engine</artifactId>
+            <version>INDEV 1.0</version>
+        </dependency>
+
+        <!-- Sunnix -->
+        <dependency>
+            <groupId>de.sunnix</groupId>
+            <artifactId>dso</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../libs/DataSaveObject.jar</systemPath>
+        </dependency>
+
+        <!-- JOGG for OGG Files -->
+        <dependency>
+            <groupId>com.github.gagravarr</groupId>
+            <artifactId>ogg-vorbis</artifactId>
+            <version>0.8</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../libs/VorbisJava-vorbis-java-0.8.zip</systemPath>
+        </dependency>
+
+
+        <!-- LWJGL DEBUG -->
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-debug</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../libs/lwjglx-debug-1.0.0.jar</systemPath>
+        </dependency>
+
+    </dependencies>
+
+</project>

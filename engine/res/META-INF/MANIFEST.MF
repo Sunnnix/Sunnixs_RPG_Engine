@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+de.sunnix.game.Main-Class: de.sunnix.game.Main
+

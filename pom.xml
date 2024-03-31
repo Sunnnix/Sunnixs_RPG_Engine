@@ -3,15 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>game</module>
+        <module>engine</module>
+        <module>editor</module>
+    </modules>
 
     <build>
         <resources>
             <resource>
                 <directory>res</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>libs</directory>
             </resource>
         </resources>
         <sourceDirectory>src</sourceDirectory>
@@ -82,27 +84,11 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Sunnix -->
-        <dependency>
-            <groupId>de.sunnix</groupId>
-            <artifactId>dso</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/libs/DataSaveObject.jar</systemPath>
-        </dependency>
         <!-- Flatlaf -->
         <dependency>
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
             <version>3.2</version>
-        </dependency>
-        <!-- JOGG for OGG Files -->
-        <dependency>
-            <groupId>com.github.gagravarr</groupId>
-            <artifactId>ogg-vorbis</artifactId>
-            <version>0.8</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/libs/VorbisJava-vorbis-java-0.8.zip</systemPath>
         </dependency>
         <!-- Lombok -->
         <dependency>
@@ -110,15 +96,6 @@
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- LWJGL DEBUG -->
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-debug</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/libs/lwjglx-debug-1.0.0.jar</systemPath>
         </dependency>
 
         <!-- JLWGL Libs-->

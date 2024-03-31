@@ -42,5 +42,4 @@ build/
 *.log
 out/
 logs/
-/res/test/
-/src/test/
+/test

@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/editor/engine/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/editor/libs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/editor/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/editor/src" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/editor/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/editor/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/engine/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/libs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/res/debug" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/src" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/engine/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/game/engine/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/game/libs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/game/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/game/src" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/game/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/game/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/libs" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/res" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/res/debug" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
