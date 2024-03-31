@@ -1,6 +1,6 @@
 package test;
 
-import de.sunnix.engine.registry.Registry;
+import de.sunnix.aje.engine.registry.Registry;
 
 public class Components {
 

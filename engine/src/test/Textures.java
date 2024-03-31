@@ -1,8 +1,8 @@
 package test;
 
-import de.sunnix.engine.graphics.Texture;
-import de.sunnix.engine.graphics.TextureAtlas;
-import de.sunnix.engine.registry.Registry;
+import de.sunnix.aje.engine.graphics.Texture;
+import de.sunnix.aje.engine.graphics.TextureAtlas;
+import de.sunnix.aje.engine.registry.Registry;
 
 public class Textures {
 
