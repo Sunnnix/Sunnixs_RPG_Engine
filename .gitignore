@@ -43,3 +43,5 @@ build/
 out/
 logs/
 /test
+/ajee.config
+*.aegf

@@ -49,7 +49,7 @@ public class World {
         tmp.addComponent(new PhysicComponent());
         tmp.init();
         RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(2, 1, 0);
+        tmp.getPosition().set(2, -1, 0);
         tmp.setName("Box 1");
 
         tmp = new GameObject(1, 1);
