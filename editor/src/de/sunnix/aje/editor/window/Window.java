@@ -159,9 +159,17 @@ public class Window extends JFrame {
                 projectName = config.getString("project_name");
             else
                 projectName = "Unnamed Project";
-            getSingleton(Resources.class).loadResources(zip, config);
+            getSingleton(Resources.class).loadResources(zip);
         } catch (Exception e){
+            JOptionPane.showMessageDialog(
+                    this,
+                    "There was a problem loading the project!\n" + e.getMessage(),
+                    "Error loading project",
+                    JOptionPane.ERROR_MESSAGE
+            );
             e.printStackTrace();
+            closeProject();
+            return;
         }
 
         projectPath = file;
@@ -206,11 +214,14 @@ public class Window extends JFrame {
         if(!saveFile.toString().endsWith(".aegf"))
             saveFile = new File(saveFile + ".aegf");
         projectPath = saveFile;
+
+
         // create save file
         try(var zip = new ZipOutputStream(new FileOutputStream(projectPath))){
             var config = new JSONObject();
             config.put("project_name", projectName);
-            getSingleton(Resources.class).saveResources(zip, config);
+            getSingleton(Resources.class).saveResources(zip);
+
             zip.putNextEntry(new ZipEntry("game.config"));
             zip.write(config.toString(2).getBytes());
         } catch (Exception e){
@@ -222,6 +233,8 @@ public class Window extends JFrame {
             );
             return false;
         }
+
+
         var path = saveFile.getPath();
         getSingleton(Config.class).change("recent_projects", Collections.<String>emptyList(), list -> {
             list.remove(path);

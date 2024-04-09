@@ -1,32 +1,30 @@
 package de.sunnix.aje.editor.window;
 
+import de.sunnix.aje.editor.window.io.BetterJSONObject;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Config {
 
     public static final File saveFile = new File("ajee.config");
 
-    private JSONObject data = new JSONObject();
+    private BetterJSONObject data = new BetterJSONObject();
 
     public void loadConfig(){
         synchronized (saveFile) {
             if (!saveFile.exists()) {
-                data = new JSONObject();
+                data = new BetterJSONObject();
                 return;
             }
             try (var stream = new FileInputStream(saveFile)) {
-                data = new JSONObject(new String(stream.readAllBytes()));
+                data = new BetterJSONObject(new String(stream.readAllBytes()));
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "There was an error reading configuration!\n" + e.getMessage(), "Can't read config", JOptionPane.ERROR_MESSAGE);
             }
@@ -102,6 +100,13 @@ public class Config {
             return data.getJSONArray(key).toList().stream().mapToDouble(o -> (double) o).toArray();
         else
             return set(key, def);
+    }
+
+    public BetterJSONObject getJSONObject(String key){
+        if(data.has(key))
+            return data.getJSONObject(key);
+        else
+            return set(key, new BetterJSONObject());
     }
 
     // -----------------               SET               -----------------

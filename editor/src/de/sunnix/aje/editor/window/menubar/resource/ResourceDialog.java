@@ -7,8 +7,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.function.Function;
 
 import static de.sunnix.aje.editor.window.Texts.WINDOW_NAME;
@@ -20,6 +19,7 @@ public class ResourceDialog extends JDialog {
     public ResourceDialog(Window parent) {
         super(parent, WINDOW_NAME + " - Resources", true);
         setContentPane(createContent(parent));
+        addWindowListener(genWindowListener());
         pack();
         setLocationRelativeTo(parent);
         setVisible(true);
@@ -41,13 +41,10 @@ public class ResourceDialog extends JDialog {
     private JTree createTree(Window parent){
         var root = createNode("Root",
                 createNode("Video",
-                        createNode("Images", p -> new ResourceImageView(parent, p)),
-                        createNode("Animations")
+                        createNode("Images", p -> new ResourceImageView(parent, p))
                 ),
                 createNode("Audio",
-                        createNode("Raw"),
-                        createNode("Sound"),
-                        createNode("Music")
+                        createNode("Raw", p -> new JPanel())
                 )
         );
 
@@ -80,22 +77,40 @@ public class ResourceDialog extends JDialog {
         return node;
     }
 
-    private DefaultMutableTreeNode createNode(String name, Function<JPanel, JPanel> contentViewCreator){
+    private DefaultMutableTreeNode createNode(String name, Function<JPanel, JComponent> contentViewCreator){
         return new InteractiveTreeNode(name, contentViewCreator);
     }
 
-    private void changeContentView(Function<JPanel, JPanel> contentViewCreator) {
+    private void changeContentView(Function<JPanel, JComponent> contentViewCreator) {
+        for(var comp : contentPanel.getComponents())
+            if(comp instanceof IResourceView resView)
+                resView.onViewClosed();
         contentPanel.removeAll();
-        contentPanel.add(contentViewCreator.apply(contentPanel), BorderLayout.CENTER);
+        var newComp = contentViewCreator.apply(contentPanel);
+        contentPanel.add(newComp, BorderLayout.CENTER);
+        if(newComp instanceof IResourceView resView)
+            resView.onViewAttached();
         contentPanel.revalidate();
         contentPanel.repaint();
     }
 
+
+    private WindowListener genWindowListener() {
+        return new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                for(var comp : contentPanel.getComponents())
+                    if(comp instanceof IResourceView resView)
+                        resView.onViewClosed();
+            }
+        };
+    }
+
     private static class InteractiveTreeNode extends DefaultMutableTreeNode{
 
-        public final Function<JPanel, JPanel> contentViewCreator;
+        public final Function<JPanel, JComponent> contentViewCreator;
 
-        public InteractiveTreeNode(String name, Function<JPanel, JPanel> contentViewCreator){
+        public InteractiveTreeNode(String name, Function<JPanel, JComponent> contentViewCreator){
             super(name);
             this.contentViewCreator = contentViewCreator;
         }
