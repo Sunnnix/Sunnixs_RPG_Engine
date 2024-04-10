@@ -1,5 +1,6 @@
 package de.sunnix.aje.editor.window.menubar;
 
+import de.sunnix.aje.editor.docu.UserGuide;
 import de.sunnix.aje.editor.window.Config;
 import de.sunnix.aje.editor.window.Window;
 import de.sunnix.aje.editor.window.menubar.resource.ResourceDialog;
@@ -66,6 +67,7 @@ public class MenuBar extends JMenuBar {
 
     private JMenu setUpMMHelp() {
         var mm = new JMenu("Help");
+        mm.add(createDefaultMenuItem("User Guide", e -> new UserGuide(parent)));
         mm.add(createDefaultMenuItem("About", e -> new AboutDialog(parent)));
         return mm;
     }

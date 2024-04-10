@@ -4,6 +4,7 @@ import de.sunnix.aje.editor.window.Window;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import java.awt.*;
@@ -51,19 +52,11 @@ public class ResourceDialog extends JDialog {
         var tree = new JTree(root);
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-        tree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
-                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-                    if (path != null) {
-                        Object selectedNode = path.getLastPathComponent();
-                        if (selectedNode instanceof InteractiveTreeNode node) {
-                            if (node.isLeaf())
-                                changeContentView(node.contentViewCreator);
-                        }
-                    }
-                }
+        tree.addTreeSelectionListener(l -> {
+            var node = (TreeNode)tree.getLastSelectedPathComponent();
+            if (node instanceof InteractiveTreeNode interactiveNode) {
+                if (interactiveNode.isLeaf())
+                    changeContentView(interactiveNode.contentViewCreator);
             }
         });
 
