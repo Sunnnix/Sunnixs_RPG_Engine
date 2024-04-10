@@ -1,5 +1,9 @@
 package de.sunnix.aje.editor.window;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 public class Texts {
 
     public static final String FULL_NAME = "Alundra Java Engine Creator";
@@ -8,19 +12,16 @@ public class Texts {
     public static final String CREATOR = "Sunnix";
     public static final String WEBSITE_LABEL = "sunnix.de";
     public static final String WEBSITE_LINK = "https://sunnix.de";
-    public static final String ABOUT_TEXT = """
-            This editor is intended for creating and modifying game files for the Alundra Java Engine.<br>
-            The game file is structured like a ZIP and the resources and maps are stored in different folders.""";
-    public static final String ABOUT_HTML_TEXT = String.format("""
-                <html>
-                <body>
-                <h1>%s</h1>
-                <h2>Version: %s</h2>
-                <p>%s</p>
-                <br>
-                <p>Created by %s</p>
-                <p>visit <a href="%s">%s</a></p>
-                </body>
-                </html>""", FULL_NAME, VERSION, ABOUT_TEXT, CREATOR, WEBSITE_LINK, WEBSITE_LABEL);
+    public static final String ABOUT_HTML_TEXT = String.format(getHTMLText("AboutSite.html"), FULL_NAME, VERSION, CREATOR, WEBSITE_LINK, WEBSITE_LABEL);
+
+    public static String getHTMLText(String html){
+        try(var stream = Texts.class.getResourceAsStream("/de/sunnix/aje/editor/window/html/" + html)){
+            return new String(stream.readAllBytes());
+        } catch (Exception e){
+            return html + ": " + e.getMessage();
+        }
+    }
+
+
 
 }

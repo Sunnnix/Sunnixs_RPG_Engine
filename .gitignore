@@ -45,3 +45,5 @@ logs/
 /test
 /ajee.config
 *.aegf
+META-INF
+*.idea/artifacts/

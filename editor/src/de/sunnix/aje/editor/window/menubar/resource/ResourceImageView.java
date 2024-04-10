@@ -37,7 +37,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
     private JLabel selectedText;
     private JPanel imageComponent;
     private JTextField atlasWidth, atlasHeight;
-    private JCheckBox showComplete, animated;
+    private JCheckBox showComplete, animated, showGrid;
     private JSpinner animSpeed;
     private int animTimer;
     private float zoom = 1;
@@ -79,6 +79,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         var imageInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         showComplete = new JCheckBox("Show complete image:", true);
+        showComplete.addActionListener(a -> imageComponent.repaint());
         showComplete.setHorizontalTextPosition(JCheckBox.LEFT);
         selectionDependency.add(showComplete);
         atlasWidth = new JTextField(4);
@@ -90,8 +91,13 @@ public class ResourceImageView extends JPanel implements IResourceView {
         animated = new JCheckBox("Animate:");
         animated.setHorizontalTextPosition(JCheckBox.LEFT);
         selectionDependency.add(animated);
+        animated.addActionListener(a -> imageComponent.repaint());
         animSpeed = new JSpinner(new SpinnerNumberModel(20, 1, 240, 1));
         selectionDependency.add(animSpeed);
+        showGrid = new JCheckBox("show Grid:");
+        showGrid.addActionListener(a -> imageComponent.repaint());
+        showGrid.setHorizontalTextPosition(JCheckBox.LEFT);
+        selectionDependency.add(showGrid);
 
         imageInfoPanel.add(showComplete);
         imageInfoPanel.add(new JLabel("Atlas width: "));
@@ -101,6 +107,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         imageInfoPanel.add(animated);
         imageInfoPanel.add(new JLabel("Animation speed: "));
         imageInfoPanel.add(animSpeed);
+        imageInfoPanel.add(showGrid);
 
         bottomPanel.add(imageInfoPanel, BorderLayout.CENTER);
 
@@ -123,6 +130,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         animSpeed.setValue(json.get("anim-speed", 20));
         zoom = json.get("zoom", 1f);
         slider.setValue((int) (zoom * 100));
+        showGrid.setSelected(json.get("show-grid", false));
 
         return panel;
     }
@@ -495,6 +503,21 @@ public class ResourceImageView extends JPanel implements IResourceView {
                 y = getHeight() / 2 - (int)(height * zoom / 2);
 
                 g.drawImage(image, x, y, x + (int)(width * zoom), y + (int)(height * zoom), srcX, srcY, srcX + width, srcY + height, null);
+
+                if(showGrid.isSelected()){
+                    var g2 = (Graphics2D) g;
+                    g2.setColor(Color.BLACK);
+                    g2.setStroke(new BasicStroke(3));
+                    if(!showComplete.isSelected())
+                        g.drawRect(x, y, (int)(width * zoom), (int) (height * zoom));
+                    else {
+                        var iWidth = width * zoom / atlasWidth;
+                        var iHeight = height * zoom / atlasHeight;
+                        for (int i = 0; i < atlasWidth; i++)
+                            for (int j = 0; j < atlasHeight; j++)
+                                g.drawRect((int)(x + iWidth * i), (int)(y + iHeight * j), (int)iWidth, (int)iHeight);
+                    }
+                }
             }
         };
     }
