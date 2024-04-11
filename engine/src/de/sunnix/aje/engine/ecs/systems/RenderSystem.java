@@ -60,7 +60,6 @@ public class RenderSystem {
         }
 
         for(var cList : colliding){
-            var maxZ = Collections.max(cList.stream().map(GameObject::getZ_pos).toList());
             var sorted = cList.stream().sorted((o1, o2) -> {
                 var pos1 = o1.getPosition();
                 var size1 = o1.getSize();
@@ -72,9 +71,17 @@ public class RenderSystem {
                     return 1;
                 else return -Float.compare(o1.getZ_pos(), o2.getZ_pos());
             }).toList();
-            for (int i = 0; i < sorted.size(); i++) {
-                sorted.get(i).setZ_pos(maxZ - .001f * i);
-            }
+
+            for(int n = 0; n < sorted.size(); n++)
+                for (int i = 0; i < sorted.size(); i++) {
+                    var go = sorted.get(i);
+                    var next = i + 1 == sorted.size() ? null : sorted.get(i + 1);
+                    if(next != null)
+                        if(go.getZ_pos() <= next.getZ_pos()) {
+                            go.setZ_pos(next.getZ_pos());
+                            next.setZ_pos(next.getZ_pos() - .001f);
+                        }
+                }
         }
     }
 }

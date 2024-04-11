@@ -75,7 +75,7 @@ public class World {
         tmp.addComponent(new PhysicComponent());
         tmp.init();
         RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 1, -.25);
+        tmp.getPosition().set(8, 1, 0);
         tmp.setName("Box 4");
 
         tmp = new GameObject(1, 1);
@@ -83,7 +83,23 @@ public class World {
         tmp.addComponent(new PhysicComponent());
         tmp.init();
         RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 0, -.5);
+        tmp.getPosition().set(8, 4, 0);
+        tmp.setName("Box 7");
+
+        tmp = new GameObject(1, 1);
+        tmp.addComponent(Component.RENDER);
+        tmp.addComponent(new PhysicComponent());
+        tmp.init();
+        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
+        tmp.getPosition().set(8, 3, 0);
+        tmp.setName("Box 8");
+
+        tmp = new GameObject(1, 1);
+        tmp.addComponent(Component.RENDER);
+        tmp.addComponent(new PhysicComponent());
+        tmp.init();
+        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
+        tmp.getPosition().set(8, 0, 0);
         tmp.setName("Box 5");
 
         tmp = new GameObject(1, 1);
