@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine.ecs;
 
+import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import test.Textures;
 
@@ -99,6 +100,86 @@ public class Tile {
                 texI = 14;
 //            var tex = Textures.TILESET_INOA.getTexturePositions(x + y * Textures.TILESET_INOA.getTileWidth());
             var tex = Textures.TILESET_INOA.getTexturePositions(texI);
+            System.arraycopy(tex, 0, textures, i * 8, 8);
+        }
+
+        var s = new StringBuilder("Tile (" + x + ", " + y + ")\n");
+        for (int i = 0; i < vertices.length / 12; i++){
+            for (int j = 0; j < 12; j += 3) {
+                s.append(String.format("%s, %s, %s\n", vertices[i * 12 + j], vertices[i * 12 + j + 1], vertices[i * 12 + j + 2]));
+            }
+            s.append("--------------------------------\n");
+        }
+        s.append("================================");
+
+        System.out.println(s);
+
+//        vertices = new float[] { // vertices
+//                -.5f + x, -1f - y + height, y + 1,
+//                -.5f + x,  0f - y + height, y + 1,
+//                .5f + x,  0f - y + height, y + 1,
+//                .5f + x, -1f - y + height, y + 1
+//        };
+
+//        de.sunnix.game.textures = Textures.TILESET_INOA.getTexturePositions((int)(Math.random() * 4) + (Textures.TILESET_INOA.getTileWidth() * (int)(Math.random() * 4)));
+
+//        de.sunnix.game.textures = Textures.TILESET_INOA.getTexturePositions(x + y * Textures.TILESET_INOA.getTileWidth());
+        this.vertexCount = indices.length;
+        return height + 1;
+    }
+
+    public int create(DataSaveObject dso){
+        var texID = dso.getShort("texID", (short) -1);
+        height = 0;
+        var iOffset = 4 * bufferOffset;
+        indices = new int[6];
+        vertices = new float[12];
+        textures = new float[8];
+
+        for (int i = 0; i < height + 1; i++) {
+            indices[i * 6] = iOffset;
+            indices[i * 6 + 1] = iOffset + 1;
+            indices[i * 6 + 2] = iOffset + 3;
+            indices[i * 6 + 3] = iOffset + 1;
+            indices[i * 6 + 4] = iOffset + 2;
+            indices[i * 6 + 5] = iOffset + 3;
+
+            iOffset += 4;
+
+            if(i == height) {
+                vertices[i * 12] = -.5f + x;
+                vertices[i * 12 + 1] = -1f - y + i;
+                vertices[i * 12 + 2] = y;
+
+                vertices[i * 12 + 3] = -.5f + x;
+                vertices[i * 12 + 4] = 0f - y + i;
+                vertices[i * 12 + 5] = y;
+
+                vertices[i * 12 + 6] = .5f + x;
+                vertices[i * 12 + 7] = 0f - y + i;
+                vertices[i * 12 + 8] = y;
+
+                vertices[i * 12 + 9] = .5f + x;
+                vertices[i * 12 + 10] = -1f - y + i;
+                vertices[i * 12 + 11] = y;
+            } else {
+                vertices[i * 12] = -.5f + x;
+                vertices[i * 12 + 1] = -1f - y + i;
+                vertices[i * 12 + 2] = y + 1;
+
+                vertices[i * 12 + 3] = -.5f + x;
+                vertices[i * 12 + 4] = 0f - y + i;
+                vertices[i * 12 + 5] = y + 1;
+
+                vertices[i * 12 + 6] = .5f + x;
+                vertices[i * 12 + 7] = 0f - y + i;
+                vertices[i * 12 + 8] = y + 1;
+
+                vertices[i * 12 + 9] = .5f + x;
+                vertices[i * 12 + 10] = -1f - y + i;
+                vertices[i * 12 + 11] = y + 1;
+            }
+            var tex = Textures.TILESET_INOA.getTexturePositions(texID);
             System.arraycopy(tex, 0, textures, i * 8, 8);
         }
 

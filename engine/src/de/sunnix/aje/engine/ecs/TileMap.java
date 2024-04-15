@@ -3,9 +3,16 @@ package de.sunnix.aje.engine.ecs;
 import de.sunnix.aje.engine.graphics.TextureAtlas;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.Shader;
+import de.sunnix.sdso.DataSaveObject;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import test.Textures;
+
+import javax.swing.*;
+
+import java.io.File;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -16,10 +23,10 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class TileMap {
 
-    public final int width;
-    public final int height;
+    public int width;
+    public int height;
 
-    private final Tile[] tiles;
+    private Tile[] tiles;
 
     private int vertexArray;
     private int verticesID;
@@ -33,21 +40,22 @@ public class TileMap {
     private final TextureAtlas texture = Textures.TILESET_INOA;
     private final Shader shader = Shader.DEFAULT_SHADER;
 
-    private final int bufferSize; // how large is the basic buffer of the Tiles
+    private int bufferSize; // how large is the basic buffer of the Tiles
 
     public TileMap(){
-        width = 3;
-        height = 10;
-        tiles = new Tile[width * height];
-        var offset = 0;
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++) {
-//                tiles[x + y * width] = new Tile(x, y, x + y * width);
-                var t = new Tile(x, y, offset);
-                offset += t.create();
-                tiles[x + y * width] = t;
-            }
-        bufferSize = offset;
+        loadMapFromFile();
+//        width = 3;
+//        height = 10;
+//        tiles = new Tile[width * height];
+//        var offset = 0;
+//        for (int x = 0; x < width; x++)
+//            for (int y = 0; y < height; y++) {
+////                tiles[x + y * width] = new Tile(x, y, x + y * width);
+//                var t = new Tile(x, y, offset);
+//                offset += t.create();
+//                tiles[x + y * width] = t;
+//            }
+//        bufferSize = offset;
 
         vertexArray = glGenVertexArrays();
         glBindVertexArray(vertexArray);
@@ -77,6 +85,44 @@ public class TileMap {
 
         unbind();
         inited = true;
+    }
+
+    private void loadMapFromFile() {
+        var gameFile = new File("GameFile.aegf");
+        try(var zip = new ZipFile(gameFile)) {
+            var stream = zip.getInputStream(new ZipEntry(new File("maps/0000.map").getPath()));
+            var dso = new DataSaveObject().load(stream);
+            width = dso.getInt("width", 0);
+            height = dso.getInt("height", 0);
+            tiles = new Tile[width * height];
+            var offset = 0;
+            var tileList = dso.<DataSaveObject>getList("tiles");
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++) {
+                    var t = new Tile(x, y, offset);
+                    offset += t.create(tileList.get(x + y * width));
+                    tiles[x + y * width] = t;
+                }
+            bufferSize = offset;
+            stream.close();
+        } catch (Exception e){
+            genMap();
+        }
+    }
+
+    private void genMap(){
+        width = 3;
+        height = 10;
+        tiles = new Tile[width * height];
+        var offset = 0;
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++) {
+//                tiles[x + y * width] = new Tile(x, y, x + y * width);
+                var t = new Tile(x, y, offset);
+                offset += t.create();
+                tiles[x + y * width] = t;
+            }
+        bufferSize = offset;
     }
 
     public void update(){}
