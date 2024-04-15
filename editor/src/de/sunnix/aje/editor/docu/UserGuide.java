@@ -1,6 +1,6 @@
 package de.sunnix.aje.editor.docu;
 
-import de.sunnix.aje.editor.window.Texts;
+import de.sunnix.aje.editor.util.Texts;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;

@@ -2,7 +2,7 @@ package de.sunnix.aje.editor.window.menubar.resource;
 
 import de.sunnix.aje.editor.window.Config;
 import de.sunnix.aje.editor.window.Window;
-import de.sunnix.aje.editor.window.io.BetterJSONObject;
+import de.sunnix.aje.editor.util.BetterJSONObject;
 import de.sunnix.aje.editor.window.resource.ImageResource;
 import de.sunnix.aje.editor.window.resource.Resources;
 
@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.List;
 import java.util.Timer;
 
-import static de.sunnix.aje.editor.window.io.FunctionUtils.firstOrNull;
+import static de.sunnix.aje.editor.util.FunctionUtils.firstOrNull;
 
 public class ResourceImageView extends JPanel implements IResourceView {
 
@@ -382,6 +382,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         else if(index - 1 >= 0)
             imageList.setSelectedIndex(index - 1);
         window.setProjectChanged();
+        window.repaint();
     }
 
     private void changeImage(String selected) {
@@ -424,6 +425,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         imageList.setSelectedIndex(selectedIndex);
 
         window.setProjectChanged();
+        window.repaint();
     }
 
     private boolean validateImageName(String name) {

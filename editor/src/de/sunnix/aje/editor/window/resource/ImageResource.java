@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.window.resource;
 
-import de.sunnix.aje.editor.window.io.BetterJSONObject;
+import de.sunnix.aje.editor.util.BetterJSONObject;
+import de.sunnix.sdso.DataSaveObject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 @Getter
 @Setter
@@ -30,20 +32,20 @@ public class ImageResource {
     }
 
 
-    public ImageResource(BetterJSONObject imageFile) throws IOException, InvocationTargetException, IllegalAccessException {
-        this.name = imageFile.get("name", "null");
-        this.width = imageFile.get("width", 1);
-        this.height = imageFile.get("height", 1);
-        this.image = ImageIO.read(new BufferedInputStream(new ByteArrayInputStream(imageFile.getByteArray("image"))));
+    public ImageResource(DataSaveObject imageFile) throws IOException, InvocationTargetException, IllegalAccessException {
+        this.name = imageFile.getString("name", "null");
+        this.width = imageFile.getInt("width", 1);
+        this.height = imageFile.getInt("height", 1);
+        this.image = ImageIO.read(new ByteArrayInputStream(imageFile.getByteArray("image")));
     }
 
-    public void save(BetterJSONObject imageFile) throws IOException {
-        imageFile.put("name", this.name);
-        imageFile.put("width", this.width);
-        imageFile.put("height", this.height);
+    public void save(DataSaveObject imageFile) throws IOException {
+        imageFile.putString("name", this.name);
+        imageFile.putInt("width", this.width);
+        imageFile.putInt("height", this.height);
         var stream = new ByteArrayOutputStream();
         ImageIO.write(image, "png", stream);
-        imageFile.put("image", stream.toByteArray());
+        imageFile.putArray("image", stream.toByteArray());
     }
 
 }

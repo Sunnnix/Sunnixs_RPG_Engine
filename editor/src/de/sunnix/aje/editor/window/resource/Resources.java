@@ -1,8 +1,10 @@
 package de.sunnix.aje.editor.window.resource;
 
-import de.sunnix.aje.editor.window.io.BetterJSONObject;
+import de.sunnix.aje.editor.util.BetterJSONObject;
+import de.sunnix.sdso.DataSaveObject;
 import org.json.JSONArray;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,13 +45,16 @@ public class Resources {
     private void loadImageResources(ZipFile zip, File res){
         var imgFolder = new File(res, "images");
         try{
-            var config = new BetterJSONObject(new String(zip.getInputStream(new ZipEntry(imgFolder.getPath())).readAllBytes()));
-            var keys = config.keySet();
-            for(var categoryName : keys){
-                var category = imageResources.computeIfAbsent(categoryName, k -> new ArrayList<>());
-                var images = config.getJSONArray(categoryName);
-                for(var i = 0; i < images.length(); i++)
-                    category.add(new ImageResource(new BetterJSONObject(images.getJSONObject(i))));
+            var entries = zip.entries();
+            while (entries.hasMoreElements()){
+                var e = entries.nextElement();
+                if(!e.toString().startsWith(imgFolder.getPath()))
+                    continue;
+                var category = imageResources.computeIfAbsent(e.getName().substring(imgFolder.getPath().length() + 1), k -> new ArrayList<>());
+                var images = new DataSaveObject().load(zip.getInputStream(e)).<DataSaveObject>getList("images");
+//                var images = new JSONArray(new String(zip.getInputStream(e).readAllBytes()));
+                for(var i = 0; i < images.size(); i++)
+                    category.add(new ImageResource(images.get(i)));
             }
         } catch (IOException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -69,18 +74,20 @@ public class Resources {
     private void saveImageResources(ZipOutputStream zip, File res){
         var imgFolder = new File(res, "images");
         try{
-            var config = new BetterJSONObject();
             for(var category : imageResources.entrySet()){
-                var images = new JSONArray();
+                var images = new DataSaveObject();
+                var list = new ArrayList<DataSaveObject>();
                 for(var imageRes: category.getValue()){
-                    var image = new BetterJSONObject();
+                    var image = new DataSaveObject();
                     imageRes.save(image);
-                    images.put(image);
+                    list.add(image);
                 }
-                config.put(category.getKey(), images);
+                images.putList("images", list);
+                zip.putNextEntry(new ZipEntry(new File(imgFolder, category.getKey()).getPath()));
+                var oStream = new ByteArrayOutputStream();
+                images.save(oStream);
+                zip.write(oStream.toByteArray());
             }
-            zip.putNextEntry(new ZipEntry(imgFolder.getPath()));
-            zip.write(config.toString().getBytes());
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (NullPointerException e) {

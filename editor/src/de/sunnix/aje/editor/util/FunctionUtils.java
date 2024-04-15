@@ -1,5 +1,7 @@
-package de.sunnix.aje.editor.window.io;
+package de.sunnix.aje.editor.util;
 
+import javax.swing.*;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.function.Function;
 
@@ -23,6 +25,18 @@ public class FunctionUtils {
     public static <T> T firstOrElse(Collection<T> collection, Function<T, Boolean> expression, T elseValue){
         var value = firstOrNull(collection, expression);
         return value == null ? elseValue : value;
+    }
+
+    public static JMenuItem createMenuItem(String name, ActionListener al){
+        var mi = new JMenuItem(name);
+        mi.addActionListener(al);
+        return mi;
+    }
+
+    public static JButton createButton(String name, ActionListener al){
+        var mi = new JButton(name);
+        mi.addActionListener(al);
+        return mi;
     }
 
 }

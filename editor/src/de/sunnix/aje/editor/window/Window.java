@@ -1,7 +1,9 @@
 package de.sunnix.aje.editor.window;
 
+import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
+import de.sunnix.aje.editor.window.tileset.TilesetTabView;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -12,20 +14,29 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import static de.sunnix.aje.editor.window.Texts.WINDOW_NAME;
+import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class Window extends JFrame {
 
     private final Map<Class<?>, Object> singletons = new HashMap<>();
     public final MenuBar menuBar;
+    @Getter
+    private MapTabsView mapTabsView;
+    @Getter
+    private MapView mapView;
+    @Getter
+    private MapListView mapListView;
+    @Getter
+    private TilesetTabView tilesetView;
 
     private File projectPath;
     @Getter
@@ -36,8 +47,14 @@ public class Window extends JFrame {
     @Getter
     private boolean projectChanged;
 
+    @Getter
+    private final JLabel info;
+
+    private final List<Consumer<Config>> onCloseActions = new ArrayList<>();
+
     public Window(){
         super();
+        setLayout(new BorderLayout());
         initSingletons();
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setJMenuBar(menuBar = new MenuBar(this));
@@ -55,6 +72,23 @@ public class Window extends JFrame {
         setSize(size[0], size[1]);
         if(config.get("window_extended", false))
             setExtendedState(MAXIMIZED_BOTH);
+        addClosingAction(conf -> {
+            var location = getBounds();
+            var windowExtended = getExtendedState() == MAXIMIZED_BOTH;
+            conf.set("window_extended", windowExtended);
+            conf.set("window_x", location.x);
+            conf.set("window_y", location.y);
+            conf.set("window_width", location.width);
+            conf.set("window_height", location.height);
+        });
+        setupViews();
+
+        info = new JLabel();
+        info.setBorder(BorderFactory.createTitledBorder((String) null));
+        info.setBackground(getBackground().darker());
+        info.setPreferredSize(new Dimension(0, 25));
+        add(info, BorderLayout.SOUTH);
+
         setProjectOpen(false);
         updateTitle();
         setVisible(true);
@@ -65,6 +99,35 @@ public class Window extends JFrame {
         config.loadConfig();
         singletons.put(Config.class, config);
         singletons.put(Resources.class, new Resources());
+        singletons.put(GameData.class, new GameData());
+    }
+
+    private void setupViews(){
+        var toolbar = new Toolbar(this);
+        add(toolbar, BorderLayout.NORTH);
+
+        var centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        centerPanel.setLeftComponent(new JScrollPane(tilesetView = new TilesetTabView(this)));
+        centerPanel.setRightComponent(mapTabsView = new MapTabsView(this));
+        add(centerPanel, BorderLayout.CENTER);
+
+        var dataPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        dataPane.setTopComponent(new PropertiesView(this));
+        dataPane.setBottomComponent(mapListView = new MapListView(this));
+        add(dataPane, BorderLayout.EAST);
+
+        var config = getSingleton(Config.class);
+        var mainSplitLocation = config.get("main_split_location", -1);
+        var rightSplitLocation = config.get("right_split_location", -1);
+        if(mainSplitLocation >= 0)
+            centerPanel.setDividerLocation(mainSplitLocation);
+        if(rightSplitLocation >= 0)
+            dataPane.setDividerLocation(rightSplitLocation);
+
+        addClosingAction(conf -> {
+            conf.set("main-split-location", centerPanel.getDividerLocation());
+//            conf.set("right-split-location", dataPane.getDividerLocation());
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -83,6 +146,10 @@ public class Window extends JFrame {
         setTitle(title.toString());
     }
 
+    public void addClosingAction(Consumer<Config> action){
+        onCloseActions.add(action);
+    }
+
     /**
      * Empties all Data from the Window
      */
@@ -91,6 +158,7 @@ public class Window extends JFrame {
         projectPath = null;
         projectChanged = false;
         getSingleton(Resources.class).reset();
+        getSingleton(GameData.class).reset();
         setProjectOpen(false);
         updateTitle();
     }
@@ -98,6 +166,14 @@ public class Window extends JFrame {
     public void setProjectOpen(boolean projectOpen) {
         this.projectOpen = projectOpen;
         menuBar.enableProjectOptions(projectOpen);
+        if(projectOpen){
+            mapListView.loadMapList();
+            mapListView.setEnabled(true);
+        } else {
+            mapListView.close();
+            mapTabsView.close();
+            tilesetView.close();
+        }
     }
 
     public boolean checkForSaving(){
@@ -142,35 +218,8 @@ public class Window extends JFrame {
         }
         cleanProject();
 
-        try(var zip = new ZipFile(file)){
-            JSONObject config;
-            try {
-                config = new JSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
-            } catch (NullPointerException e){
-                JOptionPane.showMessageDialog(
-                        this,
-                        "File missing game.config!",
-                        "Missing config",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
-            if(config.has("project_name"))
-                projectName = config.getString("project_name");
-            else
-                projectName = "Unnamed Project";
-            getSingleton(Resources.class).loadResources(zip);
-        } catch (Exception e){
-            JOptionPane.showMessageDialog(
-                    this,
-                    "There was a problem loading the project!\n" + e.getMessage(),
-                    "Error loading project",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            e.printStackTrace();
-            closeProject();
+        if(!loadGameFile(file))
             return;
-        }
 
         projectPath = file;
 
@@ -184,6 +233,40 @@ public class Window extends JFrame {
 
         setProjectOpen(true);
         updateTitle();
+    }
+
+    private boolean loadGameFile(File file){
+        try(var zip = new ZipFile(file)){
+            JSONObject config;
+            try {
+                config = new JSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
+            } catch (NullPointerException e){
+                JOptionPane.showMessageDialog(
+                        this,
+                        "File missing game.config!",
+                        "Missing config",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return false;
+            }
+            if(config.has("project_name"))
+                projectName = config.getString("project_name");
+            else
+                projectName = "Unnamed Project";
+            getSingleton(Resources.class).loadResources(zip);
+            getSingleton(GameData.class).loadData(zip);
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(
+                    this,
+                    "There was a problem loading the project!\n" + e.getMessage(),
+                    "Error loading project",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace();
+            closeProject();
+            return false;
+        }
+        return true;
     }
 
     public boolean saveProject(boolean openFilechooser) {
@@ -215,12 +298,41 @@ public class Window extends JFrame {
             saveFile = new File(saveFile + ".aegf");
         projectPath = saveFile;
 
+        var tmpFile = new File(saveFile.getParent(), "_" + saveFile.getName() + ".tmp");
 
-        // create save file
-        try(var zip = new ZipOutputStream(new FileOutputStream(projectPath))){
+        if(!saveGameFile(tmpFile))
+            return false;
+
+        try {
+            Files.move(tmpFile.toPath(), saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Problem writing file",
+                    "Save project failed",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+
+        var path = saveFile.getPath();
+        getSingleton(Config.class).change("recent_projects", Collections.<String>emptyList(), list -> {
+            list.remove(path);
+            list.add(0, path);
+            return list;
+        });
+        menuBar.genRecentProjectsList();
+        projectChanged = false;
+        updateTitle();
+        return true;
+    }
+
+    private boolean saveGameFile(File file){
+        try(var zip = new ZipOutputStream(new FileOutputStream(file))){
             var config = new JSONObject();
             config.put("project_name", projectName);
             getSingleton(Resources.class).saveResources(zip);
+            getSingleton(GameData.class).saveData(zip);
 
             zip.putNextEntry(new ZipEntry("game.config"));
             zip.write(config.toString(2).getBytes());
@@ -233,17 +345,6 @@ public class Window extends JFrame {
             );
             return false;
         }
-
-
-        var path = saveFile.getPath();
-        getSingleton(Config.class).change("recent_projects", Collections.<String>emptyList(), list -> {
-            list.remove(path);
-            list.add(0, path);
-            return list;
-        });
-        menuBar.genRecentProjectsList();
-        projectChanged = false;
-        updateTitle();
         return true;
     }
 
@@ -283,13 +384,8 @@ public class Window extends JFrame {
             @Override
             public void windowClosed(WindowEvent e) {
                 var config = getSingleton(Config.class);
-                var location = getBounds();
-                var windowExtended = getExtendedState() == MAXIMIZED_BOTH;
-                config.set("window_extended", windowExtended);
-                config.set("window_x", location.x);
-                config.set("window_y", location.y);
-                config.set("window_width", location.width);
-                config.set("window_height", location.height);
+                for(var action: onCloseActions)
+                    action.accept(config);
                 config.saveConfig();
             }
 
@@ -299,5 +395,27 @@ public class Window extends JFrame {
     public void setProjectChanged(){
         projectChanged = true;
         updateTitle();
+    }
+
+    public void openMap(int id) {
+        mapTabsView.openMap(id);
+    }
+
+    public void loadMapView(MapView mapView) {
+        this.mapView = mapView;
+    }
+
+    public void reloadMap() {
+        if(mapView != null)
+            mapView.repaint();
+    }
+
+    public void reloadTilesetView() {
+        tilesetView.reload();
+    }
+
+    public void setSelectedTile(int tileset, int index) {
+        tilesetView.setSelectedTile(tileset, index);
+        mapView.setSelectedTilesetTile(tileset, index);
     }
 }

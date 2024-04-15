@@ -5,13 +5,12 @@ import de.sunnix.aje.editor.window.Window;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.function.Function;
 
-import static de.sunnix.aje.editor.window.Texts.WINDOW_NAME;
+import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class ResourceDialog extends JDialog {
 

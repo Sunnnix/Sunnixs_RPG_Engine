@@ -7,7 +7,7 @@ import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.net.URI;
 
-import static de.sunnix.aje.editor.window.Texts.*;
+import static de.sunnix.aje.editor.util.Texts.*;
 
 public class AboutDialog extends JDialog {
 

@@ -1,8 +1,4 @@
-package de.sunnix.aje.editor.window;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+package de.sunnix.aje.editor.util;
 
 public class Texts {
 

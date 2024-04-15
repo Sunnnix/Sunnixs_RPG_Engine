@@ -1,4 +1,4 @@
-package de.sunnix.aje.editor.window.io;
+package de.sunnix.aje.editor.util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
