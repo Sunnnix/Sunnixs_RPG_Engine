@@ -1,14 +1,11 @@
 package de.sunnix.aje.editor.data;
 
 import de.sunnix.sdso.DataSaveObject;
-import lombok.Getter;
-import lombok.Setter;
 
-@Setter
-@Getter
 public class Tile {
 
-    private int[] texID = new int[] { -1, -1 };
+    private byte tsID = -1;
+    private short texID = -1;
 
     public Tile(){}
 
@@ -16,16 +13,22 @@ public class Tile {
         loadTile(dso);
     }
 
+    public int[] getTexID(){
+        return new int[]{ tsID, texID };
+    }
+
     public void setTexID(int tileset, int index) {
-        texID[0] = tileset;
-        texID[1] = index;
+        tsID = (byte)tileset;
+        texID = (short)index;
     }
 
     public void saveTile(DataSaveObject dso) {
-        dso.putArray("texID", texID);
+        dso.putByte("tsID", tsID);
+        dso.putShort("texID", texID);
     }
 
     public void loadTile(DataSaveObject dso){
-        texID = dso.getIntArray("texID", 2);
+        this.tsID = dso.getByte("tsID", (byte) -1);
+        this.texID = dso.getShort("texID", (short) -1);
     }
 }

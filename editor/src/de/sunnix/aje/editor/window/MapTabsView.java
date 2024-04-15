@@ -46,6 +46,13 @@ public class MapTabsView extends JTabbedPane {
             setSelectedIndex(index);
     }
 
+    public void closeMap(int id) {
+        var tabName = window.getSingleton(GameData.class).getMapNameOf(id);
+        var index = indexOfTab(tabName);
+        if(index != -1)
+            removeTabAt(index);
+    }
+
     private void onTabChanged(ChangeEvent changeEvent) {
         window.loadMapView(getSelectedIndex() == -1 ? null : (MapView) getSelectedComponent());
         window.reloadTilesetView();
@@ -54,4 +61,5 @@ public class MapTabsView extends JTabbedPane {
     public void close() {
         removeAll();
     }
+
 }

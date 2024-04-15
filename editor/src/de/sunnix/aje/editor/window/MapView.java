@@ -91,6 +91,7 @@ public class MapView extends JPanel {
     private MouseAdapter genMouseListener() {
         return new MouseAdapter() {
             int preX, preY;
+            int preTX, preTY;
             boolean primaryPressed;
             boolean secondaryPressed;
 
@@ -99,17 +100,45 @@ public class MapView extends JPanel {
                 var mapData = window.getSingleton(GameData.class).getMap(mapID);
                 if(mapData == null)
                     return;
+                var pos = transScreenCoordToMapCoord(e.getX(), e.getY());
+                var tPos = transMapCoordToTileCoord(pos[0], pos[1]);
+                preX = pos[0];
+                preY = pos[1];
+                preTX = tPos[0];
+                preTY = tPos[1];
                 if(e.getButton() == MouseEvent.BUTTON1){
                     primaryPressed = true;
                     secondaryPressed = false;
-                    var pos = transScreenCoordToTileCoord(e.getX(), e.getY());
                     var texID = mapData.getSelectedTilesetTile();
-                    setTile(pos[0], pos[1], texID[0], texID[1]);
-                    repaint();
+                    setTile(tPos[0], tPos[1], texID[0], texID[1]);
                 } else if(e.getButton() == MouseEvent.BUTTON3){
                     secondaryPressed = true;
                     primaryPressed = false;
+                    setTile(tPos[0], tPos[1], -1, -1);
                 }
+                repaint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                var mapData = window.getSingleton(GameData.class).getMap(mapID);
+                if(mapData == null)
+                    return;
+                var pos = transScreenCoordToMapCoord(e.getX(), e.getY());
+                var tPos = transMapCoordToTileCoord(pos[0], pos[1]);
+                preX = pos[0];
+                preY = pos[1];
+                if(preTX == tPos[0] && preTY == tPos[1])
+                    return;
+                preTX = tPos[0];
+                preTY = tPos[1];
+                window.getInfo().setText(String.format("Tile: (%s, %s)", tPos[0], tPos[1]));
+                if(primaryPressed) {
+                    var texID = mapData.getSelectedTilesetTile();
+                    setTile(tPos[0], tPos[1], texID[0], texID[1]);
+                } else if(secondaryPressed)
+                    setTile(tPos[0], tPos[1], -1, -1);
+                repaint();
             }
 
             @Override
@@ -124,6 +153,7 @@ public class MapView extends JPanel {
                     return;
                 var tile = map.getTiles()[x + y * map.getWidth()];
                 tile.setTexID(tileset, index);
+                window.setProjectChanged();
             }
 
             private int[] transScreenCoordToMapCoord(int x, int y){

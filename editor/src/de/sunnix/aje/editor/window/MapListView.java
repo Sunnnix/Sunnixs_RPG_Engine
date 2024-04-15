@@ -2,16 +2,18 @@ package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.data.MapData;
-import de.sunnix.aje.editor.window.resource.ImageResource;
 import de.sunnix.aje.editor.window.resource.Resources;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Arrays;
 
-import static de.sunnix.aje.editor.util.FunctionUtils.*;
-import static de.sunnix.aje.editor.util.DialogUtils.*;
+import static de.sunnix.aje.editor.util.DialogUtils.showMultiInputDialog;
+import static de.sunnix.aje.editor.util.FunctionUtils.createMenuItem;
 
 public class MapListView extends JScrollPane {
 
@@ -113,6 +115,7 @@ public class MapListView extends JScrollPane {
             tileset = sCat + "/" + sImage;
         map.setTilesets(tileset == null ? new String[0] : new String[] { tileset });
         window.reloadTilesetView();
+        window.setProjectChanged();
     }
 
     private void setMapTitle(ActionEvent e) {
@@ -140,9 +143,19 @@ public class MapListView extends JScrollPane {
         map.setSize((int) width.getValue(), (int) height.getValue());
         window.reloadMap();
         reloadMaps();
+        window.setProjectChanged();
     }
 
     private void deleteMap(ActionEvent e) {
+        if(JOptionPane.showConfirmDialog(window, "Do you really want to delete the map?", "Delete map", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
+            return;
+        var map = window.getSingleton(GameData.class).getMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
+        if(map == null)
+            return;
+        window.closeMap(map.getID());
+        window.getSingleton(GameData.class).deleteMap(map.getID());
+        reloadMaps();
+        window.setProjectChanged();
     }
 
     private void reloadMaps(){

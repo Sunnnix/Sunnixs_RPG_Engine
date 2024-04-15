@@ -401,6 +401,10 @@ public class Window extends JFrame {
         mapTabsView.openMap(id);
     }
 
+    public void closeMap(int id) {
+        mapTabsView.closeMap(id);
+    }
+
     public void loadMapView(MapView mapView) {
         this.mapView = mapView;
     }
@@ -418,4 +422,5 @@ public class Window extends JFrame {
         tilesetView.setSelectedTile(tileset, index);
         mapView.setSelectedTilesetTile(tileset, index);
     }
+
 }

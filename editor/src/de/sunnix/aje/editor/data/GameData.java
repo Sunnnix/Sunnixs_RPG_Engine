@@ -52,6 +52,10 @@ public class GameData {
         return FunctionUtils.firstOrNull(maps, x -> x.getID() == id);
     }
 
+    public void deleteMap(int id) {
+        maps.removeIf(x -> x.getID() == id);
+    }
+
     public void reset(){
         maps.clear();
     }
