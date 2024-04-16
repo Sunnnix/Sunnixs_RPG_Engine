@@ -89,6 +89,13 @@ public class Core {
     private static float pixel_scale = 2;
 
     // *************************************************************** //
+    //                     Game File properties                        //
+    // *************************************************************** //
+    @Getter
+    @Setter
+    private static String gameFile = "GameFile.aegf";
+
+    // *************************************************************** //
 
     @Getter
     private static final Vector3f backgroundColor = new Vector3f(0f, 0f, 0f);

@@ -15,7 +15,7 @@ public class MenuBar extends JMenuBar {
 
     private final Window parent;
 
-    private final List<JMenuItem> projectDependentMenus = new LinkedList<>();
+    private final List<JComponent> projectDependentMenus = new LinkedList<>();
     private JMenu recentProjects;
 
     public MenuBar(Window parent){
@@ -34,24 +34,16 @@ public class MenuBar extends JMenuBar {
 
         mm.add(new JSeparator());
 
-        var save = createDefaultMenuItem("Save Project", KeyEvent.VK_S, ActionEvent.CTRL_MASK, e -> parent.saveProject(false));
-        projectDependentMenus.add(save);
-        mm.add(save);
-        var saveAs = createDefaultMenuItem("Save Project as ...", KeyEvent.VK_S, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> parent.saveProject(true));
-        projectDependentMenus.add(saveAs);
-        mm.add(saveAs);
+        mm.add(addProjectDependentComponent(createDefaultMenuItem("Save Project", KeyEvent.VK_S, ActionEvent.CTRL_MASK, e -> parent.saveProject(false))));
+        mm.add(addProjectDependentComponent(createDefaultMenuItem("Save Project as ...", KeyEvent.VK_S, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> parent.saveProject(true))));
 
         mm.add(new JSeparator());
 
-        var resources = createDefaultMenuItem("Open Resource Manager", e -> new ResourceDialog(parent));
-        projectDependentMenus.add(resources);
-        mm.add(resources);
+        mm.add(addProjectDependentComponent(createDefaultMenuItem("Open Resource Manager", e -> new ResourceDialog(parent))));
 
         mm.add(new JSeparator());
 
-        var close = createDefaultMenuItem("Close Project", KeyEvent.VK_X, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> parent.closeProject());
-        projectDependentMenus.add(close);
-        mm.add(close);
+        mm.add(addProjectDependentComponent(createDefaultMenuItem("Close Project", KeyEvent.VK_X, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> parent.closeProject())));
 
         mm.add(new JSeparator());
 
@@ -60,8 +52,7 @@ public class MenuBar extends JMenuBar {
     }
 
     private JMenu setUpMMMap() {
-        var mm = new JMenu("Map");
-        projectDependentMenus.add(mm);
+        var mm = addProjectDependentComponent(new JMenu("Map"));
         return mm;
     }
 
@@ -128,6 +119,14 @@ public class MenuBar extends JMenuBar {
                 recentProjects.add(removeDisabled);
             }
         }
+    }
+
+    /**
+     * adds a component to a list that makes its components enabled when opening a project and disabled when closing a project
+     */
+    public <T extends JComponent> T addProjectDependentComponent(T comp){
+        projectDependentMenus.add(comp);
+        return comp;
     }
 
     public void enableProjectOptions(boolean enable) {

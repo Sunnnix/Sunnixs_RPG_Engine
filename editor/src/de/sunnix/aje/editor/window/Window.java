@@ -38,6 +38,7 @@ public class Window extends JFrame {
     @Getter
     private TilesetTabView tilesetView;
 
+    @Getter
     private File projectPath;
     @Getter
     private String projectName;
@@ -49,6 +50,8 @@ public class Window extends JFrame {
 
     @Getter
     private final JLabel info;
+
+    private Toolbar toolbar;
 
     private final List<Consumer<Config>> onCloseActions = new ArrayList<>();
 
@@ -103,8 +106,7 @@ public class Window extends JFrame {
     }
 
     private void setupViews(){
-        var toolbar = new Toolbar(this);
-        add(toolbar, BorderLayout.NORTH);
+        add(toolbar = new Toolbar(this), BorderLayout.NORTH);
 
         var centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         centerPanel.setLeftComponent(new JScrollPane(tilesetView = new TilesetTabView(this)));
@@ -377,8 +379,10 @@ public class Window extends JFrame {
         return new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if(checkForSaving())
-                    dispose();
+                if(!checkForSaving())
+                    return;
+                toolbar.closeProcess();
+                dispose();
             }
 
             @Override

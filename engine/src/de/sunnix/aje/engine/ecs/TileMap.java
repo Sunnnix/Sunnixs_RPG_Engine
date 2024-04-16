@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine.ecs;
 
+import de.sunnix.aje.engine.Core;
 import de.sunnix.aje.engine.graphics.TextureAtlas;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.Shader;
@@ -88,7 +89,7 @@ public class TileMap {
     }
 
     private void loadMapFromFile() {
-        var gameFile = new File("GameFile.aegf");
+        var gameFile = new File(Core.getGameFile());
         try(var zip = new ZipFile(gameFile)) {
             var stream = zip.getInputStream(new ZipEntry(new File("maps/0000.map").getPath()));
             var dso = new DataSaveObject().load(stream);
