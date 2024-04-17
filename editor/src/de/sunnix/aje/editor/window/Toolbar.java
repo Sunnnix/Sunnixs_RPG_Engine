@@ -27,6 +27,29 @@ public class Toolbar extends JToolBar {
         this.window = window;
         add(window.menuBar.addProjectDependentComponent(FunctionUtils.createButton("Play", this::startGameProcess)));
         console = new GameConsole();
+        setupWindowGlassPane();
+    }
+
+    private void setupWindowGlassPane(){
+        var test = new JPanel(new GridBagLayout());
+        test.setBackground(new Color(1f, 1f, 1f, .175f));
+        var label = new JLabel("GAME IS RUNNING");
+        label.setPreferredSize(new Dimension(350, 125));
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setFont(label.getFont().deriveFont(32f));
+        label.setBackground(Color.WHITE);
+        var gbc = new GridBagConstraints();
+        gbc.ipadx = 0;
+        gbc.ipady = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        test.add(label, gbc);
+        window.setGlassPane(test);
+
+        label.setOpaque(true);
+        test.setOpaque(true);
     }
 
     private void startGameProcess(ActionEvent e) {
@@ -81,6 +104,8 @@ public class Toolbar extends JToolBar {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(gameProcess.getInputStream()));
 
+            window.getGlassPane().setVisible(true);
+            window.setEnabled(false);
 
             new Thread(() -> {
                 try {
@@ -99,6 +124,9 @@ public class Toolbar extends JToolBar {
                 } catch (Exception e){
                     console.write(e);
                 }
+
+                window.setEnabled(true);
+                window.getGlassPane().setVisible(false);
             }).start();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(window, "There was a problem with the game process", "Process error", JOptionPane.ERROR_MESSAGE);
