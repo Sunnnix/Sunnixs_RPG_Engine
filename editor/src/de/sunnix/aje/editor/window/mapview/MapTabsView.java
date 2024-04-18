@@ -1,17 +1,17 @@
-package de.sunnix.aje.editor.window;
+package de.sunnix.aje.editor.window.mapview;
 
 import de.sunnix.aje.editor.data.GameData;
+import de.sunnix.aje.editor.window.Window;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class MapTabsView extends JTabbedPane {
 
-    private final Window window;
+    private final de.sunnix.aje.editor.window.Window window;
 
     public MapTabsView(Window window) {
         this.window = window;

@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
+import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
 import de.sunnix.aje.editor.window.tileset.TilesetTabView;
@@ -55,6 +56,11 @@ public class Window extends JFrame {
 
     private final List<Consumer<Config>> onCloseActions = new ArrayList<>();
 
+    private int currentMapModule;
+
+    private final MapViewModule[] mapModules;
+    private final NullModule nullModule = new NullModule(this);
+
     public Window(){
         super();
         setLayout(new BorderLayout());
@@ -91,6 +97,8 @@ public class Window extends JFrame {
         info.setBackground(getBackground().darker());
         info.setPreferredSize(new Dimension(0, 25));
         add(info, BorderLayout.SOUTH);
+
+        mapModules = genModules();
 
         setProjectOpen(false);
         updateTitle();
@@ -130,6 +138,13 @@ public class Window extends JFrame {
             conf.set("main-split-location", centerPanel.getDividerLocation());
 //            conf.set("right-split-location", dataPane.getDividerLocation());
         });
+    }
+
+    private MapViewModule[] genModules(){
+        return new MapViewModule[]{
+                new TopDrawModule(this),
+                new WallDrawModule(this)
+        };
     }
 
     @SuppressWarnings("unchecked")
@@ -425,6 +440,17 @@ public class Window extends JFrame {
     public void setSelectedTile(int tileset, int index) {
         tilesetView.setSelectedTile(tileset, index);
         mapView.setSelectedTilesetTile(tileset, index);
+    }
+
+    public void setMapModule(int module){
+        currentMapModule = module;
+        mapTabsView.repaint();
+    }
+
+    public MapViewModule getCurrentMapModule(){
+        if(currentMapModule >= mapModules.length)
+            return nullModule;
+        return mapModules[currentMapModule];
     }
 
 }

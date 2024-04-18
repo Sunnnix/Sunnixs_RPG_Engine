@@ -112,7 +112,7 @@ public class Tile {
         }
         s.append("================================");
 
-        System.out.println(s);
+//        System.out.println(s);
 
 //        vertices = new float[] { // vertices
 //                -.5f + x, -1f - y + height, y + 1,
@@ -129,7 +129,7 @@ public class Tile {
     }
 
     public int create(DataSaveObject dso){
-        var texID = dso.getShort("texID", (short) -1);
+        var texID = dso.getShort("g-tex", (short) -1) & 0xFFF;
         height = 0;
         var iOffset = 4 * bufferOffset;
         indices = new int[6];
@@ -192,7 +192,7 @@ public class Tile {
         }
         s.append("================================");
 
-        System.out.println(s);
+//        System.out.println(s);
 
 //        vertices = new float[] { // vertices
 //                -.5f + x, -1f - y + height, y + 1,

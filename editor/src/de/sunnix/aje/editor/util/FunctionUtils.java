@@ -1,7 +1,9 @@
 package de.sunnix.aje.editor.util;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Function;
 
@@ -33,10 +35,35 @@ public class FunctionUtils {
         return mi;
     }
 
-    public static JButton createButton(String name, ActionListener al){
+    public static JButton createButton(String name, String unselectedIcon, String selectedIcon, ActionListener al){
         var mi = new JButton(name);
+        if(unselectedIcon != null){
+            try(var stream = FunctionUtils.class.getResourceAsStream("/de/sunnix/aje/editor/window/" + unselectedIcon)){
+                var icon = new ImageIcon(ImageIO.read(stream));
+                mi.setIcon(icon);
+                mi.setText(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(selectedIcon != null){
+            try(var stream = FunctionUtils.class.getResourceAsStream("/de/sunnix/aje/editor/window/" + selectedIcon)){
+                var icon = new ImageIcon(ImageIO.read(stream));
+                mi.setSelectedIcon(icon);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         mi.addActionListener(al);
         return mi;
+    }
+
+    public static JButton createButton(String name, String iconLocation, ActionListener al){
+        return createButton(name, iconLocation, null, al);
+    }
+
+    public static JButton createButton(String name, ActionListener al){
+        return createButton(name, null, al);
     }
 
 }

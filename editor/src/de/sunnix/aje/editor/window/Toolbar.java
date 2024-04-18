@@ -3,9 +3,13 @@ package de.sunnix.aje.editor.window;
 import de.sunnix.aje.editor.Main;
 import de.sunnix.aje.editor.util.FunctionUtils;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,6 +17,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.jar.JarException;
 
 public class Toolbar extends JToolBar {
@@ -24,10 +29,66 @@ public class Toolbar extends JToolBar {
     private Process gameProcess;
 
     public Toolbar(Window window){
+        setLayout(new FlowLayout(FlowLayout.LEFT));
         this.window = window;
-        add(window.menuBar.addProjectDependentComponent(FunctionUtils.createButton("Play", this::startGameProcess)));
+        add(setPlay());
+        add(new JSeparator(JSeparator.VERTICAL));
+        add(setModes());
         console = new GameConsole();
         setupWindowGlassPane();
+    }
+
+    private JPanel setPlay(){
+        var panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder((String) null));
+        panel.add(window.menuBar.addProjectDependentComponent(FunctionUtils.createButton("Play", "toolbar/play.png", this::startGameProcess)));
+        return panel;
+    }
+
+    private JPanel setModes(){
+        var panel = new JPanel(new FlowLayout());
+        panel.setBorder(BorderFactory.createTitledBorder((String) null));
+
+        Arrays.stream(createButtonGroup(
+                createButtonGroupButton("toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
+                createButtonGroupButton("toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1))
+        )).forEach(panel::add);
+
+        return panel;
+    }
+
+    private JButton[] createButtonGroup(JButton... buttons){
+        for(var button: buttons){
+            button.addActionListener(l -> {
+                for(var b: buttons){
+                    b.setSelected(b.equals(button));
+                }
+            });
+        }
+        if(buttons.length > 0)
+            buttons[0].setSelected(true);
+        return buttons;
+    }
+
+    private JButton createButtonGroupButton(String unselectedIcon, String selectedIcon, KeyStroke shortcut, ActionListener al){
+        var button = FunctionUtils.createButton(null, unselectedIcon, selectedIcon, al);
+        if(shortcut != null) {
+            var inputMap = window.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            var actionMap = window.getRootPane().getActionMap();
+            var actionName = Integer.toHexString(shortcut.hashCode());
+            inputMap.put(shortcut, actionName);
+            actionMap.put(actionName, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Arrays.stream(button.getActionListeners()).forEach(l -> l.actionPerformed(e));
+                }
+            });
+        }
+        return button;
+    }
+
+    private void selectMode(int mode){
+        window.setMapModule(mode);
     }
 
     private void setupWindowGlassPane(){
