@@ -73,7 +73,7 @@ public class Tile {
     public void saveTile(DataSaveObject dso) {
         dso.putShort("g-tex", groundTex);
         dso.putArray("w-tex", wallTex);
-        dso.putShort("height", (short)(groundY << 8 + wallHeight));
+        dso.putShort("height", (short)((groundY << 8) + wallHeight));
     }
 
     public void loadTile(DataSaveObject dso){
@@ -81,6 +81,7 @@ public class Tile {
         wallTex = dso.getShortArray("w-tex", 0);
         var height = dso.getShort("height", (short) 0);
         groundY = (byte)(height >> 8);
-        wallHeight = (byte)(height & 0xFFFF);
+        wallHeight = (byte)(height & 0xFF);
     }
+
 }

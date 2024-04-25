@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
+import de.sunnix.aje.editor.data.MapData;
 import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
@@ -38,6 +39,8 @@ public class Window extends JFrame {
     private MapListView mapListView;
     @Getter
     private TilesetTabView tilesetView;
+    @Getter
+    private PropertiesView propertiesView;
 
     @Getter
     private File projectPath;
@@ -122,7 +125,7 @@ public class Window extends JFrame {
         add(centerPanel, BorderLayout.CENTER);
 
         var dataPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        dataPane.setTopComponent(new PropertiesView(this));
+        dataPane.setTopComponent(new JScrollPane(propertiesView = new PropertiesView(this)));
         dataPane.setBottomComponent(mapListView = new MapListView(this));
         add(dataPane, BorderLayout.EAST);
 
@@ -142,6 +145,7 @@ public class Window extends JFrame {
 
     private MapViewModule[] genModules(){
         return new MapViewModule[]{
+                new SelectTileModule(this),
                 new TopDrawModule(this),
                 new WallDrawModule(this)
         };
@@ -426,6 +430,7 @@ public class Window extends JFrame {
 
     public void loadMapView(MapView mapView) {
         this.mapView = mapView;
+        this.propertiesView.onLoadMap(mapView == null ? null : getSingleton(GameData.class).getMap(mapView.getMapID()));
     }
 
     public void reloadMap() {

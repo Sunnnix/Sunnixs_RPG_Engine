@@ -73,4 +73,5 @@ public abstract class MapViewModule {
      */
     public abstract void onDraw(Graphics2D g, MapData map, int screenWidth, int screenHeight);
 
+    public abstract boolean omMouseWheelMoved(MapData mapData, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY);
 }

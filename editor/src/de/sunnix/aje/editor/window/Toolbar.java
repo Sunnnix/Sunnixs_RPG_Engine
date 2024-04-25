@@ -50,8 +50,9 @@ public class Toolbar extends JToolBar {
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
 
         Arrays.stream(createButtonGroup(
-                createButtonGroupButton("toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
-                createButtonGroupButton("toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1))
+                createButtonGroupButton("toolbar/propertieMode.png", "toolbar/propertieMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
+                createButtonGroupButton("toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1)),
+                createButtonGroupButton("toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2))
         )).forEach(panel::add);
 
         return panel;

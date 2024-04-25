@@ -36,4 +36,9 @@ public class NullModule extends MapViewModule{
 
     }
 
+    @Override
+    public boolean omMouseWheelMoved(MapData mapData, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+        return false;
+    }
+
 }

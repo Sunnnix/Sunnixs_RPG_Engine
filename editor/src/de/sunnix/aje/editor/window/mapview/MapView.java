@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 
 public class MapView extends JPanel {
@@ -27,6 +28,7 @@ public class MapView extends JPanel {
         var ml = genMouseListener();
         addMouseListener(ml);
         addMouseMotionListener(ml);
+        addMouseWheelListener(ml);
     }
 
     @Override
@@ -73,6 +75,25 @@ public class MapView extends JPanel {
             }
 
             @Override
+            public void mouseReleased(MouseEvent e) {
+                var mapData = window.getSingleton(GameData.class).getMap(mapID);
+                if(mapData == null)
+                    return;
+                var screenX = e.getX();
+                var screenY = e.getY();
+                var mapPos = transScreenCoordToMapCoord(screenX, screenY);
+                var tilePos = transMapCoordToTileCoord(mapPos[0], mapPos[1]);
+
+                preTileX = tilePos[0];
+                preTileY = tilePos[1];
+
+                button = e.getButton();
+
+                if(window.getCurrentMapModule().onMouseReleased(mapData, button, screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
+                    repaint();
+            }
+
+            @Override
             public void mouseMoved(MouseEvent e) {
                 var mapData = window.getSingleton(GameData.class).getMap(mapID);
                 if(mapData == null)
@@ -100,6 +121,20 @@ public class MapView extends JPanel {
                 preTileY = tilePos[1];
 
                 if(window.getCurrentMapModule().onMouseDragged(mapData, button, screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1], sameTile))
+                    repaint();
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                var mapData = window.getSingleton(GameData.class).getMap(mapID);
+                if(mapData == null)
+                    return;
+                var screenX = e.getX();
+                var screenY = e.getY();
+                var mapPos = transScreenCoordToMapCoord(screenX, screenY);
+                var tilePos = transMapCoordToTileCoord(mapPos[0], mapPos[1]);
+
+                if(window.getCurrentMapModule().omMouseWheelMoved(mapData, e.getWheelRotation() > 0, screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
                     repaint();
             }
 

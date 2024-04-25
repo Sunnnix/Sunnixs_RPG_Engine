@@ -31,7 +31,10 @@ public class MapData {
     @Setter
     private int selectedTileset;
     @Getter
-    private int[] selectedTilesetTile = new int[]{-1, -1};
+    private int[] selectedTilesetTile = {-1, -1};
+
+    @Getter
+    private int[] selectedTiles = {0, 0, 1, 1};
 
     public MapData(int id, int width, int height){
         this.ID = id;
