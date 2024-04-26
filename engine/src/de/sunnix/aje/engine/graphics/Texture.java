@@ -9,7 +9,9 @@ import lombok.Getter;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -22,9 +24,27 @@ public class Texture extends MemoryHolder {
     public static final Texture MISSING_IMAGE = new Texture();
     private static int latestActiveTexture = -1;
 
+    @Getter
+    protected String name;
     protected int textureID;
     @Getter
     protected int width, height;
+
+    public Texture(InputStream data, String name) {
+        this.name = name;
+        try {
+            var image = ImageIO.read(data);
+            this.width = image.getWidth();
+            this.height = image.getHeight();
+            var buffer = getImagePixelsAsBuffer(image);
+            ContextQueue.addQueue(() -> this.textureID = genTexture(buffer, width, height));
+        } catch (Exception e) {
+            textureID = MISSING_IMAGE.textureID;
+            width = MISSING_IMAGE.width;
+            height = MISSING_IMAGE.height;
+            GameLogger.logException("Texture", new RuntimeException(String.format("Loading texture %s failed!", name), e));
+        }
+    }
 
     public Texture(String path) {
         try {

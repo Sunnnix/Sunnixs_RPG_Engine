@@ -31,6 +31,10 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Core {
 
+    public static final int MAJOR_VERSION = 0;
+    public static final int MINOR_VERSION = 2;
+    public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
+
     public enum CoreStage {
         PRE_INIT, INITED, WINDOW_CREATED, STARTING, STARTED
     }

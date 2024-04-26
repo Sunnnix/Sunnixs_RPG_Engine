@@ -130,13 +130,24 @@ public class Tile {
 
     public int create(DataSaveObject dso){
         var texID = dso.getShort("g-tex", (short) -1) & 0xFFF;
-        height = 0;
+        var heights = dso.getShort("height", (short) 0);
+        var groundY = (byte)(heights >> 8);
+        var wallHeight = (byte)(heights & 0xFF);
+        height = wallHeight;
         var iOffset = 4 * bufferOffset;
-        indices = new int[6];
-        vertices = new float[12];
-        textures = new float[8];
+        indices = new int[6 * (wallHeight + 1)];
+        vertices = new float[12 * (wallHeight + 1)];
+        textures = new float[8 * (wallHeight + 1)];
+
+        var wallTex = dso.getShortArray("w-tex", 0);
 
         for (int i = 0; i < height + 1; i++) {
+            if(i > 0){
+                var ts = ((wallTex[i - 1] >> 12) & 0xF) - 1;
+                if(ts == -1)
+                    continue;
+                texID = wallTex[i - 1] & 0xFFF;
+            }
             indices[i * 6] = iOffset;
             indices[i * 6 + 1] = iOffset + 1;
             indices[i * 6 + 2] = iOffset + 3;
@@ -146,37 +157,37 @@ public class Tile {
 
             iOffset += 4;
 
-            if(i == height) {
-                vertices[i * 12] = -.5f + x;
-                vertices[i * 12 + 1] = -1f - y + i;
-                vertices[i * 12 + 2] = y;
+            if(i == 0) {
+                vertices[0] = -.5f + x;
+                vertices[1] = -1f - y + groundY;
+                vertices[2] = y;
 
-                vertices[i * 12 + 3] = -.5f + x;
-                vertices[i * 12 + 4] = 0f - y + i;
-                vertices[i * 12 + 5] = y;
+                vertices[3] = -.5f + x;
+                vertices[4] = 0f - y + groundY;
+                vertices[5] = y;
 
-                vertices[i * 12 + 6] = .5f + x;
-                vertices[i * 12 + 7] = 0f - y + i;
-                vertices[i * 12 + 8] = y;
+                vertices[6] = .5f + x;
+                vertices[7] = 0f - y + groundY;
+                vertices[8] = y;
 
-                vertices[i * 12 + 9] = .5f + x;
-                vertices[i * 12 + 10] = -1f - y + i;
-                vertices[i * 12 + 11] = y;
+                vertices[9] = .5f + x;
+                vertices[10] = -1f - y + groundY;
+                vertices[11] = y;
             } else {
                 vertices[i * 12] = -.5f + x;
-                vertices[i * 12 + 1] = -1f - y + i;
+                vertices[i * 12 + 1] = -1f - y + i - 1;
                 vertices[i * 12 + 2] = y + 1;
 
                 vertices[i * 12 + 3] = -.5f + x;
-                vertices[i * 12 + 4] = 0f - y + i;
+                vertices[i * 12 + 4] = 0f - y + i - 1;
                 vertices[i * 12 + 5] = y + 1;
 
                 vertices[i * 12 + 6] = .5f + x;
-                vertices[i * 12 + 7] = 0f - y + i;
+                vertices[i * 12 + 7] = 0f - y + i - 1;
                 vertices[i * 12 + 8] = y + 1;
 
                 vertices[i * 12 + 9] = .5f + x;
-                vertices[i * 12 + 10] = -1f - y + i;
+                vertices[i * 12 + 10] = -1f - y + i - 1;
                 vertices[i * 12 + 11] = y + 1;
             }
             var tex = Textures.TILESET_INOA.getTexturePositions(texID);

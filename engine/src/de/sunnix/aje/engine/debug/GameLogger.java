@@ -31,16 +31,16 @@ public final class GameLogger{
         return log;
     }
 
-    public static void logI(String caller, String msg){
-        logger.log(new CustomLogRecord(caller, Level.INFO, msg));
+    public static void logI(String caller, String msg, Object... args){
+        logger.log(new CustomLogRecord(caller, Level.INFO, String.format(msg, args)));
     }
 
-    public static void logW(String caller, String msg){
-        logger.log(new CustomLogRecord(caller, Level.WARNING, msg));
+    public static void logW(String caller, String msg, Object... args){
+        logger.log(new CustomLogRecord(caller, Level.WARNING, String.format(msg, args)));
     }
 
-    public static void logE(String caller, String msg){
-        logger.log(new CustomLogRecord(caller, Level.SEVERE, msg));
+    public static void logE(String caller, String msg, Object... args){
+        logger.log(new CustomLogRecord(caller, Level.SEVERE, String.format(msg, args)));
     }
 
     public static void logException(String caller, Throwable throwable){

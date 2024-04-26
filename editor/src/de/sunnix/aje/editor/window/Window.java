@@ -29,6 +29,10 @@ import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class Window extends JFrame {
 
+    public static final int MAJOR_VERSION = 0;
+    public static final int MINOR_VERSION = 2;
+    public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
+
     private final Map<Class<?>, Object> singletons = new HashMap<>();
     public final MenuBar menuBar;
     @Getter

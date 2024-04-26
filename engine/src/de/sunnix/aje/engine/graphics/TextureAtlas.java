@@ -2,6 +2,7 @@ package de.sunnix.aje.engine.graphics;
 
 import lombok.Getter;
 
+import java.io.InputStream;
 import java.util.Arrays;
 
 public class TextureAtlas extends Texture{
@@ -10,6 +11,19 @@ public class TextureAtlas extends Texture{
     private final int tileWidth, tileHeight;
 
     protected final float[] texturePositions;
+
+    /**
+     * @param name texture name
+     * @param data raw data of image as stream
+     * @param width tile width
+     * @param height tile height
+     */
+    public TextureAtlas(String name, InputStream data, int width, int height) {
+        super(data, name);
+        this.tileWidth = width;
+        this.tileHeight = height;
+        this.texturePositions = generateTexturePositions();
+    }
 
     /**
      * @param path texture path

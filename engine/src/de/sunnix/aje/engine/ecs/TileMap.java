@@ -1,6 +1,8 @@
 package de.sunnix.aje.engine.ecs;
 
 import de.sunnix.aje.engine.Core;
+import de.sunnix.aje.engine.Resources;
+import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.graphics.TextureAtlas;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.Shader;
@@ -88,6 +90,8 @@ public class TileMap {
         inited = true;
     }
 
+    public String tileset;
+
     private void loadMapFromFile() {
         var gameFile = new File(Core.getGameFile());
         try(var zip = new ZipFile(gameFile)) {
@@ -95,6 +99,7 @@ public class TileMap {
             var dso = new DataSaveObject().load(stream);
             width = dso.getInt("width", 0);
             height = dso.getInt("height", 0);
+            tileset = dso.getArray("tilesets", String[]::new)[0];
             tiles = new Tile[width * height];
             var offset = 0;
             var tileList = dso.<DataSaveObject>getList("tiles");
@@ -107,6 +112,8 @@ public class TileMap {
             bufferSize = offset;
             stream.close();
         } catch (Exception e){
+            GameLogger.logE("TileMap", "Error loading map:\n%s", e);
+            e.printStackTrace();
             genMap();
         }
     }
@@ -141,9 +148,17 @@ public class TileMap {
             return;
         if(texture == null)
             return;
+        if(tileset == null)
+            return;
         var size = new Vector2f(24, 16);
         shader.bind();
-        texture.bind(0);
+//        texture.bind(0);
+        var split = tileset.split("/");
+        var tsCat = Resources.get().textures.get(split[0]);
+        var tsList = tsCat.stream().filter(t -> split[1].equals(t.getName())).toList();
+        if(tsList.isEmpty())
+            return;
+        tsList.get(0).bind(0);
         bind();
         var model = new Matrix4f().scale(size.x, size.y, 1);
         var view = Camera.getView();

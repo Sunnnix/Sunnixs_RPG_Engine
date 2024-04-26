@@ -1,9 +1,11 @@
 package de.sunnix.aje.editor.util;
 
+import de.sunnix.aje.editor.window.Window;
+
 public class Texts {
 
     public static final String FULL_NAME = "Alundra Java Engine Creator";
-    public static final String WINDOW_NAME = "AJE Creator";
+    public static final String WINDOW_NAME = "AJE Creator V " + Window.VERSION;
     public static final String VERSION = "INDEV 1.0";
     public static final String CREATOR = "Sunnix";
     public static final String WEBSITE_LABEL = "sunnix.de";

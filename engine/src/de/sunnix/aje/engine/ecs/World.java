@@ -1,18 +1,25 @@
 package de.sunnix.aje.engine.ecs;
 
+import de.sunnix.aje.engine.Core;
+import de.sunnix.aje.engine.Resources;
+import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.ecs.components.PhysicComponent;
 import de.sunnix.aje.engine.ecs.components.Component;
 import de.sunnix.aje.engine.ecs.components.RenderComponent;
 import de.sunnix.aje.engine.ecs.systems.RenderSystem;
 import de.sunnix.aje.engine.graphics.TestCubeRenderObject;
 import lombok.Getter;
+import org.json.JSONObject;
 import org.lwjgl.opengl.GL11;
 import test.Textures;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class World {
 
@@ -29,6 +36,12 @@ public class World {
     private TestCubeRenderObject tcro = new TestCubeRenderObject();
 
     public World(){
+        try(var zip = new ZipFile(Core.getGameFile())){
+            Resources.get().loadResources(zip);
+        } catch (Exception e){
+            GameLogger.logException("World", e);
+        }
+
         map = new TileMap();
     }
 
