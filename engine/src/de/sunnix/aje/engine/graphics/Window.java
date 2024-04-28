@@ -5,6 +5,7 @@ import de.sunnix.aje.engine.ILoggable;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 
@@ -58,7 +59,7 @@ public class Window {
             glfwWindowHint(GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
 
             // Create and bind
-            var window = glfwCreateWindow(width, height, title, NULL, NULL);
+            var window = glfwCreateWindow(width, height, title + " - GV " + Core.VERSION, NULL, NULL);
             if (window == NULL)
                 throw new RuntimeException("No window could be created!");
             glfwMakeContextCurrent(window);

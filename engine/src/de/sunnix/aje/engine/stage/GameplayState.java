@@ -1,7 +1,14 @@
 package de.sunnix.aje.engine.stage;
 
+import de.sunnix.aje.engine.Core;
+import de.sunnix.aje.engine.Resources;
+import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.ecs.World;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import lombok.Getter;
+
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class GameplayState implements IState {
 
@@ -10,23 +17,19 @@ public class GameplayState implements IState {
 
     @Override
     public void onStart() {
-        if(world == null) {
-            world = new World();
-            world.init();
-        }
+        if(world == null)
+            try(var zip = new ZipFile(Core.getGameFile())){
+                var config = new BetterJSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
+                Resources.get().loadResources(zip);
+                world = new World();
+                world.init(zip, config);
+            } catch (Exception e){
+                GameLogger.logException("World", e);
+            }
     }
 
     @Override
     public void update() {
-        var player = world.getPlayer();
-//        if(PAD_RIGHT.isPressed())
-//            player.getPosition().add(.5f, 0, 0);
-//        if(PAD_LEFT.isPressed())
-//            player.getPosition().add(-.5f, 0, 0);
-//        if(PAD_DOWN.isPressed())
-//            player.getPosition().add(0, .5f, 0);
-//        if(PAD_UP.isPressed())
-//            player.getPosition().add(0, -.5f, 0);
         world.update();
     }
 

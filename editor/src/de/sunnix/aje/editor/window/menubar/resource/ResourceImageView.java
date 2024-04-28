@@ -2,7 +2,7 @@ package de.sunnix.aje.editor.window.menubar.resource;
 
 import de.sunnix.aje.editor.window.Config;
 import de.sunnix.aje.editor.window.Window;
-import de.sunnix.aje.editor.util.BetterJSONObject;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import de.sunnix.aje.editor.window.resource.ImageResource;
 import de.sunnix.aje.editor.window.resource.Resources;
 

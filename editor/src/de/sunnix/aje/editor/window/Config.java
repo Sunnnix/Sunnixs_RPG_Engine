@@ -1,6 +1,6 @@
 package de.sunnix.aje.editor.window;
 
-import de.sunnix.aje.editor.util.BetterJSONObject;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import org.json.JSONArray;
 
 import javax.swing.*;

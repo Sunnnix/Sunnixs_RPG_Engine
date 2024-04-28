@@ -1,8 +1,7 @@
 package de.sunnix.aje.editor.window.resource;
 
-import de.sunnix.aje.editor.util.BetterJSONObject;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import de.sunnix.sdso.DataSaveObject;
-import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

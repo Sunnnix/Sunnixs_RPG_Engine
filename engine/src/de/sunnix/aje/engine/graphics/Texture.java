@@ -24,14 +24,11 @@ public class Texture extends MemoryHolder {
     public static final Texture MISSING_IMAGE = new Texture();
     private static int latestActiveTexture = -1;
 
-    @Getter
-    protected String name;
     protected int textureID;
     @Getter
     protected int width, height;
 
-    public Texture(InputStream data, String name) {
-        this.name = name;
+    public Texture(InputStream data) {
         try {
             var image = ImageIO.read(data);
             this.width = image.getWidth();
@@ -42,7 +39,7 @@ public class Texture extends MemoryHolder {
             textureID = MISSING_IMAGE.textureID;
             width = MISSING_IMAGE.width;
             height = MISSING_IMAGE.height;
-            GameLogger.logException("Texture", new RuntimeException(String.format("Loading texture %s failed!", name), e));
+            GameLogger.logException("Texture", new RuntimeException("Loading texture failed!", e));
         }
     }
 

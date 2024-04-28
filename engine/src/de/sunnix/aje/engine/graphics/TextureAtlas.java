@@ -13,13 +13,12 @@ public class TextureAtlas extends Texture{
     protected final float[] texturePositions;
 
     /**
-     * @param name texture name
      * @param data raw data of image as stream
      * @param width tile width
      * @param height tile height
      */
-    public TextureAtlas(String name, InputStream data, int width, int height) {
-        super(data, name);
+    public TextureAtlas(InputStream data, int width, int height) {
+        super(data);
         this.tileWidth = width;
         this.tileHeight = height;
         this.texturePositions = generateTexturePositions();

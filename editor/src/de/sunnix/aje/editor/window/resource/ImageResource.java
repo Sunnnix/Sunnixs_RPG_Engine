@@ -1,6 +1,6 @@
 package de.sunnix.aje.editor.window.resource;
 
-import de.sunnix.aje.editor.util.BetterJSONObject;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,12 +8,10 @@ import lombok.Setter;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
 @Getter
 @Setter

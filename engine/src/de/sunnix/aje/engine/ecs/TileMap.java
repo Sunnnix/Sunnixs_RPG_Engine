@@ -6,14 +6,14 @@ import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.graphics.TextureAtlas;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.Shader;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import de.sunnix.sdso.DataSaveObject;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import test.Textures;
 
-import javax.swing.*;
-
 import java.io.File;
+import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -39,26 +39,12 @@ public class TileMap {
     private int vertexCount;
 
     private boolean inited;
-
-    private final TextureAtlas texture = Textures.TILESET_INOA;
     private final Shader shader = Shader.DEFAULT_SHADER;
 
     private int bufferSize; // how large is the basic buffer of the Tiles
 
-    public TileMap(){
-        loadMapFromFile();
-//        width = 3;
-//        height = 10;
-//        tiles = new Tile[width * height];
-//        var offset = 0;
-//        for (int x = 0; x < width; x++)
-//            for (int y = 0; y < height; y++) {
-////                tiles[x + y * width] = new Tile(x, y, x + y * width);
-//                var t = new Tile(x, y, offset);
-//                offset += t.create();
-//                tiles[x + y * width] = t;
-//            }
-//        bufferSize = offset;
+    public TileMap(DataSaveObject data){
+        loadMapFromFile(data);
 
         vertexArray = glGenVertexArrays();
         glBindVertexArray(vertexArray);
@@ -92,42 +78,18 @@ public class TileMap {
 
     public String tileset;
 
-    private void loadMapFromFile() {
-        var gameFile = new File(Core.getGameFile());
-        try(var zip = new ZipFile(gameFile)) {
-            var stream = zip.getInputStream(new ZipEntry(new File("maps/0000.map").getPath()));
-            var dso = new DataSaveObject().load(stream);
-            width = dso.getInt("width", 0);
-            height = dso.getInt("height", 0);
-            tileset = dso.getArray("tilesets", String[]::new)[0];
-            tiles = new Tile[width * height];
-            var offset = 0;
-            var tileList = dso.<DataSaveObject>getList("tiles");
-            for (int x = 0; x < width; x++)
-                for (int y = 0; y < height; y++) {
-                    var t = new Tile(x, y, offset);
-                    offset += t.create(tileList.get(x + y * width));
-                    tiles[x + y * width] = t;
-                }
-            bufferSize = offset;
-            stream.close();
-        } catch (Exception e){
-            GameLogger.logE("TileMap", "Error loading map:\n%s", e);
-            e.printStackTrace();
-            genMap();
-        }
-    }
-
-    private void genMap(){
-        width = 3;
-        height = 10;
+    private void loadMapFromFile(DataSaveObject dso) {
+        width = dso.getInt("width", 0);
+        height = dso.getInt("height", 0);
+        tileset = dso.getArray("tilesets", String[]::new)[0];
         tiles = new Tile[width * height];
+        var tilesetImage = Resources.get().getTexture(tileset);
         var offset = 0;
+        var tileList = dso.<DataSaveObject>getList("tiles");
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++) {
-//                tiles[x + y * width] = new Tile(x, y, x + y * width);
                 var t = new Tile(x, y, offset);
-                offset += t.create();
+                offset += t.create(tilesetImage, tileList.get(x + y * width));
                 tiles[x + y * width] = t;
             }
         bufferSize = offset;
@@ -146,19 +108,15 @@ public class TileMap {
     public void render(){
         if(!inited)
             return;
-        if(texture == null)
-            return;
         if(tileset == null)
             return;
         var size = new Vector2f(24, 16);
         shader.bind();
 //        texture.bind(0);
-        var split = tileset.split("/");
-        var tsCat = Resources.get().textures.get(split[0]);
-        var tsList = tsCat.stream().filter(t -> split[1].equals(t.getName())).toList();
-        if(tsList.isEmpty())
+        var tsTex = Resources.get().getTexture(tileset);
+        if(tsTex == null)
             return;
-        tsList.get(0).bind(0);
+        tsTex.bind(0);
         bind();
         var model = new Matrix4f().scale(size.x, size.y, 1);
         var view = Camera.getView();

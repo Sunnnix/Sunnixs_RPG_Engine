@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.Main;
+import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.util.FunctionUtils;
 
 import javax.imageio.ImageIO;
@@ -117,6 +118,10 @@ public class Toolbar extends JToolBar {
     private void startGameProcess(ActionEvent e) {
         if(gameProcess != null && gameProcess.isAlive() || !window.isProjectOpen())
             return;
+        if(window.getSingleton(GameData.class).getMap(window.getStartMap()) == null){
+            JOptionPane.showMessageDialog(window, "Please set a start map!", "No start map!", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         if(window.isProjectChanged()) {
             if(JOptionPane.showConfirmDialog(window, "All changes must be saved.\nWould you like to save the current changes?", "Unsafed chnages", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION || !window.saveProject(false))
                 return;

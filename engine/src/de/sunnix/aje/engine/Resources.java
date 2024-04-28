@@ -14,7 +14,7 @@ import java.util.zip.ZipFile;
 
 public class Resources {
 
-    public final Map<String, List<TextureAtlas>> textures = new HashMap<>();
+    private final Map<String, Map<String, TextureAtlas>> textures = new HashMap<>();
 
     private static Resources instance;
 
@@ -38,10 +38,10 @@ public class Resources {
                 var e = entries.nextElement();
                 if(!e.toString().startsWith(imgFolder.getPath()))
                     continue;
-                var category = textures.computeIfAbsent(e.getName().substring(imgFolder.getPath().length() + 1), k -> new ArrayList<>());
+                var category = textures.computeIfAbsent(e.getName().substring(imgFolder.getPath().length() + 1), k -> new HashMap<>());
                 var images = new DataSaveObject().load(zip.getInputStream(e)).<DataSaveObject>getList("images");
                 for (var image : images) {
-                    category.add(new TextureAtlas(image.getString("name", "null"), new ByteArrayInputStream(image.getByteArray("image")), image.getInt("width", 1), image.getInt("height", 1)));
+                    category.put(image.getString("name", "null"), new TextureAtlas(new ByteArrayInputStream(image.getByteArray("image")), image.getInt("width", 1), image.getInt("height", 1)));
                 }
             }
         } catch (IOException e) {
@@ -49,6 +49,20 @@ public class Resources {
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    public TextureAtlas getTexture(String category, String texture){
+        var cat = textures.get(category);
+        if(cat == null)
+            return null;
+        return cat.get(texture);
+    }
+
+    public TextureAtlas getTexture(String path){
+        var split = path.split("/");
+        if(split.length < 2)
+            return null;
+        return getTexture(split[0], split[1]);
     }
 
 }

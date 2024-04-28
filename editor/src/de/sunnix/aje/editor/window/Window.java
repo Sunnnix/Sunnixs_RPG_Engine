@@ -1,12 +1,13 @@
 package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
-import de.sunnix.aje.editor.data.MapData;
 import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
 import de.sunnix.aje.editor.window.tileset.TilesetTabView;
+import de.sunnix.aje.engine.util.BetterJSONObject;
 import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -18,8 +19,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -30,7 +31,7 @@ import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 public class Window extends JFrame {
 
     public static final int MAJOR_VERSION = 0;
-    public static final int MINOR_VERSION = 2;
+    public static final int MINOR_VERSION = 3;
     public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
 
     private final Map<Class<?>, Object> singletons = new HashMap<>();
@@ -67,6 +68,10 @@ public class Window extends JFrame {
 
     private final MapViewModule[] mapModules;
     private final NullModule nullModule = new NullModule(this);
+
+    @Getter
+    @Setter
+    private int startMap = -1;
 
     public Window(){
         super();
@@ -182,6 +187,7 @@ public class Window extends JFrame {
         projectName = null;
         projectPath = null;
         projectChanged = false;
+        startMap = -1;
         getSingleton(Resources.class).reset();
         getSingleton(GameData.class).reset();
         setProjectOpen(false);
@@ -262,9 +268,9 @@ public class Window extends JFrame {
 
     private boolean loadGameFile(File file){
         try(var zip = new ZipFile(file)){
-            JSONObject config;
+            BetterJSONObject config;
             try {
-                config = new JSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
+                config = new BetterJSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
             } catch (NullPointerException e){
                 JOptionPane.showMessageDialog(
                         this,
@@ -274,10 +280,8 @@ public class Window extends JFrame {
                 );
                 return false;
             }
-            if(config.has("project_name"))
-                projectName = config.getString("project_name");
-            else
-                projectName = "Unnamed Project";
+            projectName = config.get("project_name", "Unnamed Project");
+            startMap = config.get("start_map", -1);
             getSingleton(Resources.class).loadResources(zip);
             getSingleton(GameData.class).loadData(zip);
         } catch (Exception e){
@@ -356,6 +360,7 @@ public class Window extends JFrame {
         try(var zip = new ZipOutputStream(new FileOutputStream(file))){
             var config = new JSONObject();
             config.put("project_name", projectName);
+            config.put("start_map", startMap);
             getSingleton(Resources.class).saveResources(zip);
             getSingleton(GameData.class).saveData(zip);
 

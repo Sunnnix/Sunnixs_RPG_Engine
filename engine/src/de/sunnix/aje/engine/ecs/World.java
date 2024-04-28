@@ -1,19 +1,17 @@
 package de.sunnix.aje.engine.ecs;
 
-import de.sunnix.aje.engine.Core;
-import de.sunnix.aje.engine.Resources;
-import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.ecs.components.PhysicComponent;
 import de.sunnix.aje.engine.ecs.components.Component;
 import de.sunnix.aje.engine.ecs.components.RenderComponent;
 import de.sunnix.aje.engine.ecs.systems.RenderSystem;
 import de.sunnix.aje.engine.graphics.TestCubeRenderObject;
+import de.sunnix.aje.engine.util.BetterJSONObject;
+import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
-import org.json.JSONObject;
 import org.lwjgl.opengl.GL11;
 import test.Textures;
 
-import javax.swing.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,19 +33,16 @@ public class World {
 
     private TestCubeRenderObject tcro = new TestCubeRenderObject();
 
-    public World(){
-        try(var zip = new ZipFile(Core.getGameFile())){
-            Resources.get().loadResources(zip);
-        } catch (Exception e){
-            GameLogger.logException("World", e);
-        }
-
-        map = new TileMap();
-    }
-
-    public void init(){
+    public void init(ZipFile zip, BetterJSONObject config) throws IOException {
         if(inited)
             return;
+        var startMapID = config.get("start_map", -1);
+        if(startMapID == -1)
+            throw new RuntimeException("Invalid start map id: " + startMapID);
+        var mapDSO = new DataSaveObject().load(zip.getInputStream(new ZipEntry(String.format("maps\\%04d.map", startMapID))));
+        map = new TileMap(mapDSO);
+
+        // Player
         player = new GameObject(.8f, 1.7f);
         player.addComponent(Component.RENDER);
         player.addComponent(new PhysicComponent());
@@ -55,83 +50,16 @@ public class World {
         RenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
         player.setName("Player");
 
-
         // ################################################################
-        var tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(2, -1, 0);
-        tmp.setName("Box 1");
-
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(4, 0, 0);
-        tmp.setName("Box 2");
-
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(6, 2, 0);
-        tmp.setName("Box 3");
-
-
-        // ################################################################
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 1, 0);
-        tmp.setName("Box 4");
-
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 4, 0);
-        tmp.setName("Box 7");
-
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 3, 0);
-        tmp.setName("Box 8");
-
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 0, 0);
-        tmp.setName("Box 5");
-
-        tmp = new GameObject(1, 1);
-        tmp.addComponent(Component.RENDER);
-        tmp.addComponent(new PhysicComponent());
-        tmp.init();
-        RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-        tmp.getPosition().set(8, 2, 0);
-        tmp.setName("Box 6");
-
-        for (int i = 0; i < 0; i++) {
-            tmp = new GameObject(1, 1);
-            tmp.addComponent(Component.RENDER);
-            tmp.addComponent(new PhysicComponent());
-            tmp.init();
-            RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-            tmp.getPosition().set((int)(Math.random() * 50), 0, (int)(Math.random() * 50));
-            tmp.setName(String.format("Box Gen (%s)", i + 1));
-        }
+//        for (int i = 0; i < 200; i++) {
+//            tmp = new GameObject(1, 1);
+//            tmp.addComponent(Component.RENDER);
+//            tmp.addComponent(new PhysicComponent());
+//            tmp.init();
+//            RenderComponent.TEXTURE.set(tmp, Textures.BOX);
+//            tmp.getPosition().set((int)(Math.random() * 50), 0, (int)(Math.random() * 50));
+//            tmp.setName(String.format("Box Gen (%s)", i + 1));
+//        }
 
     }
 
