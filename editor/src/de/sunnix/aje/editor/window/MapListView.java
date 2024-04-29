@@ -30,6 +30,7 @@ public class MapListView extends JScrollPane {
         var list = new JList<String>();
         list.setModel(new DefaultListModel<>());
         list.addMouseListener(genListMouseListener(list));
+        list.setCellRenderer(genCellRenderer());
         return list;
     }
 
@@ -92,8 +93,8 @@ public class MapListView extends JScrollPane {
         String tileset = null;
         if(tsArray.length > 0)
             tileset = tsArray[0];
-        var cat = window.getSingleton(Resources.class).imageResources;
-        var comboCat = new JComboBox<>(cat.keySet().toArray(String[]::new));
+        var res = window.getSingleton(Resources.class);
+        var comboCat = new JComboBox<>(res.image_getAllCategories().toArray(String[]::new));
         comboCat.setPreferredSize(new Dimension(250, comboCat.getPreferredSize().height));
         var comboImages = new JComboBox<String>();
         comboCat.addItemListener(l -> {
@@ -101,7 +102,7 @@ public class MapListView extends JScrollPane {
             if(selected == null)
                 return;
             comboImages.removeAllItems();
-            cat.get(selected).forEach(x -> comboImages.addItem(x.getName()));
+            res.image_getCategoryContent(selected).forEach(comboImages::addItem);
         });
         if(tileset == null) {
             comboCat.setSelectedIndex(-1);
@@ -164,6 +165,18 @@ public class MapListView extends JScrollPane {
         window.getSingleton(GameData.class).deleteMap(map.getID());
         reloadMaps();
         window.setProjectChanged();
+    }
+
+    private ListCellRenderer<Object> genCellRenderer(){
+        return new DefaultListCellRenderer(){
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                var label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if(Integer.parseInt(((String)value).substring(0, 4)) == window.getStartMap())
+                    label.setForeground(Color.GREEN);
+                return label;
+            }
+        };
     }
 
     private void reloadMaps(){

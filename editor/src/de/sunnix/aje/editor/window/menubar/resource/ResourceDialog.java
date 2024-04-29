@@ -41,7 +41,8 @@ public class ResourceDialog extends JDialog {
     private JTree createTree(Window parent){
         var root = createNode("Root",
                 createNode("Video",
-                        createNode("Images", p -> new ResourceImageView(parent, p))
+                        createNode("Images", p -> new ResourceImageView(parent, p)),
+                        createNode("Tilesets", p -> new TilesetView(parent, p))
                 ),
                 createNode("Audio",
                         createNode("Raw", p -> new JPanel())

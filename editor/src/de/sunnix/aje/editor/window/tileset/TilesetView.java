@@ -32,13 +32,7 @@ public class TilesetView extends JPanel {
         return new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                var cat = window.getSingleton(Resources.class).imageResources.get(tileset.substring(0, tileset.indexOf('/')));
-                if(cat == null)
-                    return;
-                var rawImage = FunctionUtils.firstOrNull(cat, x -> x.getName().equals(tileset.substring(tileset.indexOf('/') + 1)));
-                if(rawImage == null)
-                    return;
-                var image = rawImage.getImage();
+                var image = window.getSingleton(Resources.class).image_getRaw(tileset);
                 var width = image.getWidth() / 24;
                 var height = image.getHeight() / 16;
                 var x = e.getX();
@@ -57,13 +51,9 @@ public class TilesetView extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        var cat = window.getSingleton(Resources.class).imageResources.get(tileset.substring(0, tileset.indexOf('/')));
-        if(cat == null)
+        var image = window.getSingleton(Resources.class).image_getRaw(tileset);
+        if(image == null)
             return;
-        var rawImage = FunctionUtils.firstOrNull(cat, x -> x.getName().equals(tileset.substring(tileset.indexOf('/') + 1)));
-        if(rawImage == null)
-            return;
-        var image = rawImage.getImage();
         setPreferredSize(new Dimension(image.getWidth() / 24 * 24, image.getHeight() / 16 * 16));
         revalidate();
         g.drawImage(image, 0, 0, null);
