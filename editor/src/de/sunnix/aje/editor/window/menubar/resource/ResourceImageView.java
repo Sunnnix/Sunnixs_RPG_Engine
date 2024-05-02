@@ -22,8 +22,6 @@ import java.util.*;
 import java.util.List;
 import java.util.Timer;
 
-import static de.sunnix.aje.editor.util.FunctionUtils.firstOrNull;
-
 public class ResourceImageView extends JPanel implements IResourceView {
 
     private static final String[] supportedFormats = {"jpg", "jpeg", "png", "gif", "bmp"};
@@ -321,7 +319,8 @@ public class ResourceImageView extends JPanel implements IResourceView {
         }
 
         var res = window.getSingleton(Resources.class);
-        if(!res.image_containsCategory(categoryList.getSelectedValue())) {
+        var category = categoryList.getSelectedValue();
+        if(!res.image_containsCategory(category)) {
             JOptionPane.showMessageDialog(this, "Select a category before adding an image!", "No category selected", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -351,10 +350,10 @@ public class ResourceImageView extends JPanel implements IResourceView {
             if (data == null)
                 return;
             var name = (String) data[0];
-            if(validateImageName(name))
+            if(validateInput(name))
                 break;
         }
-        res.image_addResource((String)data[0], new ImageResource((String)data[0], (int)data[1], (int)data[2], image));
+        res.image_addResource(category, new ImageResource((String)data[0], (int)data[1], (int)data[2], image));
         window.setProjectChanged();
         var model = ((DefaultListModel<String>) imageList.getModel());
         model.addElement((String)data[0]);
@@ -400,7 +399,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
             if (data == null)
                 return;
             var name = (String) data[0];
-            if(name.equals(image.getName()) || validateImageName(name))
+            if(name.equals(image.getName()) || validateInput(name))
                 break;
         }
         var newName = (String)data[0];
@@ -429,9 +428,9 @@ public class ResourceImageView extends JPanel implements IResourceView {
         window.repaint();
     }
 
-    private boolean validateImageName(String name) {
+    private boolean validateInput(String name) {
         var res = window.getSingleton(Resources.class);
-        if (res.image_containsCategory(categoryList.getSelectedValue())) {
+        if (!res.image_containsCategory(categoryList.getSelectedValue())) {
             JOptionPane.showMessageDialog(this, "Select a category before adding an image!", "No category selected", JOptionPane.ERROR_MESSAGE);
             return false;
         }

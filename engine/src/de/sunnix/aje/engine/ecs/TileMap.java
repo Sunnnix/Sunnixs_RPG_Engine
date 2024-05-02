@@ -1,21 +1,11 @@
 package de.sunnix.aje.engine.ecs;
 
-import de.sunnix.aje.engine.Core;
-import de.sunnix.aje.engine.Resources;
-import de.sunnix.aje.engine.debug.GameLogger;
-import de.sunnix.aje.engine.graphics.TextureAtlas;
+import de.sunnix.aje.engine.resources.Resources;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.Shader;
-import de.sunnix.aje.engine.util.BetterJSONObject;
 import de.sunnix.sdso.DataSaveObject;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
-import test.Textures;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -83,13 +73,13 @@ public class TileMap {
         height = dso.getInt("height", 0);
         tileset = dso.getArray("tilesets", String[]::new)[0];
         tiles = new Tile[width * height];
-        var tilesetImage = Resources.get().getTexture(tileset);
+        var tilesetData = Resources.get().getTileset(tileset);
         var offset = 0;
         var tileList = dso.<DataSaveObject>getList("tiles");
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++) {
                 var t = new Tile(x, y, offset);
-                offset += t.create(tilesetImage, tileList.get(x + y * width));
+                offset += t.create(tilesetData, tileList.get(x + y * width));
                 tiles[x + y * width] = t;
             }
         bufferSize = offset;
@@ -113,7 +103,7 @@ public class TileMap {
         var size = new Vector2f(24, 16);
         shader.bind();
 //        texture.bind(0);
-        var tsTex = Resources.get().getTexture(tileset);
+        var tsTex = Resources.get().getTilesetTex(tileset);
         if(tsTex == null)
             return;
         tsTex.bind(0);

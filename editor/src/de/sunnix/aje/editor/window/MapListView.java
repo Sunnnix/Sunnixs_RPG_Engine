@@ -82,6 +82,7 @@ public class MapListView extends JScrollPane {
 
     private void setMapAsStartMap(ActionEvent e) {
         window.setStartMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
+        repaint();
         window.setProjectChanged();
     }
 
@@ -94,36 +95,23 @@ public class MapListView extends JScrollPane {
         if(tsArray.length > 0)
             tileset = tsArray[0];
         var res = window.getSingleton(Resources.class);
-        var comboCat = new JComboBox<>(res.image_getAllCategories().toArray(String[]::new));
-        comboCat.setPreferredSize(new Dimension(250, comboCat.getPreferredSize().height));
-        var comboImages = new JComboBox<String>();
-        comboCat.addItemListener(l -> {
-            var selected = (String) comboCat.getSelectedItem();
-            if(selected == null)
-                return;
-            comboImages.removeAllItems();
-            res.image_getCategoryContent(selected).forEach(comboImages::addItem);
-        });
-        if(tileset == null) {
-            comboCat.setSelectedIndex(-1);
-            comboImages.setSelectedIndex(-1);
-        } else {
-            comboCat.setSelectedItem(tileset.substring(0, tileset.indexOf('/')));
-            comboImages.setSelectedItem(tileset.substring(tileset.indexOf('/') + 1));
-        }
+        var tilesets = new JComboBox<>(res.tileset_getTilesetnames().toArray(String[]::new));
+        tilesets.setPreferredSize(new Dimension(250, tilesets.getPreferredSize().height));
+        if(tileset == null)
+            tilesets.setSelectedIndex(-1);
+        else
+            tilesets.setSelectedItem(tileset);
 
-        if(!showMultiInputDialog(window, "Set tileset", "Set the tileset for the map:", new String[]{ "Category:", "Image:" }, new JComponent[]{ comboCat, comboImages }))
+        if(!showMultiInputDialog(window, "Set tileset", "Set the tileset for the map:", new String[]{ "Tileset:" }, new JComponent[]{ tilesets }))
             return;
-        var sCat = (String)comboCat.getSelectedItem();
-        var sImage = (String)comboImages.getSelectedItem();
-        if(sCat == null || sCat.isEmpty())
-            tileset = null;
-        else if(sImage == null || sImage.isEmpty())
+        var sTileset = (String)tilesets.getSelectedItem();
+        if(sTileset == null || sTileset.isEmpty())
             tileset = null;
         else
-            tileset = sCat + "/" + sImage;
+            tileset = sTileset;
         map.setTilesets(tileset == null ? new String[0] : new String[] { tileset });
         window.reloadTilesetView();
+        window.reloadMap();
         window.setProjectChanged();
     }
 

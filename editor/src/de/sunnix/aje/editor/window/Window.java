@@ -361,6 +361,7 @@ public class Window extends JFrame {
             var config = new JSONObject();
             config.put("project_name", projectName);
             config.put("start_map", startMap);
+            config.put("editor_version", VERSION);
             getSingleton(Resources.class).saveResources(zip);
             getSingleton(GameData.class).saveData(zip);
 

@@ -1,6 +1,7 @@
 package de.sunnix.aje.engine.ecs;
 
 import de.sunnix.aje.engine.graphics.TextureAtlas;
+import de.sunnix.aje.engine.resources.Tileset;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import test.Textures;
@@ -24,7 +25,7 @@ public class Tile {
         this.bufferOffset = bufferOffset;
     }
 
-    public int create(TextureAtlas tileset, DataSaveObject dso){
+    public int create(Tileset tileset, DataSaveObject dso){
         var texID = dso.getShort("g-tex", (short) -1) & 0xFFF;
         var heights = dso.getShort("height", (short) 0);
         var groundY = (byte)(heights >> 8);
@@ -86,8 +87,10 @@ public class Tile {
                 vertices[i * 12 + 10] = -1f - y + i - 1;
                 vertices[i * 12 + 11] = y + 1;
             }
-            var tex = tileset.getTexturePositions(texID);
-            System.arraycopy(tex, 0, textures, i * 8, 8);
+            if(tileset != null) {
+                var tex = tileset.getTexturePositions(texID);
+                System.arraycopy(tex, 0, textures, i * 8, 8);
+            }
         }
 
         var s = new StringBuilder("Tile (" + x + ", " + y + ")\n");

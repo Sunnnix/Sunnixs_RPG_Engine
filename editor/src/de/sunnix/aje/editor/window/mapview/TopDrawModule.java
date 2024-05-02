@@ -4,6 +4,7 @@ import de.sunnix.aje.editor.data.MapData;
 import de.sunnix.aje.editor.util.FunctionUtils;
 import de.sunnix.aje.editor.window.Window;
 import de.sunnix.aje.editor.window.resource.Resources;
+import de.sunnix.aje.editor.window.resource.Tileset;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -73,8 +74,8 @@ public class TopDrawModule extends MapViewModule {
                 if(tsID < 0 || tsID > tilesets.length || index < 0)
                     continue;
                 var tileset = tilesets[tsID];
-                var tsWidth = tileset.getWidth() / 24;
-                var tsHeight = tileset.getHeight() / 16;
+                var tsWidth = tileset == null ? 1 : tileset.getWidth() / 24;
+                var tsHeight = tileset == null ? 1 : tileset.getHeight() / 16;
 
                 var dX = x + tX * 24;
                 var dY = y + tY * 16;
@@ -102,18 +103,27 @@ public class TopDrawModule extends MapViewModule {
         return false;
     }
 
-    private void setTile(MapData map, int x, int y, int tileset, int index){
+    private void setTile(MapData map, int x, int y, int tilesetIndex, int index){
         if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
             return;
         var tile = map.getTiles()[x + y * map.getWidth()];
-        tile.setTexID(tileset, index);
+        Tileset tileset;
+        var mapTilesets = map.getTilesets();
+        if(tilesetIndex >= mapTilesets.length || tilesetIndex < 0)
+            tileset = null;
+        else
+            tileset = window.getSingleton(Resources.class).tileset_get(mapTilesets[tilesetIndex]);
+        tile.setDataTo(tilesetIndex, index, tileset == null ? null : tileset.getPropertie(index));
         window.setProjectChanged();
     }
 
     private BufferedImage[] loadTilesets(String[] tilesets){
         var images = new BufferedImage[tilesets.length];
-        for(var i = 0; i < tilesets.length; i++)
-            images[i] = window.getSingleton(Resources.class).image_getRaw(tilesets[i]);
+        var res = window.getSingleton(Resources.class);
+        for(var i = 0; i < tilesets.length; i++) {
+            var ts = res.tileset_get(tilesets[i]);
+            images[i] = ts == null ? null : ts.getImage(window);
+        }
         return images;
     }
 

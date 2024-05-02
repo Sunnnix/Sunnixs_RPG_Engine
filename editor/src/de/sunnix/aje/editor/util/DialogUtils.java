@@ -1,12 +1,19 @@
 package de.sunnix.aje.editor.util;
 
+import de.sunnix.aje.editor.window.resource.Resources;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import static de.sunnix.aje.editor.util.FunctionUtils.createButton;
 
 public class DialogUtils {
+
+    public static final String FILE_REGEX = "[a-zA-Z0-9_]+";
 
     public static boolean showMultiInputDialog(Component parent, String title, String message, String[] names, JComponent[] components){
         if(names.length != components.length)
@@ -32,6 +39,20 @@ public class DialogUtils {
         return showMultiTextInputDialog(parent, title, message, names, defaults);
     }
 
+    public static boolean validateInput(Component parent, String text, Collection<String> duplicateCheck) {
+        if (text.isEmpty()){
+            JOptionPane.showMessageDialog(parent, "The name can't be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+            return  false;
+        } else if (!text.matches(FILE_REGEX)){
+            JOptionPane.showMessageDialog(parent, "Invalid input. Only letters (a-z, A-Z), numbers (0-9), and underscore (_) are allowed!", "Error", JOptionPane.ERROR_MESSAGE);
+            return  false;
+        } else if(duplicateCheck != null && duplicateCheck.stream().anyMatch(s -> Objects.equals(s, text))) {
+            JOptionPane.showMessageDialog(parent, "The name " + text + " is already taken!", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
     private static class MultiInputDialog extends JDialog {
 
         private boolean applied;
@@ -40,8 +61,10 @@ public class DialogUtils {
             super((JFrame) null, title, true);
             var content = new JPanel(new BorderLayout(10, 10));
             content.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-            var label = new JLabel("<html>" + message.replaceAll("\n", "<br>") + "</html>");
-            content.add(label, BorderLayout.NORTH);
+            if(message != null) {
+                var label = new JLabel("<html>" + message.replaceAll("\n", "<br>") + "</html>");
+                content.add(label, BorderLayout.NORTH);
+            }
             content.add(genContent(names, components), BorderLayout.CENTER);
             content.add(genButtons(), BorderLayout.SOUTH);
             setContentPane(content);

@@ -1,7 +1,7 @@
 package de.sunnix.aje.engine.stage;
 
 import de.sunnix.aje.engine.Core;
-import de.sunnix.aje.engine.Resources;
+import de.sunnix.aje.engine.resources.Resources;
 import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.ecs.World;
 import de.sunnix.aje.engine.util.BetterJSONObject;

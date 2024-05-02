@@ -1,9 +1,11 @@
 package de.sunnix.aje.editor.window.resource;
 
+import de.sunnix.aje.editor.data.Tile;
 import de.sunnix.sdso.DataSaveObject;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -108,6 +110,31 @@ public class Resources {
         return cat.containsKey(resName);
     }
 
+    // ###################    Tileset Resource    ###################
+
+    public Collection<String> tileset_getTilesetnames(){
+        return tilesets.keySet();
+    }
+
+    public void tileset_add(String name, Tileset tileset){
+        tilesets.put(name, tileset);
+    }
+
+    public Tileset tileset_get(String tsName) {
+        return tilesets.get(tsName);
+    }
+
+    public Tileset tileset_remove(String tsName) {
+        return tilesets.remove(tsName);
+    }
+
+    public BufferedImage tileset_getRaw(String tsName) {
+        var ts = tileset_get(tsName);
+        if(ts == null)
+            return null;
+        return image_getRaw(ts.getRes());
+    }
+
     // ###################    Load    ###################
 
     public void loadResources(ZipFile zip){
@@ -147,11 +174,10 @@ public class Resources {
         } catch (Exception e){
             return;
         }
-        var tilesets = dso.<DataSaveObject>getList("tilesets");
-        for(var ts: tilesets) {
-            var tileset = new Tileset(ts);
+        dso.<DataSaveObject>getList("tilesets").forEach(tsData -> {
+            var tileset = new Tileset(tsData);
             this.tilesets.put(tileset.getName(), tileset);
-        }
+        });
     }
 
     // ###################    Save    ###################
@@ -160,6 +186,7 @@ public class Resources {
         var resFolder = new File("res");
 
         saveImageResources(zip, resFolder);
+        saveTilesets(zip, resFolder);
     }
 
     private void saveImageResources(ZipOutputStream zip, File res){
@@ -183,6 +210,17 @@ public class Resources {
             throw new RuntimeException(e);
         } catch (NullPointerException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void saveTilesets(ZipOutputStream zip, File res) {
+        var dso = new DataSaveObject();
+        dso.putList("tilesets", tilesets.values().stream().map(ts -> ts.save(new DataSaveObject())).toList());
+        try {
+            zip.putNextEntry(new ZipEntry(new File(res, "tilesets.dat").toString()));
+            dso.save(zip);
+        } catch (Exception e){
+            new Exception("Error loading tilesets:", e).printStackTrace();
         }
     }
 

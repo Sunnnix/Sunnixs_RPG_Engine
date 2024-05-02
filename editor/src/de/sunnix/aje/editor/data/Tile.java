@@ -1,6 +1,9 @@
 package de.sunnix.aje.editor.data;
 
+import de.sunnix.aje.editor.window.resource.TilesetPropertie;
 import de.sunnix.sdso.DataSaveObject;
+import lombok.Getter;
+import lombok.Setter;
 
 public class Tile {
 
@@ -10,6 +13,10 @@ public class Tile {
     private short[] wallTex = new short[0];
 
     private byte groundY, wallHeight;
+
+    @Getter
+    @Setter
+    private boolean blocking;
 
     public Tile(){}
 
@@ -70,10 +77,22 @@ public class Tile {
         return (wallTex[pos] & 0xFFF);
     }
 
+    public void setDataTo(int tileset, int index, TilesetPropertie propertie) {
+        if(tileset == -1 || propertie == null) {
+            setTexID(-1, 0);
+            blocking = false;
+        } else {
+            setTexID(tileset, index);
+            blocking = propertie.isBlocking();
+        }
+    }
+
     public void saveTile(DataSaveObject dso) {
         dso.putShort("g-tex", groundTex);
         dso.putArray("w-tex", wallTex);
         dso.putShort("height", (short)((groundY << 8) + wallHeight));
+
+        dso.putBool("blocking", blocking);
     }
 
     public void loadTile(DataSaveObject dso){
@@ -82,6 +101,8 @@ public class Tile {
         var height = dso.getShort("height", (short) 0);
         groundY = (byte)(height >> 8);
         wallHeight = (byte)(height & 0xFF);
+
+        blocking = dso.getBool("blocking", false);
     }
 
 }

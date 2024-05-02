@@ -78,8 +78,8 @@ public class WallDrawModule extends MapViewModule {
                 if(tsID < 0 || tsID > tilesets.length || index < 0)
                     continue;
                 var tileset = tilesets[tsID];
-                var tsWidth = tileset.getWidth() / 24;
-                var tsHeight = tileset.getHeight() / 16;
+                var tsWidth = tileset == null ? 1 : tileset.getWidth() / 24;
+                var tsHeight = tileset == null ? 1 : tileset.getHeight() / 16;
 
                 var floorY = tile.getgroundY();
 
@@ -114,8 +114,8 @@ public class WallDrawModule extends MapViewModule {
             if(tsID < 0 || tsID > tilesets.length || index < 0)
                 continue;
             var tileset = tilesets[tsID];
-            var tsWidth = tileset.getWidth() / 24;
-            var tsHeight = tileset.getHeight() / 16;
+            var tsWidth = tileset == null ? 1 : tileset.getWidth() / 24;
+            var tsHeight = tileset == null ? 1 : tileset.getHeight() / 16;
 
             var floorY = tile.getgroundY();
 
@@ -166,8 +166,11 @@ public class WallDrawModule extends MapViewModule {
 
     private BufferedImage[] loadTilesets(String[] tilesets){
         var images = new BufferedImage[tilesets.length];
-        for(var i = 0; i < tilesets.length; i++)
-            images[i] = window.getSingleton(Resources.class).image_getRaw(tilesets[i]);
+        var res = window.getSingleton(Resources.class);
+        for(var i = 0; i < tilesets.length; i++) {
+            var ts = res.tileset_get(tilesets[i]);
+            images[i] = ts == null ? null : ts.getImage(window);
+        }
         return images;
     }
 
