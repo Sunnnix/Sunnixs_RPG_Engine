@@ -5,6 +5,7 @@ import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
 import de.sunnix.aje.editor.window.tileset.TilesetTabView;
+import de.sunnix.aje.engine.Core;
 import de.sunnix.aje.engine.util.BetterJSONObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,10 +30,6 @@ import java.util.zip.ZipOutputStream;
 import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class Window extends JFrame {
-
-    public static final int MAJOR_VERSION = 0;
-    public static final int MINOR_VERSION = 3;
-    public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
 
     private final Map<Class<?>, Object> singletons = new HashMap<>();
     public final MenuBar menuBar;
@@ -361,7 +358,7 @@ public class Window extends JFrame {
             var config = new JSONObject();
             config.put("project_name", projectName);
             config.put("start_map", startMap);
-            config.put("editor_version", VERSION);
+            config.put("editor_version", Core.VERSION);
             getSingleton(Resources.class).saveResources(zip);
             getSingleton(GameData.class).saveData(zip);
 

@@ -1,31 +1,61 @@
 package de.sunnix.aje.editor.docu;
 
 import de.sunnix.aje.editor.util.Texts;
+import de.sunnix.aje.editor.window.Config;
+import de.sunnix.aje.editor.window.Window;
+import de.sunnix.aje.engine.util.BetterJSONObject;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 
 public class UserGuide extends JFrame {
 
+    private final Window parent;
     private JTree tree;
+    private DefaultMutableTreeNode root;
     private JTextPane content;
     private JScrollPane contentScroll;
 
-    public UserGuide(JFrame parent) {
+    private String userGuidePath;
+
+    public UserGuide(Window parent) {
         super(Texts.WINDOW_NAME + " - User Guide");
+        this.parent = parent;
         setLayout(new BorderLayout(5, 5));
+
+        var sPanel = new JPanel(new BorderLayout());
 
         tree = genTree();
         var scroll = new JScrollPane(tree);
-        add(scroll, BorderLayout.WEST);
+        sPanel.add(scroll, BorderLayout.CENTER);
+
+        userGuidePath = parent.getSingleton(Config.class).get("user_guide_path", (String) null);
+        if(userGuidePath == null) {
+            if (!changeUserGuidePath(null)) {
+                return;
+            }
+        } else {
+            setUpTree(new File(userGuidePath));
+        }
+
+        var chooseBtn = new JButton("Select UserGuide folder");
+        chooseBtn.addActionListener(l -> changeUserGuidePath(parent.getSingleton(Config.class).get("user_guide_path", (String)null)));
+        sPanel.add(chooseBtn, BorderLayout.SOUTH);
+
+        add(sPanel, BorderLayout.WEST);
 
         add(contentScroll = new JScrollPane(content = genContentPane()), BorderLayout.CENTER);
 
@@ -36,32 +66,15 @@ public class UserGuide extends JFrame {
     }
 
     private JTree genTree(){
-        var root = new DefaultMutableTreeNode("root");
-
-        root.add(
-                genNode("Getting started",
-                        genNode("Test 1", "Main.html"),
-                        genNode("Test 2", "site 2")
-                )
-        );
+        root = new DefaultMutableTreeNode("root");
 
         var tree = new JTree(root);
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.setPreferredSize(new Dimension(200, 0));
         tree.addTreeSelectionListener(genTreeSelectionListener());
+
         return tree;
-    }
-
-    private MutableTreeNode genNode(String name, MutableTreeNode... nodes){
-        var node = new DefaultMutableTreeNode(name);
-        for(var n: nodes)
-            node.add(n);
-        return node;
-    }
-
-    private MutableTreeNode genNode(String name, String pagePath){
-        return new HTMLTreeNode(name, pagePath);
     }
 
     private TreeSelectionListener genTreeSelectionListener(){
@@ -70,6 +83,73 @@ public class UserGuide extends JFrame {
             if(node instanceof HTMLTreeNode htmlNode)
                 loadHTMLPage(htmlNode.pagePath);
         };
+    }
+
+    private boolean changeUserGuidePath(String path){
+        var fc = new JFileChooser(path);
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if(fc.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION)
+            return false;
+        var directory = fc.getSelectedFile();
+        var config = new File(directory, "UserGuide.json");
+        if(!config.exists()){
+            JOptionPane.showMessageDialog(
+                    this,
+                    "The folder doesn't have a UserGuide.json!",
+                    "Invalid folder!",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+        var done = setUpTree(directory);
+        if(done) {
+            parent.getSingleton(Config.class).set("user_guide_path", directory.toString());
+            userGuidePath = directory.toString();
+        }
+        return done;
+    }
+
+    private boolean setUpTree(File path){
+        BetterJSONObject json;
+        try (var stream = new FileInputStream(new File(path, "UserGuide.json"))){
+            var src = new String(stream.readAllBytes());
+            json = new BetterJSONObject(src);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    parent,
+                    "Error reading UserGuide.json:\n" + e.getMessage(),
+                    "Error!",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+        root.removeAllChildren();
+        var keys = json.keys();
+        while(keys.hasNext()){
+            var key = keys.next();
+            var jsonNode = json.get(key);
+            if(jsonNode instanceof JSONObject jObj)
+                root.add(jsonToNode(key, jObj));
+            else if(jsonNode instanceof String str)
+                root.add(new HTMLTreeNode(key, str));
+        }
+        tree.setModel(new DefaultTreeModel(root));
+        return true;
+    }
+
+    private MutableTreeNode jsonToNode(String key, JSONObject json){
+        var node = new DefaultMutableTreeNode(key);
+        var keys = json.keys();
+        while(keys.hasNext()) {
+            var k = keys.next();
+            var jsonNode = json.get(k);
+            if (jsonNode instanceof JSONObject jObj)
+                node.add(jsonToNode(k, jObj));
+            else if (jsonNode instanceof String str)
+                node.add(new HTMLTreeNode(k, str));
+        }
+        return node;
     }
 
     private JTextPane genContentPane(){
@@ -95,8 +175,17 @@ public class UserGuide extends JFrame {
     }
 
     private void loadHTMLPage(String path){
-        try(var stream = getClass().getResourceAsStream("/de/sunnix/aje/editor/docu/html/" + path)){
+        var rawFile = new File(userGuidePath, path);
+        try(var stream = new FileInputStream(rawFile)){
             var text = new String(stream.readAllBytes());
+            text = text.replace("src=\"file:///", "src=\"file:///" + (rawFile.getParentFile().toString().replace('\\', '/')) + "/");
+            var document = ((HTMLDocument)content.getDocument());
+            var styles = document.getStyleNames().asIterator();
+            while(styles.hasNext()) {
+                var style = styles.next();
+                if(style instanceof String sStyle)
+                    document.removeStyle(sStyle);
+            }
             content.setText(text);
             content.setCaretPosition(0);
         } catch (IOException e) {
