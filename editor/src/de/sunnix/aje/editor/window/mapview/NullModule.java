@@ -12,32 +12,32 @@ public class NullModule extends MapViewModule{
     }
 
     @Override
-    public boolean onMousePresses(MapData map, int button, int mX, int mY, int sX, int sY, int tX, int tY) {
+    public boolean onMousePresses(MapView view, MapData map, int button, int mask, int mX, int mY, int sX, int sY, int tX, int tY) {
         return false;
     }
 
     @Override
-    public boolean onMouseReleased(MapData map, int button, int mX, int mY, int sX, int sY, int tX, int tY) {
+    public boolean onMouseReleased(MapView view, MapData map, int button, int mask, int mX, int mY, int sX, int sY, int tX, int tY) {
         return false;
     }
 
     @Override
-    public boolean onMouseMoved(MapData map, int mX, int mY, int sX, int sY, int tX, int tY) {
+    public boolean onMouseMoved(MapView view, MapData map, int mX, int mY, int sX, int sY, int tX, int tY) {
         return false;
     }
 
     @Override
-    public boolean onMouseDragged(MapData map, int button, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY, boolean sameTile) {
+    public boolean onMouseDragged(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY, boolean sameTile) {
         return false;
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapData map, int screenWidth, int screenHeight) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY) {
 
     }
 
     @Override
-    public boolean omMouseWheelMoved(MapData mapData, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean omMouseWheelMoved(MapView view, MapData mapData, int mask, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         return false;
     }
 

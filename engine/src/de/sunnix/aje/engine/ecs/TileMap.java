@@ -23,13 +23,14 @@ public class TileMap {
 
     private int vertexArray;
     private int verticesID;
-    private int texturesID;
+    private int textures0ID;
+    private int textures1ID;
     private int elementBuffer;
 
     private int vertexCount;
 
     private boolean inited;
-    private final Shader shader = Shader.DEFAULT_SHADER;
+    private static final Shader shader = new Shader("/data/shader/tile_shader");
 
     private int bufferSize; // how large is the basic buffer of the Tiles
 
@@ -47,13 +48,21 @@ public class TileMap {
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
         glEnableVertexAttribArray(0);
 
-        texturesID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, texturesID);
+        textures0ID = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, textures0ID);
         glBufferData(GL_ARRAY_BUFFER, (bufferSize * 8L) * Float.BYTES, GL_DYNAMIC_DRAW);
         for(var tile : tiles)
-            tile.bufferTextures();
+            tile.bufferTextures0();
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
         glEnableVertexAttribArray(1);
+
+        textures1ID = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, textures1ID);
+        glBufferData(GL_ARRAY_BUFFER, (bufferSize * 8L) * Float.BYTES, GL_DYNAMIC_DRAW);
+        for(var tile : tiles)
+            tile.bufferTextures1();
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
+        glEnableVertexAttribArray(2);
 
         elementBuffer = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
@@ -120,7 +129,8 @@ public class TileMap {
     public void onDestroy() {
         glDeleteBuffers(vertexArray);
         glDeleteBuffers(verticesID);
-        glDeleteBuffers(texturesID);
+        glDeleteBuffers(textures0ID);
+        glDeleteBuffers(textures1ID);
         glDeleteBuffers(elementBuffer);
     }
 }

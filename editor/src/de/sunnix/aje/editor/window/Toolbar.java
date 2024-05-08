@@ -3,10 +3,9 @@ package de.sunnix.aje.editor.window;
 import de.sunnix.aje.editor.Main;
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.util.FunctionUtils;
+import de.sunnix.aje.engine.Core;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +17,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.jar.JarException;
 
@@ -35,6 +35,10 @@ public class Toolbar extends JToolBar {
         add(setPlay());
         add(new JSeparator(JSeparator.VERTICAL));
         add(setModes());
+        add(new JSeparator(JSeparator.VERTICAL));
+        add(setDrawTools());
+        add(new JSeparator());
+        add(setDrawViewProperties());
         console = new GameConsole();
         setupWindowGlassPane();
     }
@@ -42,7 +46,9 @@ public class Toolbar extends JToolBar {
     private JPanel setPlay(){
         var panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
-        panel.add(window.menuBar.addProjectDependentComponent(FunctionUtils.createButton("Play", "toolbar/play.png", this::startGameProcess)));
+        var playBtn = FunctionUtils.createButton("Play", "toolbar/play.png", this::startGameProcess);
+        playBtn.setToolTipText("Start Game");
+        panel.add(window.menuBar.addProjectDependentComponent(playBtn));
         return panel;
     }
 
@@ -51,10 +57,38 @@ public class Toolbar extends JToolBar {
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
 
         Arrays.stream(createButtonGroup(
-                createButtonGroupButton("toolbar/propertieMode.png", "toolbar/propertieMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
-                createButtonGroupButton("toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1)),
-                createButtonGroupButton("toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2))
+                createToolbarButton("Select Mode", "toolbar/propertieMode.png", "toolbar/propertieMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
+                createToolbarButton("Draw Top Mode" ,"toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1)),
+                createToolbarButton("Wall Mode" ,"toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2))
         )).forEach(panel::add);
+
+        return panel;
+    }
+
+    private JPanel setDrawTools(){
+        var panel = new JPanel(new FlowLayout());
+        panel.setBorder(BorderFactory.createTitledBorder((String) null));
+
+        Arrays.stream(createButtonGroup(
+                createToolbarButton("Single draw" ,"toolbar/draw.png", "toolbar/draw_s.png", null, l -> selectDrawTool(0)),
+                createToolbarButton("Multi draw \"Rectangle\"" ,"toolbar/dragFill.png", "toolbar/dragFill_s.png", null, l -> selectDrawTool(1)),
+                createToolbarButton("Fill" ,"toolbar/fill.png", "toolbar/fill_s.png", null, l -> selectDrawTool(2))
+        )).forEach(panel::add);
+
+        return panel;
+    }
+
+    private JPanel setDrawViewProperties(){
+        var panel = new JPanel(new FlowLayout());
+        panel.setBorder(BorderFactory.createTitledBorder((String) null));
+
+        var showGrid = createToolbarButton("Show Grid", "toolbar/showGrid.png", "toolbar/showGrid_s.png", null, l -> {
+            var b = ((AbstractButton)l.getSource());
+            b.setSelected(!b.isSelected());
+            showGrid(b.isSelected());
+        });
+        showGrid.setSelected(true);
+        panel.add(showGrid);
 
         return panel;
     }
@@ -72,7 +106,7 @@ public class Toolbar extends JToolBar {
         return buttons;
     }
 
-    private JButton createButtonGroupButton(String unselectedIcon, String selectedIcon, KeyStroke shortcut, ActionListener al){
+    private JButton createToolbarButton(String tooltip, String unselectedIcon, String selectedIcon, KeyStroke shortcut, ActionListener al){
         var button = FunctionUtils.createButton(null, unselectedIcon, selectedIcon, al);
         if(shortcut != null) {
             var inputMap = window.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -86,11 +120,21 @@ public class Toolbar extends JToolBar {
                 }
             });
         }
+        if(tooltip != null)
+            button.setToolTipText(shortcut != null ? String.format("%s (%s)", tooltip, KeyEvent.getKeyText(shortcut.getKeyCode())) : tooltip);
         return button;
     }
 
     private void selectMode(int mode){
         window.setMapModule(mode);
+    }
+
+    private void selectDrawTool(int tool){
+        window.setDrawTool(tool);
+    }
+
+    private void showGrid(boolean show){
+        window.setShowGrid(show);
     }
 
     private void setupWindowGlassPane(){
@@ -133,27 +177,45 @@ public class Toolbar extends JToolBar {
     }
 
     private void prepareProcessFromIDE() {
-        String command = "java";
-        String arg1 = "-cp";
-        String arg2 = ManagementFactory.getRuntimeMXBean().getClassPath();
-        String arg3 = Main.class.getName().replaceAll("\\.", "/");
-        String arg4 = "startGame";
-        String arg5 = "gameFile=" + window.getProjectPath().toPath();
+        var args = new ArrayList<String>();
+        args.add("java"); // command
+        args.add("-cp");
+        args.add(ManagementFactory.getRuntimeMXBean().getClassPath());
+        args.add(Main.class.getName().replaceAll("\\.", "/"));
+        args.add("startGame");
+        args.add("gameFile=" + window.getProjectPath().toPath());
 
-        ProcessBuilder processBuilder = new ProcessBuilder(command, arg1, arg2, arg3, arg4, arg5);
+        var config = window.getSingleton(Config.class).getJSONObject("game");
+        if(config.get("show_profiler", false))
+            args.add("profiling");
+        if(config.get("power_save_mode", false))
+            args.add("psm");
+        if(config.get("vsync", true))
+            args.add("vsync");
+
+        ProcessBuilder processBuilder = new ProcessBuilder(args.toArray(String[]::new));
 
         startProcess(processBuilder);
     }
 
     private void prepareProcessFromJar() {
         try {
-            String command = "java";
-            String arg1 = "-jar";
-            String arg2 = getJarPath();
-            String arg3 = "startGame";
-            String arg4 = "gameFile=" + window.getProjectPath().toPath();
+            var args = new ArrayList<String>();
+            args.add("java"); // command
+            args.add("-jar");
+            args.add(getJarPath());
+            args.add("startGame");
+            args.add("gameFile=" + window.getProjectPath().toPath());
 
-            ProcessBuilder processBuilder = new ProcessBuilder(command, arg1, arg2, arg3, arg4);
+            var config = window.getSingleton(Config.class).getJSONObject("game");
+            if(config.get("show_profiler", false))
+                args.add("profiling");
+            if(config.get("power_save_mode", false))
+                args.add("psm");
+            if(config.get("vsync", true))
+                args.add("vsync");
+
+            ProcessBuilder processBuilder = new ProcessBuilder(args.toArray(String[]::new));
 
             startProcess(processBuilder);
         } catch (JarException e){

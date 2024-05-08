@@ -8,8 +8,9 @@ import de.sunnix.aje.editor.window.menubar.resource.ResourceDialog;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
-import java.sql.Array;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class MenuBar extends JMenuBar {
 
@@ -21,7 +22,7 @@ public class MenuBar extends JMenuBar {
     public MenuBar(Window parent){
         this.parent = parent;
         add(setUpMMFile());
-        add(setUpMMMap());
+        add(setUpMMGame());
         add(setUpMMHelp());
     }
 
@@ -51,9 +52,29 @@ public class MenuBar extends JMenuBar {
         return mm;
     }
 
-    private JMenu setUpMMMap() {
-        var mm = addProjectDependentComponent(new JMenu("Map"));
+    private JMenu setUpMMGame() {
+        var mm = new JMenu("Game");
+        var config = parent.getSingleton(Config.class);
+        var gameConfig = config.getJSONObject("game");
+        mm.add(createCheckboxMenu("Show Profiler", gameConfig.get("show_profiler", false), b -> {
+            gameConfig.put("show_profiler", b);
+            config.set("game", gameConfig);
+        }));
+        mm.add(createCheckboxMenu("Power Save Mode", gameConfig.get("power_save_mode", false), b -> {
+            gameConfig.put("power_save_mode", b);
+            config.set("game", gameConfig);
+        }));
+        mm.add(createCheckboxMenu("VSync", gameConfig.get("vsync", true), b -> {
+            gameConfig.put("vsync", b);
+            config.set("game", gameConfig);
+        }));
         return mm;
+    }
+
+    private static JCheckBoxMenuItem createCheckboxMenu(String text, boolean selected, Consumer<Boolean> onChange){
+        var menu = new JCheckBoxMenuItem(text, selected);
+        menu.addActionListener(l -> onChange.accept(menu.isSelected()));
+        return menu;
     }
 
     private JMenu setUpMMHelp() {

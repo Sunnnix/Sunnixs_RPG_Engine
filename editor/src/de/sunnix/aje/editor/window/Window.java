@@ -31,6 +31,8 @@ import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class Window extends JFrame {
 
+    public static final int TILE_WIDTH = 24;
+    public static final int TILE_HEIGHT = 16;
     private final Map<Class<?>, Object> singletons = new HashMap<>();
     public final MenuBar menuBar;
     @Getter
@@ -43,32 +45,28 @@ public class Window extends JFrame {
     private TilesetTabView tilesetView;
     @Getter
     private PropertiesView propertiesView;
-
     @Getter
     private File projectPath;
     @Getter
     private String projectName;
-
     @Getter
     private boolean projectOpen;
     @Getter
     private boolean projectChanged;
-
     @Getter
     private final JLabel info;
-
     private Toolbar toolbar;
-
     private final List<Consumer<Config>> onCloseActions = new ArrayList<>();
-
     private int currentMapModule;
-
     private final MapViewModule[] mapModules;
     private final NullModule nullModule = new NullModule(this);
-
+    @Getter
+    private int drawTool = 0;
     @Getter
     @Setter
     private int startMap = -1;
+    @Getter
+    private boolean showGrid = true;
 
     public Window(){
         super();
@@ -277,10 +275,26 @@ public class Window extends JFrame {
                 );
                 return false;
             }
+            var version = Arrays.stream(config.get("editor_version", "0.0").split("\\.")).mapToInt(Integer::parseInt).toArray();
+            if(version[0] != Core.MAJOR_VERSION){
+                if(JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
+                        The major versions of the editor and the file are not the same.
+                        It is very likely that loading the file will result in errors.
+                        
+                        Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
+                    return false;
+            } else if(version[1] > Core.MINOR_VERSION){
+                if(JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
+                        The version of the file is higher than that of the editor.
+                        When the game file is loaded it may be that not all data can be loaded.
+                        
+                        Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
+                    return false;
+            }
             projectName = config.get("project_name", "Unnamed Project");
             startMap = config.get("start_map", -1);
             getSingleton(Resources.class).loadResources(zip);
-            getSingleton(GameData.class).loadData(zip);
+            getSingleton(GameData.class).loadData(zip, version);
         } catch (Exception e){
             JOptionPane.showMessageDialog(
                     this,
@@ -459,10 +473,19 @@ public class Window extends JFrame {
         mapTabsView.repaint();
     }
 
+    public void setDrawTool(int tool){
+        drawTool = tool;
+    }
+
     public MapViewModule getCurrentMapModule(){
         if(currentMapModule >= mapModules.length)
             return nullModule;
         return mapModules[currentMapModule];
+    }
+
+    public void setShowGrid(boolean show){
+        showGrid = show;
+        mapTabsView.repaint();
     }
 
 }

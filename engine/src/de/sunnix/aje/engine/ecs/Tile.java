@@ -1,18 +1,35 @@
 package de.sunnix.aje.engine.ecs;
 
-import de.sunnix.aje.engine.graphics.TextureAtlas;
 import de.sunnix.aje.engine.resources.Tileset;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
-import test.Textures;
 
 import static org.lwjgl.opengl.GL15.*;
 
 public class Tile {
+
+    private static short getLayer(int layer, int data){
+        if(layer == 0)
+            return (short)(data & 0xFFFF);
+        else
+            return (short)(data >> 16);
+    }
+
+    private static int getTexIndexOf(boolean layer0, int data){
+        data = getLayer(layer0 ? 0 : 1, data);
+        return data & 0xFFF;
+    }
+
+    private static int getTilesetOf(boolean layer0, int data){
+        data = getLayer(layer0 ? 0 : 1, data);
+        return ((data >> 12) & 0xF) - 1;
+    }
+
     private int x, y, height;
     private int[] indices;
     private float[] vertices;
-    private float[] textures;
+    private float[] texturesLayer0;
+    private float[] texturesLayer1;
 
     private int bufferOffset;
 
@@ -26,7 +43,8 @@ public class Tile {
     }
 
     public int create(Tileset tileset, DataSaveObject dso){
-        var texID = dso.getShort("g-tex", (short) -1) & 0xFFF;
+        var tex = dso.getInt("g-tex", 0);
+//        var texID = dso.getInt("g-tex", (short) -1) & 0xFFF;
         var heights = dso.getShort("height", (short) 0);
         var groundY = (byte)(heights >> 8);
         var wallHeight = (byte)(heights & 0xFF);
@@ -34,17 +52,28 @@ public class Tile {
         var iOffset = 4 * bufferOffset;
         indices = new int[6 * (wallHeight + 1)];
         vertices = new float[12 * (wallHeight + 1)];
-        textures = new float[8 * (wallHeight + 1)];
+        texturesLayer0 = new float[8 * (wallHeight + 1)];
+        texturesLayer1 = new float[8 * (wallHeight + 1)];
 
-        var wallTex = dso.getShortArray("w-tex", 0);
+        var wallTex = dso.getIntArray("w-tex", 0);
+
+        int tex0 = -1, tex1 = -1;
 
         for (int i = 0; i < height + 1; i++) {
-            if(i > 0){
-                var ts = ((wallTex[i - 1] >> 12) & 0xF) - 1;
-                if(ts == -1)
-                    continue;
-                texID = wallTex[i - 1] & 0xFFF;
-            }
+            if(i > 0)
+                tex = wallTex[i - 1];
+
+            var ts = getTilesetOf(true, tex);
+            if(ts == -1)
+                tex0 = -1;
+            else
+                tex0 = getTexIndexOf(true, tex);
+            ts = getTilesetOf(false, tex);
+            if(ts == -1)
+                tex1 = -1;
+            else
+                tex1 = getTexIndexOf(false, tex);
+
             indices[i * 6] = iOffset;
             indices[i * 6 + 1] = iOffset + 1;
             indices[i * 6 + 2] = iOffset + 3;
@@ -88,8 +117,10 @@ public class Tile {
                 vertices[i * 12 + 11] = y + 1;
             }
             if(tileset != null) {
-                var tex = tileset.getTexturePositions(texID);
-                System.arraycopy(tex, 0, textures, i * 8, 8);
+                var texArr = tileset.getTexturePositions(tex0);
+                System.arraycopy(texArr, 0, texturesLayer0, i * 8, 8);
+                texArr = tileset.getTexturePositions(tex1);
+                System.arraycopy(texArr, 0, texturesLayer1, i * 8, 8);
             }
         }
 
@@ -122,8 +153,12 @@ public class Tile {
         glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 12L * Float.BYTES, vertices);
     }
 
-    public void bufferTextures() {
-        glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 8L * Float.BYTES, textures);
+    public void bufferTextures0() {
+        glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 8L * Float.BYTES, texturesLayer0);
+    }
+
+    public void bufferTextures1() {
+        glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 8L * Float.BYTES, texturesLayer1);
     }
 
     public void bufferIndices() {

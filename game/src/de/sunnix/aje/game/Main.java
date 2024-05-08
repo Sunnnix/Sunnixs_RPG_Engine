@@ -34,7 +34,8 @@ public class Main implements IRegistry {
         Core.init();
         Core.createWindow(1280, 720);
 
-        Core.setPower_safe_mode(false);
+        Core.setPower_safe_mode(Arrays.stream(args).anyMatch("psm"::equalsIgnoreCase));
+        Core.setVsync(Arrays.stream(args).anyMatch("vsync"::equalsIgnoreCase));
 
 //        text.setPos(0, 5);
 

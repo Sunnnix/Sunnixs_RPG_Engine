@@ -7,6 +7,9 @@ import de.sunnix.aje.editor.window.resource.Resources;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import static de.sunnix.aje.editor.window.Window.TILE_HEIGHT;
+import static de.sunnix.aje.editor.window.Window.TILE_WIDTH;
+
 public class SelectTileModule extends MapViewModule {
 
     public SelectTileModule(Window window) {
@@ -16,7 +19,7 @@ public class SelectTileModule extends MapViewModule {
     private int preX, preY;
 
     @Override
-    public boolean onMousePresses(MapData map, int button, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean onMousePresses(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         if(tileX < 0)
             tileX = 0;
         if(tileY < 0)
@@ -35,19 +38,19 @@ public class SelectTileModule extends MapViewModule {
     }
 
     @Override
-    public boolean onMouseReleased(MapData map, int button, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean onMouseReleased(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         return false;
     }
 
     @Override
-    public boolean onMouseMoved(MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean onMouseMoved(MapView view, MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         var sTiles = map.getSelectedTiles();
         window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s)", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3]));
         return false;
     }
 
     @Override
-    public boolean onMouseDragged(MapData map, int button, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY, boolean sameTile) {
+    public boolean onMouseDragged(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY, boolean sameTile) {
         var sTiles = map.getSelectedTiles();
         window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s)", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3]));
         if(sameTile)
@@ -68,52 +71,65 @@ public class SelectTileModule extends MapViewModule {
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapData map, int screenWidth, int screenHeight) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY) {
         var mapWidth = map.getWidth();
         var mapHeight = map.getHeight();
-        var x = screenWidth / 2 - mapWidth * 24 / 2;
-        var y = screenHeight / 2 - mapHeight * 16 / 2;
+        var TW = (int)(TILE_WIDTH * view.getZoom());
+        var TH = (int)(TILE_HEIGHT * view.getZoom());
+        var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
+        var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
 
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
+        // ground tex
         for (var tX = 0; tX < mapWidth; tX++)
             for (var tY = 0; tY < mapHeight; tY++){
                 var tile = tiles[tX + tY * mapWidth];
-                var texID = tile.getTexID();
-                var tsID = texID[0];
-                var index = texID[1];
-                if(tsID < 0 || tsID > tilesets.length || index < 0)
-                    continue;
-                var tileset = tilesets[tsID];
-                var tsWidth = tileset == null ? 1 : tileset.getWidth() / 24;
-                var tsHeight = tileset == null ? 1 : tileset.getHeight() / 16;
 
                 var floorY = tile.getgroundY();
 
-                var dX = x + tX * 24;
-                var dY = y + (tY - floorY) * 16;
-                var iX = (index % tsWidth) * 24;
-                var iY = (index / tsWidth) * 16;
-                g.drawImage(tileset, dX, dY, dX + 24, dY + 16, iX, iY, iX + 24, iY + 16, null);
-                // draw walls
-                for(var wall = 0; wall < tile.getWallHeight(); wall++){
-                    var wallTS = tile.getWallTileset(wall);
-                    var wallIndex = tile.getWallTexIndex(wall);
-                    if(wallTS == -1 || wallIndex == -1)
+                var dX = x + tX * TW;
+                var dY = y + (tY - floorY) * TH;
+
+                var tex = tile.getGroundTex();
+                for(var layer = 0; layer < 2; layer++){
+                    var tsID = tex[layer * 2];
+                    var texID = tex[layer * 2 + 1];
+                    if(tsID < 0 || tsID > tilesets.length || texID < 0)
                         continue;
-                    tileset = tilesets[tsID];
-                    dY = y + (tY - wall) * 16;
-                    iX = (wallIndex % tsWidth) * 24;
-                    iY = (wallIndex / tsWidth) * 16;
-                    g.drawImage(tileset, dX, dY, dX + 24, dY + 16, iX, iY, iX + 24, iY + 16, null);
+                    var tileset = tilesets[tsID];
+                    var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
+                    var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+
+                    var iX = (texID % tsWidth) * TILE_WIDTH;
+                    var iY = (texID / tsWidth) * TILE_HEIGHT;
+                    g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                }
+                // wall tex
+                for(var wall = 0; wall < tile.getWallHeight(); wall++){
+                    for(var layer = 0; layer < 2; layer++){
+                        tex = tile.getWallTex(wall);
+                        var wallTS = tex[layer * 2];
+                        var wallIndex = tex[layer * 2 + 1];
+                        if(wallTS == -1 || wallIndex == -1)
+                            continue;
+                        var tileset = tilesets[wallTS];
+                        var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
+                        var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                        dY = y + (tY - wall) * TH;
+                        var iX = (wallIndex % tsWidth) * TILE_WIDTH;
+                        var iY = (wallIndex / tsWidth) * TILE_HEIGHT;
+                        g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    }
                 }
             }
 
-        g.setColor(Color.BLACK);
-        for (int i = 0; i < mapWidth; i++)
-            for (int j = 0; j < mapHeight; j++)
-                g.drawRect(x + 24 * i, y + 16 * j, 24, 16);
-
+        if(window.isShowGrid()) {
+            g.setColor(Color.BLACK);
+            for (int i = 0; i < mapWidth; i++)
+                for (int j = 0; j < mapHeight; j++)
+                    g.drawRect(x + TW * i, y + TH * j, TW, TH);
+        }
 
         var selected = map.getSelectedTiles();
         var sX = selected[0];
@@ -124,15 +140,15 @@ public class SelectTileModule extends MapViewModule {
         var groundY = tiles[sX + sY * map.getWidth()].getgroundY();
 
         g.setColor(Color.MAGENTA);
-        g.drawLine(x + 24 * sX, y + 16 * sY, x + 24 * sX + 24 * sW, y + 16 * sY);
-        g.drawRect(x + 24 * sX, y + 16 * (sY - groundY), 24 * sW, 16 * (sH + groundY));
+        g.drawLine(x + TW * sX, y + TH * sY, x + TW * sX + TW * sW, y + TH * sY);
+        g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * (sH + groundY));
 
         g.setColor(Color.YELLOW);
-        g.drawRect(x + 24 * sX, y + 16 * (sY - groundY), 24 * sW, 16 * sH);
+        g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * sH);
     }
 
     @Override
-    public boolean omMouseWheelMoved(MapData mapData, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean omMouseWheelMoved(MapView view, MapData mapData, int mask, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         return false;
     }
 

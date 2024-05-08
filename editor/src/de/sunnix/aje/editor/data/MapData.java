@@ -45,8 +45,8 @@ public class MapData {
             tiles[i] = new Tile();
     }
 
-    public MapData(DataSaveObject dso) {
-        loadMap(dso);
+    public MapData(DataSaveObject dso, int[] version) {
+        loadMap(dso, version);
     }
 
     public void setTileset(String tileset){
@@ -91,7 +91,7 @@ public class MapData {
         }).toList());
     }
 
-    private void loadMap(DataSaveObject dso) {
+    private void loadMap(DataSaveObject dso, int[] version) {
         ID = dso.getInt("id", -1);
         name = dso.getString("name", null);
         width = dso.getInt("width", MINIMUM_WIDTH);
@@ -100,7 +100,8 @@ public class MapData {
         tiles = new Tile[width * height];
         var tileList = dso.<DataSaveObject>getList("tiles");
         for (int i = 0; i < tiles.length; i++) {
-            tiles[i] = new Tile(tileList.get(i));
+            tiles[i] = new Tile(tileList.get(i), version);
         }
     }
+
 }

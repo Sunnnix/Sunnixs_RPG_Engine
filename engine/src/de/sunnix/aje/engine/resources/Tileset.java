@@ -58,6 +58,13 @@ public class Tileset {
     }
 
     public float[] getTexturePositions(int id) {
+        if(id == -1)
+            return new float[]{
+                    -1, -1,
+                    -1, -1,
+                    -1, -1,
+                    -1, -1
+            };
         if(res == null)
             id = 0;
         id = id % (this.width * this.height); // prevent crash, repeat de.sunnix.game.textures

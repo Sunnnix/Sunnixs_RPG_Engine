@@ -82,7 +82,7 @@ public class GameData {
         }
     }
 
-    public void loadData(ZipFile zip) throws IOException {
+    public void loadData(ZipFile zip, int[] version) throws IOException {
         var resFolder = new File("maps");
         var stream = zip.getInputStream(new ZipEntry(new File(resFolder, "config").getPath()));
         var conf = new DataSaveObject().load(stream);
@@ -91,7 +91,7 @@ public class GameData {
         for(var mapID: mapList){
             stream = zip.getInputStream(new ZipEntry(new File(resFolder, String.format("%04d.map", mapID)).getPath()));
             var dso = new DataSaveObject().load(stream);
-            maps.add(new MapData(dso));
+            maps.add(new MapData(dso, version));
             stream.close();
         }
     }
