@@ -38,7 +38,7 @@ public class FunctionUtils {
     public static JButton createButton(String name, String unselectedIcon, String selectedIcon, ActionListener al){
         var mi = new JButton(name);
         if(unselectedIcon != null){
-            try(var stream = FunctionUtils.class.getResourceAsStream("/de/sunnix/aje/editor/window/" + unselectedIcon)){
+            try(var stream = FunctionUtils.class.getResourceAsStream("/de/sunnix/aje/editor/window/icons/" + unselectedIcon)){
                 var icon = new ImageIcon(ImageIO.read(stream));
                 mi.setIcon(icon);
                 mi.setText(null);
@@ -47,7 +47,7 @@ public class FunctionUtils {
             }
         }
         if(selectedIcon != null){
-            try(var stream = FunctionUtils.class.getResourceAsStream("/de/sunnix/aje/editor/window/" + selectedIcon)){
+            try(var stream = FunctionUtils.class.getResourceAsStream("/de/sunnix/aje/editor/window/icons/" + selectedIcon)){
                 var icon = new ImageIcon(ImageIO.read(stream));
                 mi.setSelectedIcon(icon);
             } catch (IOException e) {

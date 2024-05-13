@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine;
 
+import de.sunnix.aje.engine.audio.OpenALContext;
 import de.sunnix.aje.engine.memory.ContextQueue;
 import de.sunnix.aje.engine.memory.MemoryHandler;
 import de.sunnix.aje.engine.debug.FPSGenerator;
@@ -32,7 +33,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class Core {
 
     public static final int MAJOR_VERSION = 0;
-    public static final int MINOR_VERSION = 4;
+    public static final int MINOR_VERSION = 5;
     public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
 
     public enum CoreStage {
@@ -118,6 +119,8 @@ public class Core {
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
 
+        OpenALContext.setUp();
+
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             logException("UncaughtExceptionHandler", throwable);
             System.exit(1);
@@ -201,6 +204,7 @@ public class Core {
         Arrays.stream(GameState.values()).forEach(state -> state.state.onDestroy());
         MemoryHandler.freeAll();
         glfwTerminate();
+        OpenALContext.close();
         logI("Core", "Game stopped!");
         if(exit_on_close)
             System.exit(0);

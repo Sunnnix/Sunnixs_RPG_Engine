@@ -1,6 +1,8 @@
 package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
+import de.sunnix.aje.editor.util.DialogUtils;
+import de.sunnix.aje.engine.audio.OpenALContext;
 import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
@@ -63,6 +65,7 @@ public class Window extends JFrame {
     private int currentMapModule;
     private final MapViewModule[] mapModules;
     private final NullModule nullModule = new NullModule(this);
+    @Setter
     @Getter
     private int drawTool = DRAW_TOOL_SINGLE;
     @Getter
@@ -109,6 +112,8 @@ public class Window extends JFrame {
         add(info, BorderLayout.SOUTH);
 
         mapModules = genModules();
+
+        OpenALContext.setUp();
 
         setProjectOpen(false);
         updateTitle();
@@ -219,11 +224,18 @@ public class Window extends JFrame {
     public void newProject() {
         if(!checkForSaving())
             return;
-        cleanProject();
-        var input = (String) JOptionPane.showInputDialog(this, "Write a name for the id of the image:", "Create new Image Resource", JOptionPane.PLAIN_MESSAGE, null, null, "New Project");
-        projectName = input == null ? "New Project" : input;
-        setProjectOpen(true);
-        setProjectChanged();
+        DialogUtils.showLoadingDialog(this, "Setup new Project", dialog -> {
+            cleanProject();
+            dialog.addProgress(80);
+            var input = (String) JOptionPane.showInputDialog(this, "Write a name for the id of the image:", "Create new Image Resource", JOptionPane.PLAIN_MESSAGE, null, null, "New Project");
+            if(input == null)
+                return;
+            projectName = input;
+            dialog.addProgress(10);
+            setProjectOpen(true);
+            setProjectChanged();
+            dialog.addProgress(10);
+        });
     }
 
     public void loadProject(String path) {
@@ -265,51 +277,56 @@ public class Window extends JFrame {
     }
 
     private boolean loadGameFile(File file){
-        try(var zip = new ZipFile(file)){
-            BetterJSONObject config;
-            try {
-                config = new BetterJSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
-            } catch (NullPointerException e){
+        return (boolean) DialogUtils.showLoadingDialog(this, "Load game file...", dialog -> {
+            dialog.setMaxProgress(1000 + 500 + 5000 + 3500);
+            try (var zip = new ZipFile(file)) {
+                BetterJSONObject config;
+                try {
+                    config = new BetterJSONObject(new String(zip.getInputStream(new ZipEntry("game.config")).readAllBytes()));
+                } catch (NullPointerException e) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "File missing game.config!",
+                            "Missing config",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return false;
+                }
+                dialog.addProgress(1000);
+                var version = Arrays.stream(config.get("editor_version", "0.0").split("\\.")).mapToInt(Integer::parseInt).toArray();
+                if (version[0] != Core.MAJOR_VERSION) {
+                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
+                            The major versions of the editor and the file are not the same.
+                            It is very likely that loading the file will result in errors.
+                                                    
+                            Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
+                        return false;
+                } else if (version[1] > Core.MINOR_VERSION) {
+                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
+                            The version of the file is higher than that of the editor.
+                            When the game file is loaded it may be that not all data can be loaded.
+                                                    
+                            Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
+                        return false;
+                }
+                projectName = config.get("project_name", "Unnamed Project");
+                startMap = config.get("start_map", -1);
+                dialog.addProgress(500);
+                getSingleton(Resources.class).loadResources(dialog, 5000, zip);
+                getSingleton(GameData.class).loadData(dialog, 3500, zip, version);
+            } catch (Exception e) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "File missing game.config!",
-                        "Missing config",
+                        "There was a problem loading the project!\n" + e.getMessage(),
+                        "Error loading project",
                         JOptionPane.ERROR_MESSAGE
                 );
+                e.printStackTrace();
+                closeProject();
                 return false;
             }
-            var version = Arrays.stream(config.get("editor_version", "0.0").split("\\.")).mapToInt(Integer::parseInt).toArray();
-            if(version[0] != Core.MAJOR_VERSION){
-                if(JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
-                        The major versions of the editor and the file are not the same.
-                        It is very likely that loading the file will result in errors.
-                        
-                        Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
-                    return false;
-            } else if(version[1] > Core.MINOR_VERSION){
-                if(JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
-                        The version of the file is higher than that of the editor.
-                        When the game file is loaded it may be that not all data can be loaded.
-                        
-                        Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
-                    return false;
-            }
-            projectName = config.get("project_name", "Unnamed Project");
-            startMap = config.get("start_map", -1);
-            getSingleton(Resources.class).loadResources(zip);
-            getSingleton(GameData.class).loadData(zip, version);
-        } catch (Exception e){
-            JOptionPane.showMessageDialog(
-                    this,
-                    "There was a problem loading the project!\n" + e.getMessage(),
-                    "Error loading project",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            e.printStackTrace();
-            closeProject();
-            return false;
-        }
-        return true;
+            return true;
+        });
     }
 
     public boolean saveProject(boolean openFilechooser) {
@@ -371,26 +388,32 @@ public class Window extends JFrame {
     }
 
     private boolean saveGameFile(File file){
-        try(var zip = new ZipOutputStream(new FileOutputStream(file))){
-            var config = new JSONObject();
-            config.put("project_name", projectName);
-            config.put("start_map", startMap);
-            config.put("editor_version", Core.VERSION);
-            getSingleton(Resources.class).saveResources(zip);
-            getSingleton(GameData.class).saveData(zip);
+        return (boolean) DialogUtils.showLoadingDialog(this, "Saving project...", dialog -> {
+            dialog.setMaxProgress(1000 + 500 + 5000 + 3500);
+            try(var zip = new ZipOutputStream(new FileOutputStream(file))){
+                var config = new JSONObject();
+                dialog.addProgress(1000);
+                config.put("project_name", projectName);
+                config.put("start_map", startMap);
+                config.put("editor_version", Core.VERSION);
+                dialog.addProgress(500);
+                getSingleton(Resources.class).saveResources(dialog, 5000, zip);
+                getSingleton(GameData.class).saveData(dialog, 3500, zip);
 
-            zip.putNextEntry(new ZipEntry("game.config"));
-            zip.write(config.toString(2).getBytes());
-        } catch (Exception e){
-            JOptionPane.showMessageDialog(
-                    this,
-                    "There was a problem saving the project!",
-                    "Error saving project",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            return false;
-        }
-        return true;
+                zip.putNextEntry(new ZipEntry("game.config"));
+                zip.write(config.toString(2).getBytes());
+            } catch (Exception e){
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        this,
+                        "There was a problem saving the project!",
+                        "Error saving project",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return false;
+            }
+            return true;
+        });
     }
 
     public void closeProject(){
@@ -425,6 +448,7 @@ public class Window extends JFrame {
                 if(!checkForSaving())
                     return;
                 toolbar.closeProcess();
+                OpenALContext.close();
                 dispose();
             }
 
@@ -474,10 +498,6 @@ public class Window extends JFrame {
     public void setMapModule(int module){
         currentMapModule = module;
         mapTabsView.repaint();
-    }
-
-    public void setDrawTool(int tool){
-        drawTool = tool;
     }
 
     public MapViewModule getCurrentMapModule(){

@@ -45,7 +45,7 @@ public class ResourceDialog extends JDialog {
                         createNode("Tilesets", p -> new TilesetView(parent, p))
                 ),
                 createNode("Audio",
-                        createNode("Raw", p -> new JPanel())
+                        createNode("Raw", p -> new ResourceAudioView(parent, p))
                 )
         );
 

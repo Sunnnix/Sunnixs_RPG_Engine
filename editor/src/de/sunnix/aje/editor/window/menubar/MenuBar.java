@@ -80,6 +80,9 @@ public class MenuBar extends JMenuBar {
     private JMenu setUpMMHelp() {
         var mm = new JMenu("Help");
         mm.add(createDefaultMenuItem("User Guide", e -> new UserGuide(parent)));
+        var langMenu = createDefaultMenuItem("Language (WIP)", null);
+        langMenu.setEnabled(false);
+        mm.add(langMenu);
         mm.add(createDefaultMenuItem("About", e -> new AboutDialog(parent)));
         return mm;
     }

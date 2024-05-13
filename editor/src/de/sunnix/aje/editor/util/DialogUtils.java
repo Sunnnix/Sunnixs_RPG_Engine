@@ -1,15 +1,15 @@
 package de.sunnix.aje.editor.util;
 
-import de.sunnix.aje.editor.window.resource.Resources;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static de.sunnix.aje.editor.util.FunctionUtils.createButton;
+import static javax.swing.JOptionPane.getRootFrame;
 
 public class DialogUtils {
 
@@ -51,6 +51,43 @@ public class DialogUtils {
             return false;
         }
         return true;
+    }
+
+    public static Object showLoadingDialog(Component parentComponent, String title, Consumer<LoadingDialog> process){
+        if(process == null)
+            return null;
+        final LoadingDialog dialog;
+
+        final var window = getWindowForComponent(parentComponent);
+        if (window instanceof Frame) {
+            dialog = new LoadingDialog((Frame)window, title, process);
+        } else {
+            dialog = new LoadingDialog((Dialog)window, title, process);
+        }
+        return dialog.getResult();
+    }
+
+    public static Object showLoadingDialog(Component parentComponent, String title, Function<LoadingDialog, Object> process){
+        if(process == null)
+            return null;
+        final LoadingDialog dialog;
+
+        final var window = getWindowForComponent(parentComponent);
+        if (window instanceof Frame) {
+            dialog = new LoadingDialog((Frame)window, title, process);
+        } else {
+            dialog = new LoadingDialog((Dialog)window, title, process);
+        }
+        return dialog.getResult();
+    }
+
+    private static Window getWindowForComponent(Component parentComponent)
+            throws HeadlessException {
+        if (parentComponent == null)
+            return getRootFrame();
+        if (parentComponent instanceof Frame || parentComponent instanceof Dialog)
+            return (Window)parentComponent;
+        return getWindowForComponent(parentComponent.getParent());
     }
 
     private static class MultiInputDialog extends JDialog {

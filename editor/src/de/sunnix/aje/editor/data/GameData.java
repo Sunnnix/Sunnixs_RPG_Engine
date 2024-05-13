@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.data;
 
 import de.sunnix.aje.editor.util.FunctionUtils;
+import de.sunnix.aje.editor.util.LoadingDialog;
 import de.sunnix.sdso.DataSaveObject;
 
 import java.io.ByteArrayOutputStream;
@@ -60,11 +61,11 @@ public class GameData {
         maps.clear();
     }
 
-    public void saveData(ZipOutputStream zip) throws IOException {
-        saveMaps(zip);
+    public void saveData(LoadingDialog dialog, int progress, ZipOutputStream zip) throws IOException {
+        saveMaps(dialog, progress, zip);
     }
 
-    private void saveMaps(ZipOutputStream zip) throws IOException {
+    private void saveMaps(LoadingDialog dialog, int progress, ZipOutputStream zip) throws IOException {
         var resFolder = new File("maps");
         var conf = new DataSaveObject();
         conf.putList("config", maps.stream().map(x -> (short) x.getID()).toList());
@@ -72,6 +73,7 @@ public class GameData {
         var oStream = new ByteArrayOutputStream();
         conf.save(oStream);
         zip.write(oStream.toByteArray());
+        var progressPerMap = (int)((double) progress / maps.size());
         for (var map : maps) {
             zip.putNextEntry(new ZipEntry(new File(resFolder, String.format("%04d.map", map.getID())).getPath()));
             var dso = new DataSaveObject();
@@ -79,20 +81,23 @@ public class GameData {
             oStream = new ByteArrayOutputStream();
             dso.save(oStream);
             zip.write(oStream.toByteArray());
+            dialog.addProgress(progressPerMap);
         }
     }
 
-    public void loadData(ZipFile zip, int[] version) throws IOException {
+    public void loadData(LoadingDialog dialog, int progress, ZipFile zip, int[] version) throws IOException {
         var resFolder = new File("maps");
         var stream = zip.getInputStream(new ZipEntry(new File(resFolder, "config").getPath()));
         var conf = new DataSaveObject().load(stream);
         stream.close();
         var mapList = conf.<Short>getList("config");
+        var progressPerMap = (int)((double) progress / mapList.size());
         for(var mapID: mapList){
             stream = zip.getInputStream(new ZipEntry(new File(resFolder, String.format("%04d.map", mapID)).getPath()));
             var dso = new DataSaveObject().load(stream);
             maps.add(new MapData(dso, version));
             stream.close();
+            dialog.addProgress(progressPerMap);
         }
     }
 

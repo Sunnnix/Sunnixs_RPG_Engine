@@ -6,7 +6,7 @@
     <parent>
         <groupId>de.sunnix</groupId>
         <artifactId>Sunlundra</artifactId>
-        <version>INDEV 1.0</version>
+        <version>1.0</version>
     </parent>
 
     <groupId>de.sunnix.sunlundra</groupId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>de.sunnix.sunlundra</groupId>
             <artifactId>engine</artifactId>
-            <version>INDEV 1.0</version>
+            <version>1.0</version>
         </dependency>
 
         <!-- Sunnix -->
