@@ -33,6 +33,9 @@ public class Window extends JFrame {
 
     public static final int TILE_WIDTH = 24;
     public static final int TILE_HEIGHT = 16;
+    public static final int DRAW_TOOL_SINGLE = 0;
+    public static final int DRAW_TOOL_MULTI_RECT = 1;
+    public static final int DRAW_TOOL_FILL = 2;
     private final Map<Class<?>, Object> singletons = new HashMap<>();
     public final MenuBar menuBar;
     @Getter
@@ -61,7 +64,7 @@ public class Window extends JFrame {
     private final MapViewModule[] mapModules;
     private final NullModule nullModule = new NullModule(this);
     @Getter
-    private int drawTool = 0;
+    private int drawTool = DRAW_TOOL_SINGLE;
     @Getter
     @Setter
     private int startMap = -1;
@@ -463,9 +466,9 @@ public class Window extends JFrame {
         tilesetView.reload();
     }
 
-    public void setSelectedTile(int tileset, int index) {
-        tilesetView.setSelectedTile(tileset, index);
-        mapView.setSelectedTilesetTile(tileset, index);
+    public void setSelectedTile(int tileset, int index, int width, int height) {
+        tilesetView.setSelectedTile(tileset, index, width, height);
+        mapView.setSelectedTilesetTile(tileset, index, width, height);
     }
 
     public void setMapModule(int module){

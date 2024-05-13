@@ -13,6 +13,15 @@ import static de.sunnix.aje.editor.window.Window.TILE_HEIGHT;
 
 public class WallDrawModule extends MapViewModule {
 
+    private int dragFillRootX = -1;
+    private int dragFillRootY = -1;
+    private int dragFillStartX = -1;
+    private int dragFillStartY = -1;
+    private int dragFillWidth = 1;
+    private int dragFillHeight = 1;
+    private int dragFillLayer = 0;
+    private boolean dragFillPrimaryMouse = true;
+
     public WallDrawModule(Window window) {
         super(window);
     }
@@ -29,28 +38,80 @@ public class WallDrawModule extends MapViewModule {
             return false;
         if(button == MouseEvent.BUTTON1){
             var texID = map.getSelectedTilesetTile();
-            setTileWall(map, layer, tileX, wallDrawLayer, yDiff, texID[0], texID[1]);
+            switch (window.getDrawTool()) {
+                case Window.DRAW_TOOL_MULTI_RECT -> {
+                    dragFillPrimaryMouse = true;
+                    dragFillLayer = layer;
+                    dragFillRootX = tileX;
+                    dragFillRootY = yDiff;
+                    dragFillStartX = tileX;
+                    dragFillStartY = yDiff;
+                    dragFillWidth = 1;
+                    dragFillHeight = 1;
+                }
+                case Window.DRAW_TOOL_FILL -> startFillTiles(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
+                default -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
+            }
         } else if(button == MouseEvent.BUTTON3)
-            setTileWall(map, layer, tileX, wallDrawLayer, yDiff, -1, 0);
+            switch (window.getDrawTool()) {
+                case Window.DRAW_TOOL_MULTI_RECT -> {
+                    dragFillPrimaryMouse = false;
+                    dragFillLayer = layer;
+                    dragFillRootX = tileX;
+                    dragFillRootY = yDiff;
+                    dragFillStartX = tileX;
+                    dragFillStartY = yDiff;
+                    dragFillWidth = 1;
+                    dragFillHeight = 1;
+                }
+                case Window.DRAW_TOOL_FILL -> startFillTiles(map, tileX, wallDrawLayer, layer, yDiff, -1, 0);
+                default -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, -1, 0);
+            }
         else if(button == MouseEvent.BUTTON2){
             var tile = map.getTiles()[tileX + wallDrawLayer * map.getWidth()];
             var tex = tile.getWallTex(yDiff);
             if(layer == 0)
-                window.setSelectedTile(tex[0], tex[1]);
+                window.setSelectedTile(tex[0], tex[1], 1, 1);
             else
-                window.setSelectedTile(tex[2], tex[3]);
+                window.setSelectedTile(tex[2], tex[3], 1, 1);
         }
         return true;
     }
 
     @Override
     public boolean onMouseReleased(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+        if(window.getDrawTool() == Window.DRAW_TOOL_MULTI_RECT){
+            if(button == MouseEvent.BUTTON1 && dragFillPrimaryMouse) {
+                var tex = map.getSelectedTilesetTile();
+                for(var x = Math.max(0, dragFillStartX); x < Math.min(map.getWidth(), dragFillStartX + dragFillWidth); x++)
+                    setTileWalls(map, x, window.getPropertiesView().getWallDrawLayer(), dragFillStartY, dragFillHeight, dragFillLayer, tex[0], tex[1]);
+                window.setProjectChanged();
+                dragFillRootX = -1;
+                dragFillRootY = -1;
+                dragFillStartX = -1;
+                dragFillStartY = -1;
+                dragFillWidth = 1;
+                dragFillHeight = 1;
+                return true;
+            } else if(button == MouseEvent.BUTTON3 && !dragFillPrimaryMouse) {
+                for(var x = Math.max(0, dragFillStartX); x < Math.min(map.getWidth(), dragFillStartX + dragFillWidth); x++)
+                    setTileWalls(map, x, window.getPropertiesView().getWallDrawLayer(), dragFillStartY, dragFillHeight, dragFillLayer, -1, 0);
+                window.setProjectChanged();
+                dragFillRootX = -1;
+                dragFillRootY = -1;
+                dragFillStartX = -1;
+                dragFillStartY = -1;
+                dragFillWidth = 1;
+                dragFillHeight = 1;
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean onMouseMoved(MapView view, MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
-        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s)", tileX, tileY, mapX, mapY));
+        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%", tileX, tileY, mapX, mapY, (int)(view.getZoom() * 100)));
         return false;
     }
 
@@ -64,14 +125,32 @@ public class WallDrawModule extends MapViewModule {
         if(yDiff < 0)
             return false;
         var layer = (mask & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK ? 1 : 0;
-        var wallHeight = map.getTiles()[tileX + wallDrawLayer * map.getWidth()].getWallHeight();
+        var wallHeight = tileX < 0 ? 0 : map.getTiles()[tileX + wallDrawLayer * map.getWidth()].getWallHeight();
         if(yDiff > wallHeight)
             return false;
         if(button == MouseEvent.BUTTON1){
             var texID = map.getSelectedTilesetTile();
-            setTileWall(map, layer, tileX, wallDrawLayer, yDiff, texID[0], texID[1]);
+            switch (window.getDrawTool()) {
+                case Window.DRAW_TOOL_MULTI_RECT -> {
+                    dragFillWidth = Math.max(1, Math.abs(dragFillRootX - tileX) + 1);
+                    dragFillHeight = Math.max(1, Math.abs(dragFillRootY - yDiff) + 1);
+                    dragFillStartX = Math.min(tileX, dragFillRootX);
+                    dragFillStartY = Math.min(yDiff, dragFillRootY);
+                    dragFillLayer = layer;
+                }
+                case Window.DRAW_TOOL_SINGLE -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
+            }
         } else if(button == MouseEvent.BUTTON3)
-            setTileWall(map, layer, tileX, wallDrawLayer, yDiff, -1, 0);
+            switch (window.getDrawTool()) {
+                case Window.DRAW_TOOL_MULTI_RECT -> {
+                    dragFillWidth = Math.max(1, Math.abs(dragFillRootX - tileX) + 1);
+                    dragFillHeight = Math.max(1, Math.abs(dragFillRootY - yDiff) + 1);
+                    dragFillStartX = Math.min(tileX, dragFillRootX);
+                    dragFillStartY = Math.min(yDiff, dragFillRootY);
+                    dragFillLayer = layer;
+                }
+                case Window.DRAW_TOOL_SINGLE -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, -1, 0);
+            }
         return true;
     }
 
@@ -88,6 +167,7 @@ public class WallDrawModule extends MapViewModule {
 
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
+        // draw complete with black layer
         g.setColor(new Color(0f, 0f, 0f, .75f));
         for (var tX = 0; tX < mapWidth; tX++)
             for (var tY = 0; tY < mapHeight; tY++) {
@@ -133,6 +213,7 @@ public class WallDrawModule extends MapViewModule {
                 }
             }
 
+        // draw selected layer
         g.setColor(Color.BLACK);
         for (var tX = 0; tX < mapWidth; tX++){
             var tile = tiles[tX + wallDrawLayer * mapWidth];
@@ -159,11 +240,28 @@ public class WallDrawModule extends MapViewModule {
 
             for(var wall = 0; wall < tile.getWallHeight(); wall++) {
                 for(var layer = 0; layer < 2; layer++) {
+                    dY = y + (wallDrawLayer - wall) * TH;
+                    // dragFillTool
+                    if(window.getDrawTool() == Window.DRAW_TOOL_MULTI_RECT && dragFillLayer == layer && tX >= dragFillStartX && tX < dragFillStartX + dragFillWidth && wall >= dragFillStartY && wall < dragFillStartY + dragFillHeight){
+                        if(!dragFillPrimaryMouse)
+                            continue;
+                        var tex = map.getSelectedTilesetTile();
+                        if(tex[0] == -1)
+                            continue;
+                        if (tex[0] < 0 || tex[0] > tilesets.length || tex[1] < 0)
+                            continue;
+                        var tileset = tilesets[tex[0]];
+                        var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
+                        var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+
+                        var iX = (tex[1] % tsWidth) * TILE_WIDTH;
+                        var iY = (tex[1] / tsWidth) * TILE_HEIGHT;
+                        g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        continue;
+                    }
                     var tex = tile.getWallTex(wall);
                     var wallTS = tex[layer * 2];
                     var wallIndex = tex[layer * 2 + 1];
-
-                    dY = y + (wallDrawLayer - wall) * TH;
 
                     if(wallTS == -1)
                         continue;
@@ -188,7 +286,7 @@ public class WallDrawModule extends MapViewModule {
         return false;
     }
 
-    private void setTileWall(MapData map, int layer, int x, int y, int wall, int tileset, int index) {
+    private void setTileWall(MapData map, int x, int y, int layer, int wall, int tileset, int index, boolean noticeChanged) {
         if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
             return;
         var tile = map.getTiles()[x + y * map.getWidth()];
@@ -196,7 +294,57 @@ public class WallDrawModule extends MapViewModule {
         if(wall >= wallHeight)
             return;
         tile.setWallTex(wall, layer, tileset, index);
+        if(noticeChanged)
+            window.setProjectChanged();
+    }
+
+    private void setTileWall(MapData map, int x, int y, int layer, int wall, int tileset, int index) {
+        setTileWall(map, x, y, layer, wall, tileset, index, true);
+    }
+
+
+    private void setTileWalls(MapData map, int x, int y, int wallStart, int length, int layer, int tileset, int index) {
+        for (var i = wallStart; i < wallStart + length; i++) {
+            if (wallStart < 0)
+                continue;
+            setTileWall(map, x, y, layer, i, tileset, index, false);
+        }
+    }
+
+    private void startFillTiles(MapData map, int x, int y, int layer, int wall, int tilesetIndex, int index){
+        if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
+            return;
+        int tTS, tIndex;
+        var tiles = map.getTiles();
+        var sTile = tiles[x + y * map.getWidth()];
+        var wallHeight = sTile.getWallHeight();
+        if(wall >= wallHeight || wall < 0)
+            return;
+        var tex = sTile.getWallTex(wall);
+        tTS = tex[layer * 2];
+        tIndex = tex[layer * 2 + 1];
+        if(tTS == tilesetIndex && tIndex == index)
+            return;
+        fillTiles(map, x, y, layer, wall, tTS, tIndex, tilesetIndex, index);
         window.setProjectChanged();
+    }
+
+    private void fillTiles(MapData map, int x, int y, int layer, int wall, int rootTS, int rootIndex, int changeTS, int changeIndex){
+        if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
+            return;
+        var tile = map.getTiles()[x + y * map.getWidth()];
+        var wallHeight = tile.getWallHeight();
+        if(wall >= wallHeight || wall < 0)
+            return;
+        var tex = tile.getWallTex(wall);
+        if(tex[layer * 2] != rootTS || tex[layer * 2 + 1] != rootIndex)
+            return;
+        setTileWall(map, x, y, layer, wall, changeTS, changeIndex, false);
+
+        fillTiles(map, x, y, layer, wall - 1, rootTS, rootIndex, changeTS, changeIndex);
+        fillTiles(map, x, y, layer, wall + 1, rootTS, rootIndex, changeTS, changeIndex);
+        fillTiles(map, x - 1, y, layer, wall, rootTS, rootIndex, changeTS, changeIndex);
+        fillTiles(map, x + 1, y, layer, wall, rootTS, rootIndex, changeTS, changeIndex);
     }
 
     private BufferedImage[] loadTilesets(String[] tilesets){

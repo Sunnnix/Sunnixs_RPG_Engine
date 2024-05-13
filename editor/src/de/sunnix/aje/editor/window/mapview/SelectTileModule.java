@@ -45,14 +45,14 @@ public class SelectTileModule extends MapViewModule {
     @Override
     public boolean onMouseMoved(MapView view, MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         var sTiles = map.getSelectedTiles();
-        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s)", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3]));
+        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s) | Zoom: %s%%", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3], (int)(view.getZoom() * 100)));
         return false;
     }
 
     @Override
     public boolean onMouseDragged(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY, boolean sameTile) {
         var sTiles = map.getSelectedTiles();
-        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s)", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3]));
+        onMouseMoved(view, map, screenX, screenY, mapX, mapY, tileX, tileY);
         if(sameTile)
             return false;
         if(tileX < 0)

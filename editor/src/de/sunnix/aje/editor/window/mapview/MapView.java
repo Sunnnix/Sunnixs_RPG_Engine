@@ -45,8 +45,8 @@ public class MapView extends JPanel {
         window.getCurrentMapModule().onDraw((Graphics2D) g, MapView.this, mapData, getWidth(), getHeight(), (int)offsetX, (int)offsetY);
     }
 
-    public void setSelectedTilesetTile(int tileset, int index) {
-        window.getSingleton(GameData.class).getMap(mapID).setSelectedTilesetTile(tileset, index);
+    public void setSelectedTilesetTile(int tileset, int index, int width, int height) {
+        window.getSingleton(GameData.class).getMap(mapID).setSelectedTilesetTile(tileset, index, width, height);
     }
 
     public void setZoom(float zoom){

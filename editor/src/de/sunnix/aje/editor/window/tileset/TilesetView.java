@@ -11,6 +11,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import static de.sunnix.aje.editor.window.Window.TILE_HEIGHT;
+import static de.sunnix.aje.editor.window.Window.TILE_WIDTH;
+
 public class TilesetView extends JPanel {
 
     private final Window window;
@@ -18,7 +21,7 @@ public class TilesetView extends JPanel {
     private final String tileset;
 
     @Setter
-    private int selected;
+    private int[] selected = new int[] { -1, 1, 1};
 
     public TilesetView(Window window, TilesetTabView parent, String tileset) {
         this.window = window;
@@ -30,23 +33,29 @@ public class TilesetView extends JPanel {
 
     private MouseListener genMouseListener() {
         return new MouseAdapter() {
+
+
             @Override
             public void mousePressed(MouseEvent e) {
-                var image = window.getSingleton(Resources.class).tileset_getRaw(tileset);
-                if(image == null)
-                    return;
-                var width = image.getWidth() / 24;
-                var height = image.getHeight() / 16;
-                var x = e.getX();
-                var y = e.getY();
-                if(x < 0 || x > image.getWidth() || y < 0 || y > image.getHeight())
-                    return;
-                var index = x / 24 + (y / 16) * width;
-                if(index == selected)
-                    return;
-                window.setSelectedTile(parent.getSelectedIndex(), index);
+                if(e.getButton() == MouseEvent.BUTTON1) {
+                    var image = window.getSingleton(Resources.class).tileset_getRaw(tileset);
+                    if (image == null)
+                        return;
+                    var width = image.getWidth() / TILE_WIDTH;
+                    var height = image.getHeight() / TILE_HEIGHT;
+                    var x = e.getX();
+                    var y = e.getY();
+                    if (x < 0 || x > image.getWidth() || y < 0 || y > image.getHeight())
+                        return;
+                    var index = x / TILE_WIDTH + (y / TILE_HEIGHT) * width;
+                    window.setSelectedTile(parent.getSelectedIndex(), index, 1, 1);
+                }
             }
 
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
         };
     }
 
@@ -56,18 +65,24 @@ public class TilesetView extends JPanel {
         var image = window.getSingleton(Resources.class).tileset_getRaw(tileset);
         if(image == null)
             return;
-        setPreferredSize(new Dimension(image.getWidth() / 24 * 24, image.getHeight() / 16 * 16));
+        setPreferredSize(new Dimension(image.getWidth() / TILE_WIDTH * TILE_WIDTH, image.getHeight() / TILE_HEIGHT * TILE_HEIGHT));
         revalidate();
         g.drawImage(image, 0, 0, null);
-        if(selected < 0)
+        if(selected[0] < 0)
             return;
-        var width = image.getWidth() / 24;
-        var height = image.getHeight() / 16;
+        var width = image.getWidth() / TILE_WIDTH;
+        var height = image.getHeight() / TILE_HEIGHT;
         int x, y;
-        x = selected % width;
-        y = selected / width;
+        x = selected[0] % width;
+        y = selected[0] / width;
         g.setColor(Color.YELLOW);
-        g.drawRect(x * 24, y * 16, 24, 16);
+        g.drawRect(x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH * selected[1], TILE_HEIGHT * selected[2]);
+    }
+
+    public void setSelected(int index, int width, int height){
+        selected[0] = index;
+        selected[1] = width;
+        selected[2] = height;
     }
 
 }

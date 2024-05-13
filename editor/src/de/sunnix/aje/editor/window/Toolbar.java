@@ -70,9 +70,9 @@ public class Toolbar extends JToolBar {
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
 
         Arrays.stream(createButtonGroup(
-                createToolbarButton("Single draw" ,"toolbar/draw.png", "toolbar/draw_s.png", null, l -> selectDrawTool(0)),
-                createToolbarButton("Multi draw \"Rectangle\"" ,"toolbar/dragFill.png", "toolbar/dragFill_s.png", null, l -> selectDrawTool(1)),
-                createToolbarButton("Fill" ,"toolbar/fill.png", "toolbar/fill_s.png", null, l -> selectDrawTool(2))
+                createToolbarButton("Single draw" ,"toolbar/draw.png", "toolbar/draw_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_SINGLE)),
+                createToolbarButton("Multi draw \"Rectangle\"" ,"toolbar/dragFill.png", "toolbar/dragFill_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_MULTI_RECT)),
+                createToolbarButton("Fill" ,"toolbar/fill.png", "toolbar/fill_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_FILL))
         )).forEach(panel::add);
 
         return panel;

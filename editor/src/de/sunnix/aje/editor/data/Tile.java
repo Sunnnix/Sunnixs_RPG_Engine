@@ -35,7 +35,7 @@ public class Tile {
 
     // ts 0 is no texture and equals -1
     // the index allows for a 64x64 tileset to be loaded.
-    private int groundTex = -1; // 2 textures a 16 bit | 4 bit tileset (-1 - 14); 12 bit texture (0 - 4095)
+    private int groundTex = 0; // 2 textures a 16 bit | 4 bit tileset (-1 - 14); 12 bit texture (0 - 4095)
     private int[] wallTex = new int[0];
 
     private byte groundY, wallHeight;

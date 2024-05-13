@@ -31,7 +31,7 @@ public class MapData {
     @Setter
     private int selectedTileset;
     @Getter
-    private int[] selectedTilesetTile = {-1, -1};
+    private int[] selectedTilesetTile = {0, 0, 1, 1};
 
     @Getter
     private int[] selectedTiles = {0, 0, 1, 1};
@@ -68,9 +68,11 @@ public class MapData {
         this.height = height;
     }
 
-    public void setSelectedTilesetTile(int tileset, int index) {
+    public void setSelectedTilesetTile(int tileset, int index, int width, int height) {
         selectedTilesetTile[0] = tileset;
         selectedTilesetTile[1] = index;
+        selectedTilesetTile[2] = width;
+        selectedTilesetTile[3] = height;
     }
 
     @Override

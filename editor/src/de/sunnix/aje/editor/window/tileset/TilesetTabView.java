@@ -30,12 +30,12 @@ public class TilesetTabView extends JTabbedPane {
         if(index < getTabCount())
             setSelectedIndex(index);
         var sTile = map.getSelectedTilesetTile();
-        setSelectedTile(sTile[0], sTile[1]);
+        setSelectedTile(sTile[0], sTile[1], sTile[2], sTile[3]);
     }
 
-    public void setSelectedTile(int tileset, int index){
+    public void setSelectedTile(int tileset, int index, int width, int height){
         for(var i = 0; i < getTabCount(); i++)
-            ((TilesetView)((JScrollPane)getComponentAt(i)).getViewport().getView()).setSelected(i == tileset ? index : -1);
+            ((TilesetView)((JScrollPane)getComponentAt(i)).getViewport().getView()).setSelected(i == tileset ? index : -1, width, height);
         repaint();
     }
 
