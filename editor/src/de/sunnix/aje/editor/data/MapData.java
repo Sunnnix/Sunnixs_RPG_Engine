@@ -26,7 +26,9 @@ public class MapData {
     @Getter
     @Setter
     private String[] tilesets = new String[0];
-
+    @Getter
+    @Setter
+    private String backgroundMusic;
     @Getter
     @Setter
     private int selectedTileset;
@@ -91,6 +93,7 @@ public class MapData {
             x.saveTile(tileDSO);
             return tileDSO;
         }).toList());
+        dso.putString("bgm", backgroundMusic);
     }
 
     private void loadMap(DataSaveObject dso, int[] version) {
@@ -104,6 +107,7 @@ public class MapData {
         for (int i = 0; i < tiles.length; i++) {
             tiles[i] = new Tile(tileList.get(i), version);
         }
+        backgroundMusic = dso.getString("bgm", null);
     }
 
 }

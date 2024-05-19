@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine.resources;
 
+import de.sunnix.aje.engine.audio.AudioResource;
 import de.sunnix.aje.engine.graphics.Texture;
 import de.sunnix.aje.engine.graphics.TextureAtlas;
 import de.sunnix.sdso.DataSaveObject;
@@ -8,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -16,6 +18,7 @@ public class Resources {
 
     private final Map<String, Map<String, TextureAtlas>> textures = new HashMap<>();
     private final Map<String, Tileset> tilesets = new HashMap<>();
+    private final Map<String, Map<String, AudioResource>> audioResources = new HashMap<>();
 
     private static Resources instance;
 
@@ -25,11 +28,12 @@ public class Resources {
         return instance;
     }
 
-    public void loadResources(ZipFile zip){
+    public void loadResources(ZipFile zip) {
         var resFolder = new File("res");
 
         loadImageResources(zip, resFolder);
         loadTilesets(zip, resFolder);
+        loadAudioResources(zip, resFolder);
     }
 
     private void loadImageResources(ZipFile zip, File res){
@@ -66,6 +70,30 @@ public class Resources {
         });
     }
 
+
+    private void loadAudioResources(ZipFile zip, File res) {
+        var audioFolder = new File(res, "audio");
+        List<String> categories;
+        try {
+            categories = new DataSaveObject().load(zip.getInputStream(new ZipEntry(new File(audioFolder, "audio.dat").getPath()))).getList("categories");
+        } catch (Exception e){
+            return;
+        }
+        for(var cat : categories) {
+            try {
+                var data = new DataSaveObject().load(zip.getInputStream(new ZipEntry(new File(audioFolder, cat).getPath()))).<DataSaveObject>getList("data");
+                var category = new HashMap<String, AudioResource>();
+                for (var audioDSO : data) {
+                    var audio = new AudioResource(audioDSO);
+                    category.put(audio.name, audio);
+                }
+                this.audioResources.put(cat, category);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public TextureAtlas getTexture(String category, String texture){
         var cat = textures.get(category);
         if(cat == null)
@@ -91,6 +119,22 @@ public class Resources {
         if(ts == null)
             return null;
         return ts.getRes();
+    }
+
+    public AudioResource getAudio(String category, String name){
+        var cat = audioResources.get(category);
+        if(cat == null)
+            return null;
+        return cat.get(name);
+    }
+
+    public AudioResource getAudio(String path){
+        if(path == null)
+            return null;
+        var split = path.split("/");
+        if(split.length < 2)
+            return null;
+        return getAudio(split[0], split[1]);
     }
 
 }

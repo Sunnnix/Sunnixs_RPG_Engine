@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine;
 
+import de.sunnix.aje.engine.audio.AudioManager;
 import de.sunnix.aje.engine.audio.OpenALContext;
 import de.sunnix.aje.engine.memory.ContextQueue;
 import de.sunnix.aje.engine.memory.MemoryHandler;
@@ -172,6 +173,8 @@ public class Core {
         Setup.init();
         Registry.registerAll();
 
+        AudioManager.get();
+
         subscribeLoop("fps_generator", 0, ticks -> calculateFPS());
         subscribeLoop("input_process", 0, ticks -> InputManager.process(window));
         subscribeLoop("update", 1, ticks -> update());
@@ -204,6 +207,7 @@ public class Core {
         Arrays.stream(GameState.values()).forEach(state -> state.state.onDestroy());
         MemoryHandler.freeAll();
         glfwTerminate();
+        AudioManager.get().cleanup();
         OpenALContext.close();
         logI("Core", "Game stopped!");
         if(exit_on_close)

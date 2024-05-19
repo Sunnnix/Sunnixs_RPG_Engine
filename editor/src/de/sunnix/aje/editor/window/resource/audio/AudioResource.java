@@ -1,5 +1,6 @@
 package de.sunnix.aje.editor.window.resource.audio;
 
+import de.sunnix.aje.engine.audio.AudioDecoder;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
+import static de.sunnix.aje.engine.audio.OpenALContext.checkALError;
 import static org.lwjgl.openal.AL10.*;
 
 public class AudioResource {
@@ -31,6 +33,10 @@ public class AudioResource {
     @Setter
     private String name;
 
+    @Getter
+    @Setter
+    private float defaultGain = 1;
+
     public AudioResource(String name, String path) throws Exception {
         if(path.endsWith(".") || !path.contains("."))
             throw new RuntimeException("Unknown file format!");
@@ -52,14 +58,15 @@ public class AudioResource {
         this.name = dso.getString("name", null);
         this.data = dso.getByteArray("data");
         this.extension = dso.getString("extension", null);
-        var data = AudioDecoder.decode(this.data, extension);
-        ID = alGenBuffers();
+        this.defaultGain = dso.getFloat("def_gain", 1);
+        var data = AudioDecoder.decode(this.data, this.extension);
+        this.ID = alGenBuffers();
         checkALError("creating buffer", true);
         setData(data);
 
-        frequency = alGetBufferi(ID, AL_FREQUENCY);
-        bitDepth = alGetBufferi(ID, AL_BITS);
-        channels = alGetBufferi(ID, AL_CHANNELS);
+        this.frequency = alGetBufferi(this.ID, AL_FREQUENCY);
+        this.bitDepth = alGetBufferi(this.ID, AL_BITS);
+        this.channels = alGetBufferi(this.ID, AL_CHANNELS);
     }
 
     private void setData(AudioDecoder.AudioData data) {
@@ -100,31 +107,11 @@ public class AudioResource {
         return (int)(bytes / (float)(frequency * bitDepth / 8 * channels) * 1000);
     }
 
-    public static void checkALError(String caller, boolean throwException){
-        var error = alGetError();
-        if(error != AL_NO_ERROR)
-            if(throwException)
-                throw new RuntimeException(String.format("OpenAL error in %s: %s", caller, getALError(error)));
-            else
-                System.err.println(String.format("OpenAL error in %s: %s", caller, getALError(error)));
-    }
-
-    public static String getALError(int code){
-        return switch (code) {
-            case AL_NO_ERROR -> "No Error";
-            case AL_INVALID_NAME -> "Invalid Name";
-            case AL_INVALID_ENUM -> "Invalid Enum";
-            case AL_INVALID_VALUE -> "Invalid Value";
-            case AL_INVALID_OPERATION -> "Invalid Operation";
-            case AL_OUT_OF_MEMORY -> "Out of Memory";
-            default -> "Unknown Error";
-        };
-    }
-
     public DataSaveObject save(DataSaveObject dso) {
         dso.putString("name", name);
         dso.putString("extension", extension);
         dso.putArray("data", data);
+        dso.putFloat("def_gain", defaultGain);
         return dso;
     }
 }

@@ -257,9 +257,9 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             var gbc = new GridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = 0;
-            gbc.gridwidth = 9;
+            gbc.gridwidth = 8;
             gbc.gridheight = 1;
-            gbc.weightx = .9;
+            gbc.weightx = .8;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = new Insets(2, 5, 0, 0);
 
@@ -270,8 +270,13 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             genLabel();
             panel.add(label, gbc);
             gbc.gridwidth = 1;
-            gbc.gridx = 9;
+            gbc.gridx = 8;
             gbc.weightx = .1;
+
+            var type = new JLabel(speaker.getAudio().channels == 1 ? " Mono " : " Stereo ", JLabel.CENTER);
+            type.setBorder(BorderFactory.createLineBorder(type.getForeground().darker(), 2, true));
+            panel.add(type);
+            gbc.gridx++;
 
             var buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
             JButton rename, delete;
@@ -329,6 +334,27 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             panel.add(play, gbc);
             gbc.gridx++;
             panel.add(stop, gbc);
+            gbc.gridx++;
+
+            panel.add(new JLabel("Default Volume:"), gbc);
+            gbc.gridx++;
+
+            var gain = new JSlider(JSlider.HORIZONTAL, 0, 200, (int)(speaker.getGain() * 100));
+            gain.setMajorTickSpacing(50);
+            gain.setMinorTickSpacing(10);
+            gain.setPaintTrack(true);
+            gain.setPaintLabels(true);
+            gain.setPaintTicks(true);
+            gain.addChangeListener(cl -> {
+                var g = gain.getValue() / 100f;
+                speaker.getAudio().setDefaultGain(g);
+                speaker.setGain(g);
+                window.setProjectChanged();
+            });
+
+            gbc.gridwidth = 2;
+
+            panel.add(gain, gbc);
 
             gbc.gridwidth = 2;
             gbc.gridx = 8;

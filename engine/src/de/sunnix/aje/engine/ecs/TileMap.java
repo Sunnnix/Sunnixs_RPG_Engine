@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine.ecs;
 
+import de.sunnix.aje.engine.audio.AudioManager;
 import de.sunnix.aje.engine.resources.Resources;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.Shader;
@@ -92,6 +93,9 @@ public class TileMap {
                 tiles[x + y * width] = t;
             }
         bufferSize = offset;
+        var am = AudioManager.get();
+        am.setBGM(Resources.get().getAudio(dso.getString("bgm", null)));
+        am.playBGM();
     }
 
     public void update(){}

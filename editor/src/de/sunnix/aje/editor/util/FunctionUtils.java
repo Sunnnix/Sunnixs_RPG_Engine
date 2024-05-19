@@ -1,5 +1,7 @@
 package de.sunnix.aje.editor.util;
 
+import de.sunnix.aje.editor.window.customswing.DefaultValueComboboxModel;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.ActionListener;
@@ -64,6 +66,10 @@ public class FunctionUtils {
 
     public static JButton createButton(String name, ActionListener al){
         return createButton(name, null, al);
+    }
+
+    public static <T> JComboBox<T> createComboBox(T defaultValue, T[] content){
+        return new JComboBox<>(new DefaultValueComboboxModel<>(defaultValue, content));
     }
 
 }

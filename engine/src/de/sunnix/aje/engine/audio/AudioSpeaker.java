@@ -1,26 +1,38 @@
-package de.sunnix.aje.editor.window.resource.audio;
+package de.sunnix.aje.engine.audio;
 
 import lombok.Getter;
 
-import java.util.Arrays;
-
 import static de.sunnix.aje.engine.audio.OpenALContext.checkALError;
-import static org.lwjgl.openal.AL11.*;
+import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.AL10.alDeleteSources;
+import static org.lwjgl.openal.AL11.AL_BYTE_OFFSET;
 
 public class AudioSpeaker {
 
     public final int ID;
     @Getter
-    private final AudioResource audio;
+    private AudioResource audio;
 
-    public AudioSpeaker(AudioResource audio) throws RuntimeException{
-        this.audio = audio;
+    public AudioSpeaker(AudioResource audio){
         ID = alGenSources();
+        setAudio(audio);
         checkALError("creating speaker", true);
-        alSourcei(ID, AL_BUFFER, audio.ID);
-        checkALError("binding source", true);
         alSourcef(ID, AL_MAX_GAIN, 2);
-        setGain(audio.getDefaultGain());
+    }
+
+    public AudioSpeaker(){
+        this(null);
+    }
+
+    public void setAudio(AudioResource audio){
+        this.audio = audio;
+        if(audio == null)
+            alSourcei(ID, AL_BUFFER, 0);
+        else {
+            setGain(audio.defaultGain);
+            alSourcei(ID, AL_BUFFER, audio.ID);
+        }
+        checkALError("creating speaker", true);
     }
 
     public void play() {
@@ -39,32 +51,8 @@ public class AudioSpeaker {
         return alGetSourcei(ID, AL_SOURCE_STATE) == AL_PLAYING;
     }
 
-    public int getFrequency(){
-        return audio.frequency;
-    }
-
-    public int getBitDepth(){
-        return audio.bitDepth;
-    }
-
-    public int getChannelCount(){
-        return audio.channels;
-    }
-
-    public int getSize(){
-        return audio.getSize();
-    }
-
     public int getPosition(){
         return alGetSourcei(ID, AL_BYTE_OFFSET);
-    }
-
-    public int getLengthInMS(){
-        return audio.convertBytesToMillies(getSize());
-    }
-
-    public int getPositionInMS(){
-        return audio.convertBytesToMillies(getPosition());
     }
 
     public void setPosition(int pos){
@@ -77,6 +65,10 @@ public class AudioSpeaker {
 
     public void setGain(float gain){
         alSourcef(ID, AL_GAIN, gain);
+    }
+
+    public void setLooping(boolean looping){
+        alSourcei(ID, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
     }
 
     public void cleanup() {

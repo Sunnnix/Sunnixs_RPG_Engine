@@ -464,6 +464,8 @@ public class Window extends JFrame {
     }
 
     public void setProjectChanged(){
+        if(projectChanged)
+            return;
         projectChanged = true;
         updateTitle();
     }

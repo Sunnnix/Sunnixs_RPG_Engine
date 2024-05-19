@@ -31,6 +31,13 @@
         <joml.version>1.10.5</joml.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <profiles>
         <profile>
             <id>lwjgl-natives-linux-amd64</id>
@@ -104,12 +111,13 @@
             <version>20240303</version>
         </dependency>
 
-        <!-- MP3 Lib https://github.com/delthas/JavaMP3 -->
-        <dependency>
-            <groupId>fr.delthas</groupId>
-            <artifactId>javamp3</artifactId>
-            <version>1.0.1</version>
-        </dependency>
+        <!-- MP3 Lib https://github.com/umjammer/jlayer?tab=readme-ov-file -->
+<!--        <dependency>-->
+<!--            <groupId>com.github.umjammer</groupId>-->
+<!--            <artifactId>jlayer</artifactId>-->
+<!--            <version>1.0.3</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
 
         <!-- JLWGL Libs-->

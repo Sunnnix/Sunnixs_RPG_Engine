@@ -2,6 +2,7 @@ package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.data.MapData;
+import de.sunnix.aje.editor.window.customswing.DefaultValueComboboxModel;
 import de.sunnix.aje.editor.window.resource.Resources;
 
 import javax.swing.*;
@@ -11,8 +12,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static de.sunnix.aje.editor.util.DialogUtils.showMultiInputDialog;
+import static de.sunnix.aje.editor.util.FunctionUtils.createComboBox;
 import static de.sunnix.aje.editor.util.FunctionUtils.createMenuItem;
 
 public class MapListView extends JScrollPane {
@@ -66,6 +69,7 @@ public class MapListView extends JScrollPane {
             popup.add(createMenuItem("Set tileset", this::setMapTileset));
             popup.add(createMenuItem("Set title", this::setMapTitle));
             popup.add(createMenuItem("Set size", this::setMapSize));
+            popup.add(createMenuItem("Set BGM", this::setMapBGM));
             popup.add(createMenuItem("Delete", this::deleteMap));
         }
         popup.show(mapList, x, y);
@@ -140,6 +144,41 @@ public class MapListView extends JScrollPane {
         map.setSize((int) width.getValue(), (int) height.getValue());
         window.reloadMap();
         reloadMaps();
+        window.setProjectChanged();
+    }
+
+    private void setMapBGM(ActionEvent e) {
+        var map = window.getSingleton(GameData.class).getMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
+        if(map == null)
+            return;
+        var bgm = map.getBackgroundMusic();
+        var res = window.getSingleton(Resources.class);
+        var soundCats = createComboBox("none", res.audio_getCategories().toArray(String[]::new));
+        soundCats.setPreferredSize(new Dimension(200, soundCats.getPreferredSize().height));
+
+        var sounds = new JComboBox<String>();
+
+        soundCats.addActionListener(l -> {
+            sounds.removeAllItems();
+            if(soundCats.getSelectedIndex() > 0)
+                ((DefaultComboBoxModel<String>)sounds.getModel()).addAll(res.audio_getAllNames((String)soundCats.getSelectedItem()));
+        });
+
+        if(bgm != null) {
+            var split = bgm.split("/");
+            soundCats.setSelectedItem(split[0]);
+            sounds.setSelectedItem(split[1]);
+        }
+
+        if(!showMultiInputDialog(window, "Set BGM", "Set background music:", new String[]{"Category:", "Track:"}, new JComponent[]{ soundCats, sounds }))
+            return;
+
+        String newBGM = null;
+        if(soundCats.getSelectedIndex() > 0 && sounds.getSelectedIndex() >= 0)
+            newBGM = soundCats.getSelectedItem() + "/" + sounds.getSelectedItem();
+        if(Objects.equals(bgm, newBGM))
+            return;
+        map.setBackgroundMusic(newBGM);
         window.setProjectChanged();
     }
 
