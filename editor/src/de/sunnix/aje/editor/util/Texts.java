@@ -2,6 +2,8 @@ package de.sunnix.aje.editor.util;
 
 import de.sunnix.aje.engine.Core;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
+
 public class Texts {
 
     public static final String FULL_NAME = "Alundra Java Engine Creator";
@@ -15,7 +17,7 @@ public class Texts {
         try(var stream = Texts.class.getResourceAsStream("/de/sunnix/aje/editor/window/about/AboutSite.html")){
             return new String(stream.readAllBytes());
         } catch (Exception e){
-            return "Error loading AboutSite.html: " + e.getMessage();
+            return getString("texts.error_loading_about", e.getMessage());
         }
     }
 

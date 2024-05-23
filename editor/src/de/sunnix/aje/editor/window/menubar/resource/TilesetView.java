@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
+
 public class TilesetView extends JPanel implements IResourceView{
 
     private final Window window;
@@ -57,7 +59,7 @@ public class TilesetView extends JPanel implements IResourceView{
                 if(e.getButton() == MouseEvent.BUTTON3)
                     new JPopupMenu(){
                         {
-                            var create = new JMenuItem("Create");
+                            var create = new JMenuItem(getString("name.create"));
                             create.addActionListener(this::createTileset);
                             add(create);
                             var selected = list.getSelectedValue();
@@ -66,7 +68,7 @@ public class TilesetView extends JPanel implements IResourceView{
                                 label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
                                 add(label, 0);
                                 add(new JSeparator(), 1);
-                                var delete = new JMenuItem("Delete");
+                                var delete = new JMenuItem(getString("name.delete"));
                                 delete.addActionListener(this::deleteTileset);
                                 add(delete);
                             }
@@ -82,9 +84,9 @@ public class TilesetView extends JPanel implements IResourceView{
                                 tex.removeAllItems();
                                 res.image_getCategoryContent((String)cat.getSelectedItem()).forEach(tex::addItem);
                             });
-                            while (DialogUtils.showMultiInputDialog(parent, "Create tileset", null, new String[]{"Name:", "Texture category:", "Texture:"}, new JComponent[]{input, cat, tex})) {
+                            while (DialogUtils.showMultiInputDialog(parent, getString("view.dialog_resources.tileset.create"), null, new String[]{getString("name.name"), getString("view.dialog_resources.tileset.ts_cat"), getString("name.texture")}, new JComponent[]{input, cat, tex})) {
                                 if(cat.getSelectedIndex() == -1 || tex.getSelectedIndex() == -1)
-                                    JOptionPane.showMessageDialog(parent, "No texture selected!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    JOptionPane.showMessageDialog(parent, getString("view.dialog_resources.tileset.no_texture_selected"), getString("name.error"), JOptionPane.ERROR_MESSAGE);
                                 else if (DialogUtils.validateInput(parent, input.getText(), res.tileset_getTilesetnames()))
                                     break;
                             }
@@ -92,7 +94,7 @@ public class TilesetView extends JPanel implements IResourceView{
                             try {
                                 ts = new Tileset(input.getText(), String.format("%s/%s", cat.getSelectedItem(), tex.getSelectedItem()), res);
                             } catch (IndexOutOfBoundsException ex) {
-                                JOptionPane.showMessageDialog(parent, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(parent, ex.getMessage(), getString("name.error"), JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
                             res.tileset_add(input.getText(), ts);
@@ -101,8 +103,12 @@ public class TilesetView extends JPanel implements IResourceView{
                         }
 
                         private void deleteTileset(ActionEvent actionEvent) {
-                            if(JOptionPane.showConfirmDialog(parent, "Do you really want to delete the tileset?\n" +
-                                    "All data in the tileset will be lost and maps that used it must be adjusted!", "Delete tileset", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
+                            if(JOptionPane.showConfirmDialog(parent,
+                                    getString("view.dialog_resources.tileset.delete_tileset.text"),
+                                    getString("view.dialog_resources.tileset.delete_tileset.title"),
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION
+                            )
                                 return;
                             var res = window.getSingleton(Resources.class);
                             res.tileset_remove(getCurrentTileset().getName());
@@ -126,7 +132,7 @@ public class TilesetView extends JPanel implements IResourceView{
             imageView.repaint();
         });
         var scroll = new JScrollPane(list);
-        scroll.setBorder(BorderFactory.createTitledBorder("Tilesets:"));
+        scroll.setBorder(BorderFactory.createTitledBorder(getString("name.tilesets")));
         scroll.setPreferredSize(new Dimension(120, 0));
         return scroll;
     }
@@ -251,7 +257,7 @@ public class TilesetView extends JPanel implements IResourceView{
     private JScrollPane setupPropertiesView(){
         var panel = new JPanel(new BorderLayout());
         var top = new JPanel(new GridBagLayout());
-        top.setBorder(BorderFactory.createTitledBorder("Tileset"));
+        top.setBorder(BorderFactory.createTitledBorder(getString("name.tileset")));
         var gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -269,14 +275,14 @@ public class TilesetView extends JPanel implements IResourceView{
 
         gbc.gridwidth = 1;
         gbc.weightx = .5;
-        top.add(new JLabel("Width:"), gbc);
+        top.add(new JLabel(getString("name.width")), gbc);
         gbc.gridx++;
         top.add(lblWidth = new JTextField(9), gbc);
         lblWidth.setEditable(false);
         gbc.gridx = 0;
         gbc.gridy++;
 
-        top.add(new JLabel("Height:"), gbc);
+        top.add(new JLabel(getString("name.height")), gbc);
         gbc.gridx++;
         top.add(lblHeight = new JTextField(), gbc);
         lblHeight.setEditable(false);
@@ -286,7 +292,7 @@ public class TilesetView extends JPanel implements IResourceView{
         panel.add(top, BorderLayout.NORTH);
 
         var bottom = new JPanel(new GridBagLayout());
-        bottom.setBorder(BorderFactory.createTitledBorder("Tile"));
+        bottom.setBorder(BorderFactory.createTitledBorder(getString("name.tile")));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;

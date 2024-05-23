@@ -7,6 +7,7 @@ import de.sunnix.aje.editor.window.resource.Resources;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.window.Window.TILE_HEIGHT;
 import static de.sunnix.aje.editor.window.Window.TILE_WIDTH;
 
@@ -45,7 +46,7 @@ public class SelectTileModule extends MapViewModule {
     @Override
     public boolean onMouseMoved(MapView view, MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         var sTiles = map.getSelectedTiles();
-        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s) | Zoom: %s%%", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3], (int)(view.getZoom() * 100)));
+        window.getInfo().setText(getString("view.map.module.select_tile.info", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3], (int)(view.getZoom() * 100)));
         return false;
     }
 

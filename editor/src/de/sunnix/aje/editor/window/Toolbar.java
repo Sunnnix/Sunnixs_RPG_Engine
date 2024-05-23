@@ -3,7 +3,6 @@ package de.sunnix.aje.editor.window;
 import de.sunnix.aje.editor.Main;
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.util.FunctionUtils;
-import de.sunnix.aje.engine.Core;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +19,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.jar.JarException;
+
+import static de.sunnix.aje.editor.lang.Language.getString;
 
 public class Toolbar extends JToolBar {
 
@@ -46,8 +47,8 @@ public class Toolbar extends JToolBar {
     private JPanel setPlay(){
         var panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
-        var playBtn = FunctionUtils.createButton("Play", "toolbar/play.png", this::startGameProcess);
-        playBtn.setToolTipText("Start Game");
+        var playBtn = FunctionUtils.createButton(getString("toolbar.play.name"), "toolbar/play.png", this::startGameProcess);
+        playBtn.setToolTipText(getString("toolbar.play.tooltip"));
         panel.add(window.menuBar.addProjectDependentComponent(playBtn));
         return panel;
     }
@@ -57,9 +58,9 @@ public class Toolbar extends JToolBar {
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
 
         Arrays.stream(createButtonGroup(
-                createToolbarButton("Select Mode", "toolbar/propertieMode.png", "toolbar/propertieMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
-                createToolbarButton("Draw Top Mode" ,"toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1)),
-                createToolbarButton("Wall Mode" ,"toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2))
+                createToolbarButton(getString("toolbar.mode.select.tooltip"), "toolbar/propertieMode.png", "toolbar/propertieMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
+                createToolbarButton(getString("toolbar.mode.draw_top.tooltip") ,"toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1)),
+                createToolbarButton(getString("toolbar.mode.wall.tooltip") ,"toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2))
         )).forEach(panel::add);
 
         return panel;
@@ -70,9 +71,9 @@ public class Toolbar extends JToolBar {
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
 
         Arrays.stream(createButtonGroup(
-                createToolbarButton("Single draw" ,"toolbar/draw.png", "toolbar/draw_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_SINGLE)),
-                createToolbarButton("Multi draw \"Rectangle\"" ,"toolbar/dragFill.png", "toolbar/dragFill_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_MULTI_RECT)),
-                createToolbarButton("Fill" ,"toolbar/fill.png", "toolbar/fill_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_FILL))
+                createToolbarButton(getString("toolbar.tool.single_draw.tooltip") ,"toolbar/draw.png", "toolbar/draw_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_SINGLE)),
+                createToolbarButton(getString("toolbar.tool.multi_draw_rect.tooltip") ,"toolbar/dragFill.png", "toolbar/dragFill_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_MULTI_RECT)),
+                createToolbarButton(getString("toolbar.tool.fill.tooltip") ,"toolbar/fill.png", "toolbar/fill_s.png", null, l -> selectDrawTool(Window.DRAW_TOOL_FILL))
         )).forEach(panel::add);
 
         return panel;
@@ -82,7 +83,7 @@ public class Toolbar extends JToolBar {
         var panel = new JPanel(new FlowLayout());
         panel.setBorder(BorderFactory.createTitledBorder((String) null));
 
-        var showGrid = createToolbarButton("Show Grid", "toolbar/showGrid.png", "toolbar/showGrid_s.png", null, l -> {
+        var showGrid = createToolbarButton(getString("toolbar.option.show_grid.tooltip"), "toolbar/showGrid.png", "toolbar/showGrid_s.png", null, l -> {
             var b = ((AbstractButton)l.getSource());
             b.setSelected(!b.isSelected());
             showGrid(b.isSelected());
@@ -140,7 +141,7 @@ public class Toolbar extends JToolBar {
     private void setupWindowGlassPane(){
         var test = new JPanel(new GridBagLayout());
         test.setBackground(new Color(1f, 1f, 1f, .175f));
-        var label = new JLabel("GAME IS RUNNING");
+        var label = new JLabel(getString("name.game_is_running"));
         label.setPreferredSize(new Dimension(350, 125));
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setFont(label.getFont().deriveFont(32f));
@@ -162,12 +163,12 @@ public class Toolbar extends JToolBar {
     private void startGameProcess(ActionEvent e) {
         if(gameProcess != null && gameProcess.isAlive() || !window.isProjectOpen())
             return;
-        if(window.getSingleton(GameData.class).getMap(window.getStartMap()) == null){
-            JOptionPane.showMessageDialog(window, "Please set a start map!", "No start map!", JOptionPane.ERROR_MESSAGE);
+        if(window.getSingleton(GameData.class).getMap(window.getStartMap()) == null) {
+            JOptionPane.showMessageDialog(window, getString("toolbar.dialog.no_start_map.text"), getString("toolbar.dialog.no_start_map.title"), JOptionPane.ERROR_MESSAGE);
             return;
         }
         if(window.isProjectChanged()) {
-            if(JOptionPane.showConfirmDialog(window, "All changes must be saved.\nWould you like to save the current changes?", "Unsafed chnages", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION || !window.saveProject(false))
+            if(JOptionPane.showConfirmDialog(window, getString("toolbar.dialog.project_must_be_saved.text"), getString("dialog.unsaved_changes.title"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION || !window.saveProject(false))
                 return;
         }
         if(Main.isFROM_IDE())
@@ -218,9 +219,8 @@ public class Toolbar extends JToolBar {
             ProcessBuilder processBuilder = new ProcessBuilder(args.toArray(String[]::new));
 
             startProcess(processBuilder);
-        } catch (JarException e){
-            JOptionPane.showMessageDialog(window, "The process could not start because the Jar was not found.\n" +
-                    "If you are in an IDE, start the editor with the argument \"fromIDE\"", "Couldn't start game process", JOptionPane.ERROR_MESSAGE);
+        } catch (JarException e) {
+            JOptionPane.showMessageDialog(window, getString("toolbar.dialog.start_game_error.jar.text", e.getMessage()), getString("toolbar.dialog.start_game_error.jar.title"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -258,7 +258,7 @@ public class Toolbar extends JToolBar {
                 window.getGlassPane().setVisible(false);
             }).start();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(window, "There was a problem with the game process", "Process error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(window, getString("toolbar.dialog.game_process_error.text", e.getMessage()), getString("toolbar.dialog.game_process_error.title"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -286,7 +286,7 @@ public class Toolbar extends JToolBar {
         private JScrollPane scroll;
 
         public GameConsole(){
-            super((JFrame) null, "Game Console", false);
+            super((JFrame) null, getString("name.game_console"), false);
             setSize(800, 500);
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 

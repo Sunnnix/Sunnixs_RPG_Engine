@@ -10,61 +10,62 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
+
+import static de.sunnix.aje.editor.lang.Language.getString;
 
 public class MenuBar extends JMenuBar {
 
-    private final Window parent;
+    private final Window window;
 
     private final List<JComponent> projectDependentMenus = new LinkedList<>();
     private JMenu recentProjects;
 
     public MenuBar(Window parent){
-        this.parent = parent;
+        this.window = parent;
         add(setUpMMFile());
         add(setUpMMGame());
         add(setUpMMHelp());
     }
 
     private JMenu setUpMMFile(){
-        var mm = new JMenu("File");
-        mm.add(createDefaultMenuItem("New Project", KeyEvent.VK_N, ActionEvent.CTRL_MASK, e -> parent.newProject()));
-        mm.add(createDefaultMenuItem("Open Project", KeyEvent.VK_O, ActionEvent.CTRL_MASK, e -> parent.loadProject(null)));
-        mm.add(recentProjects = new JMenu("Recent Projects..."));
+        var mm = new JMenu(getString("menu.file"));
+        mm.add(createDefaultMenuItem(getString("menu.file.new_project"), KeyEvent.VK_N, ActionEvent.CTRL_MASK, e -> window.newProject()));
+        mm.add(createDefaultMenuItem(getString("menu.file.open_project"), KeyEvent.VK_O, ActionEvent.CTRL_MASK, e -> window.loadProject(null)));
+        mm.add(recentProjects = new JMenu(getString("menu.file.recent_projects")));
         genRecentProjectsList();
 
         mm.add(new JSeparator());
 
-        mm.add(addProjectDependentComponent(createDefaultMenuItem("Save Project", KeyEvent.VK_S, ActionEvent.CTRL_MASK, e -> parent.saveProject(false))));
-        mm.add(addProjectDependentComponent(createDefaultMenuItem("Save Project as ...", KeyEvent.VK_S, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> parent.saveProject(true))));
+        mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.save_project"), KeyEvent.VK_S, ActionEvent.CTRL_MASK, e -> window.saveProject(false))));
+        mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.save_project_as"), KeyEvent.VK_S, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> window.saveProject(true))));
 
         mm.add(new JSeparator());
 
-        mm.add(addProjectDependentComponent(createDefaultMenuItem("Open Resource Manager", e -> new ResourceDialog(parent))));
+        mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.open_resource_manager"), e -> new ResourceDialog(window))));
 
         mm.add(new JSeparator());
 
-        mm.add(addProjectDependentComponent(createDefaultMenuItem("Close Project", KeyEvent.VK_X, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> parent.closeProject())));
+        mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.close_project"), KeyEvent.VK_X, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK, e -> window.closeProject())));
 
         mm.add(new JSeparator());
 
-        mm.add(createDefaultMenuItem("Exit", e -> parent.exit()));
+        mm.add(createDefaultMenuItem(getString("menu.file.exit"), e -> window.exit()));
         return mm;
     }
 
     private JMenu setUpMMGame() {
-        var mm = new JMenu("Game");
-        var config = parent.getSingleton(Config.class);
+        var mm = new JMenu(getString("menu.game"));
+        var config = window.getSingleton(Config.class);
         var gameConfig = config.getJSONObject("game");
-        mm.add(createCheckboxMenu("Show Profiler", gameConfig.get("show_profiler", false), b -> {
+        mm.add(createCheckboxMenu(getString("menu.game.show_profiler"), gameConfig.get("show_profiler", false), b -> {
             gameConfig.put("show_profiler", b);
             config.set("game", gameConfig);
         }));
-        mm.add(createCheckboxMenu("Power Save Mode", gameConfig.get("power_save_mode", false), b -> {
+        mm.add(createCheckboxMenu(getString("menu.game.power_save_mode"), gameConfig.get("power_save_mode", false), b -> {
             gameConfig.put("power_save_mode", b);
             config.set("game", gameConfig);
         }));
-        mm.add(createCheckboxMenu("VSync", gameConfig.get("vsync", true), b -> {
+        mm.add(createCheckboxMenu(getString("menu.game.vsync"), gameConfig.get("vsync", true), b -> {
             gameConfig.put("vsync", b);
             config.set("game", gameConfig);
         }));
@@ -78,12 +79,11 @@ public class MenuBar extends JMenuBar {
     }
 
     private JMenu setUpMMHelp() {
-        var mm = new JMenu("Help");
-        mm.add(createDefaultMenuItem("User Guide", e -> new UserGuide(parent)));
-        var langMenu = createDefaultMenuItem("Language (WIP)", null);
-        langMenu.setEnabled(false);
+        var mm = new JMenu(getString("menu.help"));
+        mm.add(createDefaultMenuItem(getString("menu.help.user_guide"), e -> new UserGuide(window)));
+        var langMenu = createDefaultMenuItem(getString("menu.help.language"), e -> new LanguageDialog(window));
         mm.add(langMenu);
-        mm.add(createDefaultMenuItem("About", e -> new AboutDialog(parent)));
+        mm.add(createDefaultMenuItem(getString("menu.help.about"), e -> new AboutDialog(window)));
         return mm;
     }
 
@@ -106,35 +106,35 @@ public class MenuBar extends JMenuBar {
 
     public void genRecentProjectsList(){
         recentProjects.removeAll();
-        List<String> recentProjectsList = parent.getSingleton(Config.class).get("recent_projects", Collections.emptyList());
+        List<String> recentProjectsList = window.getSingleton(Config.class).get("recent_projects", Collections.emptyList());
         if(recentProjectsList.isEmpty()) {
-            var noProject = new JMenuItem("No project found!");
+            var noProject = new JMenuItem(getString("menu.file.recent_projects.no_project_found"));
             noProject.setEnabled(false);
             recentProjects.add(noProject);
         } else {
             recentProjectsList.forEach(project -> {
                 var item = new JMenuItem(project);
-                item.addActionListener(a -> parent.loadProject(project));
+                item.addActionListener(a -> window.loadProject(project));
                 if(!new File(project).exists())
                     item.setEnabled(false);
                 recentProjects.add(item);
             });
             recentProjects.add(new JSeparator());
-            var clearList = new JMenuItem("Clear List");
+            var clearList = new JMenuItem(getString("menu.file.recent_projects.clear_list"));
             clearList.addActionListener(a -> {
-                if(JOptionPane.showConfirmDialog(parent,
-                        "Are you sure, to clear the recent projects list?",
-                        "Clear list",
+                if(JOptionPane.showConfirmDialog(window,
+                        getString("menu.file.recent_projects.clear_list.dialog_txt"),
+                        getString("menu.file.recent_projects.clear_list"),
                         JOptionPane.YES_NO_OPTION)
                 == JOptionPane.YES_OPTION)
-                    parent.getSingleton(Config.class).set("recent_projects", Collections.emptyList());
+                    window.getSingleton(Config.class).set("recent_projects", Collections.emptyList());
                 genRecentProjectsList();
             });
             recentProjects.add(clearList);
             if(Arrays.stream(recentProjects.getMenuComponents()).anyMatch(c -> c instanceof JMenuItem i && !i.isEnabled())){
-                var removeDisabled = new JMenuItem("Remove not found projects");
+                var removeDisabled = new JMenuItem(getString("menu.file.recent_projects.remove_not_found_projects"));
                 removeDisabled.addActionListener(a -> {
-                    parent.getSingleton(Config.class).change("recent_projects", Collections.<String>emptyList(), list -> {
+                    window.getSingleton(Config.class).change("recent_projects", Collections.<String>emptyList(), list -> {
                         list.removeIf(s -> !new File(s).exists());
                         return list;
                     });

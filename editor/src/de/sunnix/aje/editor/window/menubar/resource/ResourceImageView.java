@@ -1,5 +1,6 @@
 package de.sunnix.aje.editor.window.menubar.resource;
 
+import de.sunnix.aje.editor.util.DialogUtils;
 import de.sunnix.aje.editor.window.Config;
 import de.sunnix.aje.editor.window.Window;
 import de.sunnix.aje.engine.util.BetterJSONObject;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.Timer;
+
+import static de.sunnix.aje.editor.lang.Language.getString;
 
 public class ResourceImageView extends JPanel implements IResourceView {
 
@@ -76,7 +79,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
 
         var imageInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        showComplete = new JCheckBox("Show complete image:", true);
+        showComplete = new JCheckBox(getString("view.dialog_resources.image.show_complete_image"), true);
         showComplete.addActionListener(a -> imageComponent.repaint());
         showComplete.setHorizontalTextPosition(JCheckBox.LEFT);
         selectionDependency.add(showComplete);
@@ -86,24 +89,24 @@ public class ResourceImageView extends JPanel implements IResourceView {
         atlasHeight = new JTextField(4);
         atlasHeight.setHorizontalAlignment(JTextField.RIGHT);
         atlasHeight.setEditable(false);
-        animated = new JCheckBox("Animate:");
+        animated = new JCheckBox(getString("view.dialog_resources.image.animate"));
         animated.setHorizontalTextPosition(JCheckBox.LEFT);
         selectionDependency.add(animated);
         animated.addActionListener(a -> imageComponent.repaint());
         animSpeed = new JSpinner(new SpinnerNumberModel(20, 1, 240, 1));
         selectionDependency.add(animSpeed);
-        showGrid = new JCheckBox("show Grid:");
+        showGrid = new JCheckBox(getString("view.dialog_resources.image.show_grid"));
         showGrid.addActionListener(a -> imageComponent.repaint());
         showGrid.setHorizontalTextPosition(JCheckBox.LEFT);
         selectionDependency.add(showGrid);
 
         imageInfoPanel.add(showComplete);
-        imageInfoPanel.add(new JLabel("Atlas width: "));
+        imageInfoPanel.add(new JLabel(getString("name.atlas_width")));
         imageInfoPanel.add(atlasWidth);
-        imageInfoPanel.add(new JLabel("Atlas height: "));
+        imageInfoPanel.add(new JLabel(getString("name.atlas_height")));
         imageInfoPanel.add(atlasHeight);
         imageInfoPanel.add(animated);
-        imageInfoPanel.add(new JLabel("Animation speed: "));
+        imageInfoPanel.add(new JLabel(getString("view.dialog_resources.image.animation_speed")));
         imageInfoPanel.add(animSpeed);
         imageInfoPanel.add(showGrid);
 
@@ -143,7 +146,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         categoryList.addListSelectionListener(e -> onCategorySelected());
         var scroll = new JScrollPane(categoryList);
-        scroll.setBorder(BorderFactory.createTitledBorder("Category"));
+        scroll.setBorder(BorderFactory.createTitledBorder(getString("name.category")));
         scroll.setMaximumSize(new Dimension(0, 200));
         scroll.setMinimumSize(scroll.getMaximumSize());
         panel.add(scroll, BorderLayout.NORTH);
@@ -156,7 +159,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         imageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         imageList.addListSelectionListener(e -> onImageSelected());
         scroll = new JScrollPane(imageList);
-        scroll.setBorder(BorderFactory.createTitledBorder("Image"));
+        scroll.setBorder(BorderFactory.createTitledBorder(getString("name.image")));
         scroll.setPreferredSize(new Dimension(120, 0));
         panel.add(scroll, BorderLayout.CENTER);
 
@@ -172,15 +175,15 @@ public class ResourceImageView extends JPanel implements IResourceView {
                 if(e.getButton() != MouseEvent.BUTTON3)
                     return;
                 var popup = new JPopupMenu();
-                var create = new JMenuItem("Create");
+                var create = new JMenuItem(getString("name.create"));
                 create.addActionListener(a -> createCategory(list));
                 popup.add(create);
 
                 var selected = list.getSelectedValue();
                 if(selected != null) {
-                    var remove = new JMenuItem("Remove");
+                    var remove = new JMenuItem(getString("name.remove"));
                     remove.addActionListener(a -> removeCategory(list, selected));
-                    var change = new JMenuItem("Change");
+                    var change = new JMenuItem(getString("name.change"));
                     change.addActionListener(a -> changeCategory(list, selected));
                     if (selected.equals("default")) {
                         remove.setEnabled(false);
@@ -197,20 +200,12 @@ public class ResourceImageView extends JPanel implements IResourceView {
 
     private void createCategory(JList<String> list){
         var model = (DefaultListModel<String>) list.getModel();
-        String input = "";
-        for(;;) {
-            input = (String) JOptionPane.showInputDialog(this, "Type category name:", "Create new Category", JOptionPane.PLAIN_MESSAGE, null, null, input);
+        String input = null;
+        do {
+            input = (String) JOptionPane.showInputDialog(this, getString("view.dialog_resources.image.insert_category_name"), getString("view.dialog_resources.image.create_category"), JOptionPane.PLAIN_MESSAGE, null, null, input);
             if (input == null)
                 return;
-            if(input.isEmpty())
-                JOptionPane.showMessageDialog(this, "The name can't be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-            else if(!input.matches(regexFilename))
-                JOptionPane.showMessageDialog(this, "Invalid input. Only letters (a-z, A-Z), numbers (0-9), and underscore (_) are allowed!", "Error", JOptionPane.ERROR_MESSAGE);
-            else if(model.contains(input))
-                JOptionPane.showMessageDialog(this, String.format("The name %s is already taken!", input), "Error", JOptionPane.ERROR_MESSAGE);
-            else
-                break;
-        }
+        } while (!DialogUtils.validateInput(parent, input, model.elements()));
         window.getSingleton(Resources.class).image_createCategory(input);
         model.addElement(input);
         list.setSelectedValue(input, true);
@@ -218,11 +213,9 @@ public class ResourceImageView extends JPanel implements IResourceView {
     }
 
     private void removeCategory(JList<String> list, String category) {
-        var option = JOptionPane.showConfirmDialog(this, String.format(
-                "Are you sure you want to delete the category %s?\n" +
-                        "All objects that use this category will then display an error image!",
-                        category),
-                "Delete Category",
+        var option = JOptionPane.showConfirmDialog(this,
+                getString("view.dialog_resources.image.delete_category.text", category),
+                getString("view.dialog_resources.image.delete_category.title"),
                 JOptionPane.YES_NO_OPTION);
         if(option != JOptionPane.YES_OPTION)
             return;
@@ -240,30 +233,20 @@ public class ResourceImageView extends JPanel implements IResourceView {
     }
 
     private void changeCategory(JList<String> list, String category) {
-        var option = JOptionPane.showConfirmDialog(this, String.format(
-                        "Are you sure you want to change the category %s?\n" +
-                                "All objects that use this category will then display an error image!",
-                        category),
-                "Change Category",
+        var option = JOptionPane.showConfirmDialog(this,
+                getString("view.dialog_resources.image.change_category.text", category),
+                getString("view.dialog_resources.image.change_category.title"),
                 JOptionPane.YES_NO_OPTION);
         if(option != JOptionPane.YES_OPTION)
             return;
 
         var model = (DefaultListModel<String>) list.getModel();
         String input = category;
-        for(;;) {
-            input = (String) JOptionPane.showInputDialog(this, "Type category name:", "Create new Category", JOptionPane.PLAIN_MESSAGE, null, null, input);
+        do {
+            input = (String) JOptionPane.showInputDialog(this, getString("view.dialog_resources.image.insert_category_name"), getString("view.dialog_resources.image.change_category.title"), JOptionPane.PLAIN_MESSAGE, null, null, input);
             if (input == null || input.equals(category))
                 return;
-            if(input.isEmpty())
-                JOptionPane.showMessageDialog(this, "The name can't be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-            else if(!input.matches(regexFilename))
-                JOptionPane.showMessageDialog(this, "Invalid input. Only letters (a-z, A-Z), numbers (0-9), and underscore (_) are allowed!", "Error", JOptionPane.ERROR_MESSAGE);
-            else if(model.contains(input))
-                JOptionPane.showMessageDialog(this, String.format("The name %s is already taken!", input), "Error", JOptionPane.ERROR_MESSAGE);
-            else
-                break;
-        }
+        } while (!DialogUtils.validateInput(parent, input, model.elements()));
 
         var res = window.getSingleton(Resources.class);
         var catData = res.image_removeCategory(category);
@@ -283,15 +266,15 @@ public class ResourceImageView extends JPanel implements IResourceView {
                 if(e.getButton() != MouseEvent.BUTTON3)
                     return;
                 var popup = new JPopupMenu();
-                var add = new JMenuItem("Add");
+                var add = new JMenuItem(getString("name.add"));
                 add.addActionListener(a -> addImage(null));
                 popup.add(add);
 
                 var selected = list.getSelectedValue();
                 if(selected != null) {
-                    var remove = new JMenuItem("Remove");
+                    var remove = new JMenuItem(getString("name.remove"));
                     remove.addActionListener(a -> removeImage(selected));
-                    var change = new JMenuItem("Change");
+                    var change = new JMenuItem(getString("name.change"));
                     change.addActionListener(a -> changeImage(selected));
                     if (selected.equals("default")) {
                         remove.setEnabled(false);
@@ -309,7 +292,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
     private void addImage(File file) {
         if(file == null) {
             var chooser = new JFileChooser(window.getSingleton(Config.class).get("chooser_image_resource", (String) null));
-            var imageFilter = new FileNameExtensionFilter("Image file", supportedFormats);
+            var imageFilter = new FileNameExtensionFilter(getString("name.image_file"), supportedFormats);
             chooser.setFileFilter(imageFilter);
             var action = chooser.showOpenDialog(parent);
             if (action != JFileChooser.APPROVE_OPTION)
@@ -321,7 +304,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         var res = window.getSingleton(Resources.class);
         var category = categoryList.getSelectedValue();
         if(!res.image_containsCategory(category)) {
-            JOptionPane.showMessageDialog(this, "Select a category before adding an image!", "No category selected", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, getString("view.dialog_resources.image.add_no_category_selected.text"), getString("view.dialog_resources.image.no_category_selected.title"), JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -331,8 +314,8 @@ public class ResourceImageView extends JPanel implements IResourceView {
         } catch (Exception e){
             JOptionPane.showMessageDialog(
                     this,
-                    String.format("Error loading image %s.\n%s", file, e.getMessage()),
-                    "Error loading image!",
+                    getString("view.dialog_resources.image.error_loading_image.text", file, e.getMessage()),
+                    getString("view.dialog_resources.image.error_loading_image.title"),
                     JOptionPane.ERROR_MESSAGE
             );
             return;
@@ -364,10 +347,10 @@ public class ResourceImageView extends JPanel implements IResourceView {
         if(image == null)
             return;
         var option = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete the Image Resource?\n" +
-                        "All objects that use this resource will then display an error image!",
-                "Delete Image Resource",
-                JOptionPane.YES_NO_OPTION);
+                getString("view.dialog_resources.image.delete_image.text"),
+                getString("view.dialog_resources.image.delete_image.title"),
+                JOptionPane.YES_NO_OPTION
+        );
         if(option == JOptionPane.NO_OPTION || option == JOptionPane.CLOSED_OPTION)
             return;
         var model = ((DefaultListModel<String>) imageList.getModel());
@@ -386,7 +369,11 @@ public class ResourceImageView extends JPanel implements IResourceView {
         var res = window.getSingleton(Resources.class);
         var image = res.image_get(categoryList.getSelectedValue(), selected);
         if(image == null) {
-            JOptionPane.showMessageDialog(this, "Select a category before adding an image!", "No category selected", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    getString("view.dialog_resources.image.change_no_category_selected.text"),
+                    getString("view.dialog_resources.image.no_category_selected.title"),
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
         var data = new Object[] {
@@ -406,8 +393,8 @@ public class ResourceImageView extends JPanel implements IResourceView {
         if(!newName.equals(image.getName()) &&
                 JOptionPane.showConfirmDialog(
                         this,
-                        "If you change the image name, all objects that use these resources will display an error image!",
-                        "Change image name",
+                        getString("view.dialog_resources.image.change_image.text"),
+                        getString("view.dialog_resources.image.change_image.title"),
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE
                 ) != JOptionPane.OK_OPTION)
@@ -431,20 +418,14 @@ public class ResourceImageView extends JPanel implements IResourceView {
     private boolean validateInput(String name) {
         var res = window.getSingleton(Resources.class);
         if (!res.image_containsCategory(categoryList.getSelectedValue())) {
-            JOptionPane.showMessageDialog(this, "Select a category before adding an image!", "No category selected", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    getString("view.dialog_resources.image.select_cat_first"),
+                    getString("view.dialog_resources.image.no_cat_selected"),
+                    JOptionPane.ERROR_MESSAGE
+            );
             return false;
         }
-        if (name.isEmpty()){
-            JOptionPane.showMessageDialog(this, "The name can't be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-            return  false;
-        } else if (!name.matches(regexFilename)){
-            JOptionPane.showMessageDialog(this, "Invalid input. Only letters (a-z, A-Z), numbers (0-9), and underscore (_) are allowed!", "Error", JOptionPane.ERROR_MESSAGE);
-            return  false;
-        } else if(res.image_containsResource(categoryList.getSelectedValue(), name)) {
-            JOptionPane.showMessageDialog(this, "The name " + name + " is already taken!", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        return true;
+        return DialogUtils.validateInput(parent, name, res.image_getAllCategories());
     }
 
     private void onCategorySelected(){
@@ -545,8 +526,8 @@ public class ResourceImageView extends JPanel implements IResourceView {
                         if (!formatSupported(file)) {
                             JOptionPane.showMessageDialog(
                                     ResourceImageView.this,
-                                    "The image format is not supported.",
-                                    "Unsupported format!",
+                                    getString("view.dialog_resources.image.unsupported_format.text"),
+                                    getString("view.dialog_resources.image.unsupported_format.title"),
                                     JOptionPane.ERROR_MESSAGE
                             );
                             continue;
@@ -556,8 +537,8 @@ public class ResourceImageView extends JPanel implements IResourceView {
                 } catch (IOException | UnsupportedFlavorException e) {
                     JOptionPane.showMessageDialog(
                             ResourceImageView.this,
-                            String.format("Error dragging image.\n%s", e.getMessage()),
-                            "Error dragging image!",
+                            getString("view.dialog_resources.image.error_dragging.text", e.getMessage()),
+                            getString("view.dialog_resources.image.error_dragging.title"),
                             JOptionPane.ERROR_MESSAGE
                     );
                 }
@@ -603,7 +584,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         private boolean canceled = true;
 
         private NewImageDialog(Component parent, boolean change, Object[] data){
-            super(getWindowForComponent(parent), (change ? "Change" : "Create") + " image resource", true);
+            super(getWindowForComponent(parent), getString("view.dialog_resources.image.new_image_dialog.title", (change ? getString("name.change") : getString("name.create"))), true);
             var content = new JPanel(new BorderLayout(10, 10));
             content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -627,30 +608,32 @@ public class ResourceImageView extends JPanel implements IResourceView {
                 atlasHeight.setValue(data[2]);
             }
 
-            fieldsPanel.add(new JLabel("ID/Name: "), gbc);
+            gbc.insets.right=7;
+
+            fieldsPanel.add(new JLabel(getString("name.id_name")), gbc);
             gbc.gridx++;
             fieldsPanel.add(name, gbc);
             gbc.gridx = 0;
             gbc.gridy++;
-            fieldsPanel.add(new JLabel("Atlas width: "), gbc);
+            fieldsPanel.add(new JLabel(getString("name.atlas_width")), gbc);
             gbc.gridx++;
             fieldsPanel.add(atlasWidth, gbc);
             gbc.gridx = 0;
             gbc.gridy++;
-            fieldsPanel.add(new JLabel("Atlas height: "), gbc);
+            fieldsPanel.add(new JLabel(getString("name.atlas_height")), gbc);
             gbc.gridx++;
             fieldsPanel.add(atlasHeight, gbc);
 
             content.add(fieldsPanel, BorderLayout.CENTER);
 
             var buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-            var apply = new JButton(change ? "Apply" : "Create");
+            var apply = new JButton(change ? getString("button.apply") : getString("name.create"));
             apply.addActionListener(a -> {
                 canceled = false;
                 dispose();
             });
             buttonsPanel.add(apply);
-            var cancel = new JButton("Cancel");
+            var cancel = new JButton(getString("button.cancel"));
             cancel.addActionListener(a -> dispose());
             buttonsPanel.add(cancel);
             content.add(buttonsPanel, BorderLayout.SOUTH);

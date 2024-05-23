@@ -2,7 +2,6 @@ package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.data.MapData;
-import de.sunnix.aje.editor.window.customswing.DefaultValueComboboxModel;
 import de.sunnix.aje.editor.window.resource.Resources;
 
 import javax.swing.*;
@@ -14,6 +13,7 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.util.DialogUtils.showMultiInputDialog;
 import static de.sunnix.aje.editor.util.FunctionUtils.createComboBox;
 import static de.sunnix.aje.editor.util.FunctionUtils.createMenuItem;
@@ -57,20 +57,20 @@ public class MapListView extends JScrollPane {
 
     private void openPopup(String item, int x, int y){
         var popup = new JPopupMenu();
-        popup.add(createMenuItem("Create", this::createNewMap));
+        popup.add(createMenuItem(getString("name.create"), this::createNewMap));
         if(item != null){
             var label = new JLabel(item);
             label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
             popup.add(label, 0);
             popup.add(new JSeparator(), 1);
-            var setStart = createMenuItem("Set as start", this::setMapAsStartMap);
+            var setStart = createMenuItem(getString("view.map_list.popup.set_as_start"), this::setMapAsStartMap);
             setStart.setEnabled(window.getStartMap() != Integer.parseInt(item.substring(0, 4)));
             popup.add(setStart);
-            popup.add(createMenuItem("Set tileset", this::setMapTileset));
-            popup.add(createMenuItem("Set title", this::setMapTitle));
-            popup.add(createMenuItem("Set size", this::setMapSize));
-            popup.add(createMenuItem("Set BGM", this::setMapBGM));
-            popup.add(createMenuItem("Delete", this::deleteMap));
+            popup.add(createMenuItem(getString("view.map_list.popup.set_tileset"), this::setMapTileset));
+            popup.add(createMenuItem(getString("view.map_list.popup.set_title"), this::setMapTitle));
+            popup.add(createMenuItem(getString("view.map_list.popup.set_size"), this::setMapSize));
+            popup.add(createMenuItem(getString("view.map_list.popup.set_bgm"), this::setMapBGM));
+            popup.add(createMenuItem(getString("name.delete"), this::deleteMap));
         }
         popup.show(mapList, x, y);
     }
@@ -106,7 +106,7 @@ public class MapListView extends JScrollPane {
         else
             tilesets.setSelectedItem(tileset);
 
-        if(!showMultiInputDialog(window, "Set tileset", "Set the tileset for the map:", new String[]{ "Tileset:" }, new JComponent[]{ tilesets }))
+        if(!showMultiInputDialog(window, getString("view.map_list.dialog.set_tileset.title"), getString("view.map_list.dialog.set_tileset.text"), new String[]{ getString("name.tileset") }, new JComponent[]{ tilesets }))
             return;
         var sTileset = (String)tilesets.getSelectedItem();
         if(sTileset == null || sTileset.isEmpty())
@@ -123,7 +123,7 @@ public class MapListView extends JScrollPane {
         var map = window.getSingleton(GameData.class).getMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
         if(map == null)
             return;
-        var name = (String) JOptionPane.showInputDialog(window, "Enter new map name", "Change map name", JOptionPane.PLAIN_MESSAGE, null, null, map.getName());
+        var name = (String) JOptionPane.showInputDialog(window, getString("view.map_list.dialog.change_map_name.title"), getString("view.map_list.dialog.change_map_name.text"), JOptionPane.PLAIN_MESSAGE, null, null, map.getName());
         if(name == null || name.equals(map.getName()))
             return;
         map.setName(name);
@@ -137,7 +137,7 @@ public class MapListView extends JScrollPane {
             return;
         var width = new JSpinner(new SpinnerNumberModel(map.getWidth(), MapData.MINIMUM_WIDTH, 1000, 1));
         var height = new JSpinner(new SpinnerNumberModel(map.getHeight(), MapData.MINIMUM_HEIGHT, 1000, 1));
-        if(!showMultiInputDialog(window, "Set map size", "Set new map size:", new String[]{"Width:", "Height:"}, new JComponent[]{ width, height }))
+        if(!showMultiInputDialog(window, getString("view.map_list.dialog.change_map_size.title"), getString("view.map_list.dialog.change_map_size.text"), new String[]{getString("name.width"), getString("name.height")}, new JComponent[]{ width, height }))
             return;
         if(width.getValue().equals(map.getWidth()) && height.getValue().equals(map.getHeight()))
             return;
@@ -153,7 +153,7 @@ public class MapListView extends JScrollPane {
             return;
         var bgm = map.getBackgroundMusic();
         var res = window.getSingleton(Resources.class);
-        var soundCats = createComboBox("none", res.audio_getCategories().toArray(String[]::new));
+        var soundCats = createComboBox(getString("name.none"), res.audio_getCategories().toArray(String[]::new));
         soundCats.setPreferredSize(new Dimension(200, soundCats.getPreferredSize().height));
 
         var sounds = new JComboBox<String>();
@@ -170,7 +170,7 @@ public class MapListView extends JScrollPane {
             sounds.setSelectedItem(split[1]);
         }
 
-        if(!showMultiInputDialog(window, "Set BGM", "Set background music:", new String[]{"Category:", "Track:"}, new JComponent[]{ soundCats, sounds }))
+        if(!showMultiInputDialog(window, getString("view.map_list.popup.set_bgm"), getString("view.map_list.dialog.set_bgm.text"), new String[]{getString("name.category"), getString("name.audio")}, new JComponent[]{ soundCats, sounds }))
             return;
 
         String newBGM = null;
@@ -183,7 +183,7 @@ public class MapListView extends JScrollPane {
     }
 
     private void deleteMap(ActionEvent e) {
-        if(JOptionPane.showConfirmDialog(window, "Do you really want to delete the map?", "Delete map", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
+        if(JOptionPane.showConfirmDialog(window, getString("view.map_list.dialog.delete_map.text"), getString("view.map_list.dialog.delete_map.title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
             return;
         var map = window.getSingleton(GameData.class).getMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
         if(map == null)

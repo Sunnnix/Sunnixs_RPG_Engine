@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
+
 public class PropertiesView extends JPanel {
 
     private final Window window;
@@ -55,19 +57,19 @@ public class PropertiesView extends JPanel {
         gbc.gridheight = 1;
         gbc.ipadx = 12;
 
-        wallDrawLayer = new NumberPicker("Wall Layer:", 0, 10, 0, 0);
+        wallDrawLayer = new NumberPicker(getString("view.properties.wall_layer"), 0, 10, 0, 0);
         wallDrawLayer.addChangeListener(this::wallDrawLayerChanged);
         panel.add(wallDrawLayer, gbc);
         gbc.gridwidth = 1;
         gbc.gridy++;
 
-        floorY = new NumberPicker("Floor Y:", 0, 2, 0, 255);
+        floorY = new NumberPicker(getString("view.properties.floor_y"), 0, 2, 0, 255);
         floorY.addChangeListener(this::floorHeightChanged);
         panel.add(floorY, gbc);
 
         gbc.gridx++;
 
-        wallHeight = new NumberPicker("Wall height:", 0, 2, 0, 255);
+        wallHeight = new NumberPicker(getString("view.properties.wall_height"), 0, 2, 0, 255);
         wallHeight.addChangeListener(this::wallHeightChanged);
         panel.add(wallHeight, gbc);
 

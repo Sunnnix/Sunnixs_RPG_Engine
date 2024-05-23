@@ -7,12 +7,13 @@ import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.net.URI;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.util.Texts.*;
 
 public class AboutDialog extends JDialog {
 
     public AboutDialog(Window parent) {
-        super(parent, WINDOW_NAME + " - About", true);
+        super(parent, WINDOW_NAME + " - " + getString("menu.help.about"), true);
         setContentPane(createContent());
         setResizable(false);
         pack();
@@ -29,7 +30,7 @@ public class AboutDialog extends JDialog {
         panel.add(text);
 
         var btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        var closeBtn = new JButton("Close");
+        var closeBtn = new JButton(getString("button.close"));
         closeBtn.addActionListener(e -> dispose());
         btnPanel.add(closeBtn);
         panel.add(btnPanel);
@@ -49,8 +50,8 @@ public class AboutDialog extends JDialog {
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(
                             AboutDialog.this,
-                            "An exception was thrown!\n" + ex.getMessage(),
-                            "Error",
+                            getString("dialog_about.exception_thrown", ex.getMessage()),
+                            getString("name.error"),
                             JOptionPane.ERROR_MESSAGE
                     );
                 }

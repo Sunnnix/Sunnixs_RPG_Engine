@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.util.FunctionUtils.createButton;
 import static de.sunnix.aje.editor.util.FunctionUtils.createMenuItem;
 
@@ -50,7 +51,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                 try {
                     @SuppressWarnings("unchecked")
                     var files = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
-                    DialogUtils.showLoadingDialog(parent, "Loading audio files", pb -> {
+                    DialogUtils.showLoadingDialog(parent, getString("view.dialog_resources.audio.loading_files"), pb -> {
                         try {
                             var changed = false;
                             var percent = 1f / files.size();
@@ -59,7 +60,10 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                                 pb.addProgress((int) (percent * 10000));
                                 String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
                                 do {
-                                    name = (String) JOptionPane.showInputDialog(parent, "Input audio name:", "Rename audio", JOptionPane.PLAIN_MESSAGE, null, null, name);
+                                    name = (String) JOptionPane.showInputDialog(parent,
+                                            getString("view.dialog_resources.audio.input_name"),
+                                            getString("view.dialog_resources.audio.rename"),
+                                            JOptionPane.PLAIN_MESSAGE, null, null, name);
                                     if (name == null)
                                         break;
                                 } while (!DialogUtils.validateInput(parent, name, res.audio_getAllNames(categories.getSelectedValue())));
@@ -77,8 +81,8 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                         } catch (Exception e) {
                             JOptionPane.showMessageDialog(
                                     parent,
-                                    String.format("Error dragging audio.\n%s", e.getMessage()),
-                                    "Error dragging audio!",
+                                    getString("view.dialog_resources.audio.dragging_error.text", e.getMessage()),
+                                    getString("view.dialog_resources.audio.dragging_error.title"),
                                     JOptionPane.ERROR_MESSAGE
                             );
                             e.printStackTrace();
@@ -88,8 +92,8 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(
                             parent,
-                            String.format("Error dragging audio.\n%s", e.getMessage()),
-                            "Error dragging audio!",
+                            getString("view.dialog_resources.audio.dragging_error.text", e.getMessage()),
+                            getString("view.dialog_resources.audio.dragging_error.title"),
                             JOptionPane.ERROR_MESSAGE
                     );
                     e.printStackTrace();
@@ -125,7 +129,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
         });
 
         var scroll = new JScrollPane(categories);
-        scroll.setBorder(BorderFactory.createTitledBorder("Categories:"));
+        scroll.setBorder(BorderFactory.createTitledBorder(getString("name.categories")));
         scroll.setPreferredSize(new Dimension(120, 0));
         add(scroll, BorderLayout.WEST);
 
@@ -142,14 +146,14 @@ public class ResourceAudioView extends JPanel implements IResourceView{
         var sCat = categories.getSelectedValue();
         new JPopupMenu(sCat){
             {
-                add(createMenuItem("Create", this::createCategory));
+                add(createMenuItem(getString("name.create"), this::createCategory));
                 if(sCat != null){
                     var label = new JLabel(sCat);
                     label.setBorder(BorderFactory.createEmptyBorder(3, 5,5,3));
                     add(label, 0);
                     add(new JSeparator(JSeparator.HORIZONTAL), 1);
-                    add(createMenuItem("Rename", this::renameCategory));
-                    add(createMenuItem("Delete", this::deleteCategory));
+                    add(createMenuItem(getString("name.rename"), this::renameCategory));
+                    add(createMenuItem(getString("name.delete"), this::deleteCategory));
                 }
             }
 
@@ -157,7 +161,10 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                 var res = window.getSingleton(Resources.class);
                 String name = null;
                 do {
-                    name = (String) JOptionPane.showInputDialog(parent, "Input category name:", "Create new category", JOptionPane.PLAIN_MESSAGE, null, null, name);
+                    name = (String) JOptionPane.showInputDialog(parent,
+                            getString("view.dialog_resources.image.insert_category_name"),
+                            getString("view.dialog_resources.image.create_category"),
+                            JOptionPane.PLAIN_MESSAGE, null, null, name);
                     if (name == null)
                         return;
                 } while (!DialogUtils.validateInput(parent, name, res.audio_getCategories()));
@@ -170,9 +177,8 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             private void renameCategory(ActionEvent e) {
                 if(JOptionPane.showConfirmDialog(
                         parent,
-                        "Do you want to rename the category?\n" +
-                                "All components that use sounds in this category could have errors.",
-                        "Rename category",
+                        getString("view.dialog_resources.audio.rename_category"),
+                        getString("view.dialog_resources.image.change_category.title"),
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE
                 ) != JOptionPane.YES_OPTION)
@@ -181,7 +187,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                 var preName = categories.getSelectedValue();
                 String name = preName;
                 do {
-                    name = (String) JOptionPane.showInputDialog(parent, "Input category name:", "Create new category", JOptionPane.PLAIN_MESSAGE, null, null, name);
+                    name = (String) JOptionPane.showInputDialog(parent, getString("view.dialog_resources.image.insert_category_name"), getString("view.dialog_resources.image.create_category"), JOptionPane.PLAIN_MESSAGE, null, null, name);
                     if (name == null || name.equals(preName))
                         return;
                 } while (!DialogUtils.validateInput(parent, name, res.audio_getCategories()));
@@ -198,9 +204,8 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             private void deleteCategory(ActionEvent e) {
                 if(JOptionPane.showConfirmDialog(
                         parent,
-                        "Do you really want to delete the category?\n" +
-                        "All components that use sounds in this category could have errors.",
-                        "Delete category",
+                        getString("view.dialog_resources.audio.delete_category"),
+                        getString("view.dialog_resources.image.delete_category.title"),
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE
                 ) != JOptionPane.YES_OPTION)
@@ -273,7 +278,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             gbc.gridx = 8;
             gbc.weightx = .1;
 
-            var type = new JLabel(speaker.getAudio().channels == 1 ? " Mono " : " Stereo ", JLabel.CENTER);
+            var type = new JLabel(speaker.getAudio().channels == 1 ? getString("name.mono") : getString("name.stereo"), JLabel.CENTER);
             type.setBorder(BorderFactory.createLineBorder(type.getForeground().darker(), 2, true));
             panel.add(type);
             gbc.gridx++;
@@ -325,9 +330,9 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             gbc.weightx = 0;
             gbc.fill = GridBagConstraints.NONE;
 
-            play = new JButton("Play");
+            play = new JButton(getString("name.play"));
             play.addActionListener(this::pressPlay);
-            var stop = new JButton("Stop");
+            var stop = new JButton(getString("name.stop"));
             stop.addActionListener(this::stop);
 
             gbc.gridwidth = 1;
@@ -336,7 +341,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             panel.add(stop, gbc);
             gbc.gridx++;
 
-            panel.add(new JLabel("Default Volume:"), gbc);
+            panel.add(new JLabel(getString("view.dialog_resources.audio.default_value")), gbc);
             gbc.gridx++;
 
             var gain = new JSlider(JSlider.HORIZONTAL, 0, 200, (int)(speaker.getGain() * 100));
@@ -429,7 +434,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
 
         private void pressPlay(ActionEvent e) {
             if(!speaker.isPlaying()) {
-                play.setText("Pause");
+                play.setText(getString("name.pause"));
                 speaker.play();
                 if (thread != null)
                     thread.interrupt();
@@ -437,7 +442,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                 thread.setDaemon(true);
                 thread.start();
             } else {
-                play.setText("Play");
+                play.setText(getString("name.play"));
                 speaker.pause();
             }
         }
@@ -472,7 +477,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                     break;
                 }
             }
-            play.setText("Play");
+            play.setText(getString("name.play"));
             thread = null;
         }
 

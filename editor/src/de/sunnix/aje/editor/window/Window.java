@@ -1,13 +1,14 @@
 package de.sunnix.aje.editor.window;
 
 import de.sunnix.aje.editor.data.GameData;
+import de.sunnix.aje.editor.lang.Language;
 import de.sunnix.aje.editor.util.DialogUtils;
-import de.sunnix.aje.engine.audio.OpenALContext;
 import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
 import de.sunnix.aje.editor.window.resource.Resources;
 import de.sunnix.aje.editor.window.tileset.TilesetTabView;
 import de.sunnix.aje.engine.Core;
+import de.sunnix.aje.engine.audio.OpenALContext;
 import de.sunnix.aje.engine.util.BetterJSONObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class Window extends JFrame {
@@ -76,14 +78,22 @@ public class Window extends JFrame {
 
     public Window(){
         super();
-        setLayout(new BorderLayout());
         initSingletons();
+        var config = getSingleton(Config.class);
+
+        var lang = config.get("language", Locale.getDefault().getCountry().toLowerCase());
+        config.set("language", lang);
+        Language.setupConfig(config);
+        Language.setLanguage(Arrays.asList(Language.getLanguages()).contains(lang) ? lang : "en");
+        Language.setUseEnglishForMissing(config.get("en_fallback", true));
+
+        setLayout(new BorderLayout());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setJMenuBar(menuBar = new MenuBar(this));
         var wl = setupWindowListener();
         addWindowListener(wl);
         addWindowStateListener(wl);
-        var config = getSingleton(Config.class);
+
         var size = new int[] { config.get("window_width", 1600), config.get("window_height", 900) };
         var screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         if(screenSize.width < size[0])
@@ -172,7 +182,7 @@ public class Window extends JFrame {
         var title = new StringBuilder(WINDOW_NAME);
         if(projectOpen){
             title.append(" - ");
-            title.append(Objects.requireNonNullElse(projectName, "New Project"));
+            title.append(Objects.requireNonNullElse(projectName, getString("name.new_project")));
         }
         if(projectChanged)
             title.append(" *");
@@ -213,8 +223,8 @@ public class Window extends JFrame {
     public boolean checkForSaving(){
         if(projectOpen && projectChanged){
             var option = JOptionPane.showConfirmDialog(this,
-                    "There are unsaved changes. Do you want to save them?",
-                    "Unsaved Changes",
+                    getString("dialog.unsaved_changes.text"),
+                    getString("dialog.unsaved_changes.title"),
                     JOptionPane.YES_NO_CANCEL_OPTION);
             return option != JOptionPane.CLOSED_OPTION && option != JOptionPane.CANCEL_OPTION && (option != JOptionPane.YES_OPTION || saveProject(false));
         }
@@ -224,13 +234,13 @@ public class Window extends JFrame {
     public void newProject() {
         if(!checkForSaving())
             return;
-        DialogUtils.showLoadingDialog(this, "Setup new Project", dialog -> {
+        DialogUtils.showLoadingDialog(this, getString("dialog.loading.setup_project"), dialog -> {
             cleanProject();
             dialog.addProgress(80);
-            var input = (String) JOptionPane.showInputDialog(this, "Write a name for the id of the image:", "Create new Image Resource", JOptionPane.PLAIN_MESSAGE, null, null, "New Project");
+            var input = (String) JOptionPane.showInputDialog(this, getString("dialog.loading.setup_project_name"), getString("menu.file.new_project"), JOptionPane.PLAIN_MESSAGE, null, null, getString("name.new_project"));
             if(input == null)
                 return;
-            projectName = input;
+            projectName = input.isEmpty() ? null : input;
             dialog.addProgress(10);
             setProjectOpen(true);
             setProjectChanged();
@@ -251,8 +261,8 @@ public class Window extends JFrame {
         if(!file.exists()){
             JOptionPane.showMessageDialog(
                     this,
-                    String.format("The File %s was not found!", file),
-                    "File not found!",
+                    getString("dialog.file_not_found.text", file),
+                    getString("dialog.file_not_found.title"),
                     JOptionPane.WARNING_MESSAGE
             );
             return;
@@ -277,7 +287,7 @@ public class Window extends JFrame {
     }
 
     private boolean loadGameFile(File file){
-        return (boolean) DialogUtils.showLoadingDialog(this, "Load game file...", dialog -> {
+        return (boolean) DialogUtils.showLoadingDialog(this, getString("dialog.loading.load_game_file"), dialog -> {
             dialog.setMaxProgress(1000 + 500 + 5000 + 3500);
             try (var zip = new ZipFile(file)) {
                 BetterJSONObject config;
@@ -286,8 +296,8 @@ public class Window extends JFrame {
                 } catch (NullPointerException e) {
                     JOptionPane.showMessageDialog(
                             this,
-                            "File missing game.config!",
-                            "Missing config",
+                            getString("dialog.load_game_file.missing_config.text"),
+                            getString("dialog.load_game_file.missing_config.title"),
                             JOptionPane.ERROR_MESSAGE
                     );
                     return false;
@@ -295,21 +305,13 @@ public class Window extends JFrame {
                 dialog.addProgress(1000);
                 var version = Arrays.stream(config.get("editor_version", "0.0").split("\\.")).mapToInt(Integer::parseInt).toArray();
                 if (version[0] != Core.MAJOR_VERSION) {
-                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
-                            The major versions of the editor and the file are not the same.
-                            It is very likely that loading the file will result in errors.
-                                                    
-                            Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
+                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, getString("dialog.load_game_file.version_conflict.major.text"), getString("dialog.load_game_file.version_conflict.title"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
                         return false;
                 } else if (version[1] > Core.MINOR_VERSION) {
-                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, """
-                            The version of the file is higher than that of the editor.
-                            When the game file is loaded it may be that not all data can be loaded.
-                                                    
-                            Proceed anyway?""", "Version conflict!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
+                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, getString("dialog.load_game_file.version_conflict.minor.text"), getString("dialog.load_game_file.version_conflict.title"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE))
                         return false;
                 }
-                projectName = config.get("project_name", "Unnamed Project");
+                projectName = config.get("project_name", getString("name.unnamed_project"));
                 startMap = config.get("start_map", -1);
                 dialog.addProgress(500);
                 getSingleton(Resources.class).loadResources(dialog, 5000, zip);
@@ -317,8 +319,8 @@ public class Window extends JFrame {
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "There was a problem loading the project!\n" + e.getMessage(),
-                        "Error loading project",
+                        getString("dialog.load_game_file.problem_loading_project.text", e.getMessage()),
+                        getString("dialog.load_game_file.problem_loading_project.title"),
                         JOptionPane.ERROR_MESSAGE
                 );
                 e.printStackTrace();
@@ -331,16 +333,16 @@ public class Window extends JFrame {
 
     public boolean saveProject(boolean openFilechooser) {
         File saveFile;
-        if(projectName == null){
+        if(projectName == null) {
             String input = "";
             while(input != null) {
-                input = (String) JOptionPane.showInputDialog(this, "Write a name for the id of the image:", "Create new Image Resource", JOptionPane.PLAIN_MESSAGE, null, null, input);
+                input = (String) JOptionPane.showInputDialog(this, getString("dialog.loading.setup_project_name"), getString("menu.file.save_project"), JOptionPane.PLAIN_MESSAGE, null, null, input);
                 if(input != null && !input.isEmpty())
                     break;
                 JOptionPane.showMessageDialog(
                         this,
-                        "Project name can't be empty!",
-                        "Wrong project name",
+                        getString("dialog.name_cant_be_empty.text"),
+                        getString("dialog.name_cant_be_empty.title"),
                         JOptionPane.WARNING_MESSAGE
                 );
             }
@@ -368,8 +370,8 @@ public class Window extends JFrame {
         } catch (Exception e){
             JOptionPane.showMessageDialog(
                     this,
-                    "Problem writing file",
-                    "Save project failed",
+                    getString("dialog.problem_writing_file"),
+                    getString("dialog.save_file_failed"),
                     JOptionPane.ERROR_MESSAGE
             );
             return false;
@@ -388,7 +390,7 @@ public class Window extends JFrame {
     }
 
     private boolean saveGameFile(File file){
-        return (boolean) DialogUtils.showLoadingDialog(this, "Saving project...", dialog -> {
+        return (boolean) DialogUtils.showLoadingDialog(this, getString("dialog.loading.saving_project"), dialog -> {
             dialog.setMaxProgress(1000 + 500 + 5000 + 3500);
             try(var zip = new ZipOutputStream(new FileOutputStream(file))){
                 var config = new JSONObject();
@@ -406,8 +408,8 @@ public class Window extends JFrame {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(
                         this,
-                        "There was a problem saving the project!",
-                        "Error saving project",
+                        getString("dialog.problem_saving_project"),
+                        getString("dialog.save_file_failed"),
                         JOptionPane.ERROR_MESSAGE
                 );
                 return false;

@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.window.Window.TILE_WIDTH;
 import static de.sunnix.aje.editor.window.Window.TILE_HEIGHT;
 
@@ -109,7 +110,7 @@ public class TopDrawModule extends MapViewModule {
 
     @Override
     public boolean onMouseMoved(MapView view, MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
-        window.getInfo().setText(String.format("Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%", tileX, tileY, mapX, mapY, (int)(view.getZoom() * 100)));
+        window.getInfo().setText(getString("view.map.module.top_draw.info", tileX, tileY, mapX, mapY, (int)(view.getZoom() * 100)));
         return false;
     }
 

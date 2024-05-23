@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.function.Function;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.util.Texts.WINDOW_NAME;
 
 public class ResourceDialog extends JDialog {
@@ -17,7 +18,7 @@ public class ResourceDialog extends JDialog {
     private JPanel contentPanel;
 
     public ResourceDialog(Window parent) {
-        super(parent, WINDOW_NAME + " - Resources", true);
+        super(parent, WINDOW_NAME + " - " + getString("dialog_resources.title"), true);
         setContentPane(createContent(parent));
         addWindowListener(genWindowListener());
         pack();
@@ -40,12 +41,12 @@ public class ResourceDialog extends JDialog {
 
     private JTree createTree(Window parent){
         var root = createNode("Root",
-                createNode("Video",
-                        createNode("Images", p -> new ResourceImageView(parent, p)),
-                        createNode("Tilesets", p -> new TilesetView(parent, p))
+                createNode(getString("dialog_resources.node.video"),
+                        createNode(getString("dialog_resources.node.video.images"), p -> new ResourceImageView(parent, p)),
+                        createNode(getString("dialog_resources.node.video.tilesets"), p -> new TilesetView(parent, p))
                 ),
-                createNode("Audio",
-                        createNode("Raw", p -> new ResourceAudioView(parent, p))
+                createNode(getString("dialog_resources.node.audio"),
+                        createNode(getString("dialog_resources.node.audio.raw"), p -> new ResourceAudioView(parent, p))
                 )
         );
 

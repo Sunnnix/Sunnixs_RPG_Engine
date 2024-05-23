@@ -1,0 +1,224 @@
+# Buttons
+button.ok=Ok
+button.cancel=Cancel
+button.yes=Yes
+button.no=No
+button.apply=Apply
+button.close=Close
+
+# Menu
+menu.file=File
+menu.file.new_project=New Project
+menu.file.open_project=Open Project
+menu.file.recent_projects=Recent Projects...
+menu.file.recent_projects.no_project_found=No project found
+menu.file.recent_projects.clear_list=Clear list
+menu.file.recent_projects.clear_list.dialog_txt=Are you sure, to clear the recent projects list?
+menu.file.recent_projects.remove_not_found_projects=Remove not found projects
+menu.file.save_project=Save Project
+menu.file.save_project_as=Save Project as...
+menu.file.open_resource_manager=Open Resource Manager
+menu.file.close_project=Close Project
+menu.file.exit=Exit
+menu.game=Game
+menu.game.show_profiler=Show Profiler
+menu.game.power_save_mode=Power save mode
+menu.game.vsync=VSync
+menu.help=Help
+menu.help.user_guide=User Guide
+menu.help.language=Language
+menu.help.about=About
+
+# Names
+name.new_project=New Project
+name.unnamed_project=Unnamed Project
+name.game_is_running=GAME IS RUNNING
+name.game_console=Game Console
+name.tileset=Tileset
+name.width=Width
+name.height=Height
+name.none=None
+name.category=Category
+name.audio=Audio
+name.error=Error
+name.create=Create
+name.remove=Remove
+name.change=Change
+name.add=Add
+name.image_file=Image file
+name.image=Image
+name.id_name=ID/Name
+name.atlas_width=Atlas width
+name.atlas_height=Atlas height
+name.delete=Delete
+name.name=Name
+name.texture=Texture
+name.tilesets=Tilesets
+name.tile=Tile
+name.categories=Categories
+name.rename=Rename
+name.mono=Mono
+name.stereo=Stereo
+name.play=Play
+name.pause=Pause
+name.stop=Stop
+name.import=Import
+name.load=Load
+name.language_file=Language Pack
+texts.error_loading_about=Error loading AboutSite.html: %s
+
+# Main dialogs
+dialog.unsaved_changes.title=Unsaved Changes
+dialog.unsaved_changes.text=There are unsaved changes. Do you want to save them?
+dialog.loading.setup_project_name=Set new project title
+dialog.file_not_found.text=The File %s was not found!
+dialog.file_not_found.title=File not found
+dialog.load_game_file.missing_config.text=File missing game.config!
+dialog.load_game_file.missing_config.title=Missing config
+dialog.load_game_file.version_conflict.major.text=The major versions of the editor and the file are not the same.\nIt is very likely that loading the file will result in errors.\n\nProceed anyway?
+dialog.load_game_file.version_conflict.minor.text=The version of the file is higher than that of the editor.\nWhen the game file is loaded it may be that not all data can be loaded.\n\nProceed anyway?
+dialog.load_game_file.version_conflict.title=Version conflict!
+dialog.load_game_file.problem_loading_project.text=There was a problem loading the project!\n%s
+dialog.load_game_file.problem_loading_project.title=Error loading project
+dialog.name_cant_be_empty.text=Name can't be empty!
+dialog.name_cant_be_empty.title=Invalid name
+dialog.problem_writing_file=Problem writing file
+dialog.save_file_failed=Save project failed
+dialog.loading.saving_project=Saving project...
+dialog.problem_saving_project=There was a problem saving the project!
+
+dialog.loading.setup_project=Setup new Project
+dialog.loading.load_game_file=Load game file...
+
+# Toolbar
+toolbar.play.name=Play
+toolbar.play.tooltip=Start Game
+toolbar.mode.select.tooltip=Select Mode
+toolbar.mode.draw_top.tooltip=Draw Top Mode
+toolbar.mode.wall.tooltip=Wall Mode
+toolbar.tool.single_draw.tooltip=Single draw
+toolbar.tool.multi_draw_rect.tooltip=Multi draw "Rectangle"
+toolbar.tool.fill.tooltip=Fill
+toolbar.option.show_grid.tooltip=Show Grid
+toolbar.dialog.no_start_map.text=Please set a start map!
+toolbar.dialog.no_start_map.title=No start map!
+toolbar.dialog.project_must_be_saved.text=All changes must be saved.\nWould you like to save the current changes?
+toolbar.dialog.start_game_error.jar.title=Couldn't start game process
+toolbar.dialog.start_game_error.jar.text=The process could not start because the Jar was not found.\nIf you are in an IDE, start the editor with the argument "fromIDE"\n\n%s
+toolbar.dialog.game_process_error.text=There was a problem with the game process:\n%s
+toolbar.dialog.game_process_error.title=Process error
+
+# Properties View
+view.properties.wall_layer=Wall Layer:
+view.properties.floor_y=Floor Y:
+view.properties.wall_height=Wall height:
+
+# MapList View
+view.map_list.popup.set_as_start=Set as start
+view.map_list.popup.set_tileset=Set tileset
+view.map_list.popup.set_title=Set title
+view.map_list.popup.set_size=Set size
+view.map_list.popup.set_bgm=Set BGM
+view.map_list.dialog.set_tileset.title=Set tileset
+view.map_list.dialog.set_tileset.text=Set the tileset for the map:
+view.map_list.dialog.change_map_name.text=Enter new map name
+view.map_list.dialog.change_map_name.title=Change map name
+view.map_list.dialog.change_map_size.text=Set new map size:
+view.map_list.dialog.change_map_size.title=Set map size
+view.map_list.dialog.set_bgm.text=Set background music:
+view.map_list.dialog.delete_map.text=Do you really want to delete the map?
+view.map_list.dialog.delete_map.title=Delete map
+
+# DialogUtils
+dialog_utils.validate_input.name_cant_be_empty=The name can't be empty!
+dialog_utils.validate_input.invalid_symbols=Invalid input. Only letters %s, numbers %s, and underscore %s are allowed!
+dialog_utils.validate_input.name_taken=The name %s is already taken!
+
+# Config
+config.error_reading.text=There was an error reading configuration!\n%s
+config.error_reading.title=Can't read config
+config.error_creating.text=Config couldn't be created!\n%s
+config.error_creating.title=Can't create config
+config.error_saving.text=Config couldn't be saved!\n%s
+config.error_saving.title=Can't save config
+
+# Map View
+view.map.data_not_found=MapData not found!
+
+# SelectTileModule
+view.map.module.select_tile.info=Tile(%s, %s) | Mouse: (%s, %s) | selected: (%s, %s, %s, %s) | Zoom: %s%%
+
+# TopDrawModule
+view.map.module.top_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
+
+# WallDrawModule
+view.map.module.wall_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
+
+# About dialog
+dialog_about.exception_thrown=An exception was thrown!\n%s
+
+# Resource dialog
+dialog_resources.title=Resources
+dialog_resources.node.video=Video
+dialog_resources.node.video.images=Images
+dialog_resources.node.video.tilesets=Tilesets
+dialog_resources.node.audio=Audio
+dialog_resources.node.audio.raw=Raw
+
+# Resource dialog views
+view.dialog_resources.image.show_complete_image=Show complete image:
+view.dialog_resources.image.animate=Animate:
+view.dialog_resources.image.show_grid=show Grid:
+view.dialog_resources.image.animation_speed=Animation speed:
+view.dialog_resources.image.insert_category_name=Insert category name:
+view.dialog_resources.image.create_category=Create new Category
+view.dialog_resources.image.delete_category.text=Are you sure you want to delete the category %s?\nAll objects that use this category will then display an error image!
+view.dialog_resources.image.delete_category.title=Delete Category
+view.dialog_resources.image.change_category.text=Are you sure you want to change the category %s?\nAll objects that use this category will then display an error image!
+view.dialog_resources.image.change_category.title=Change Category
+view.dialog_resources.image.add_no_category_selected.text=Select a category before adding an image!
+view.dialog_resources.image.no_category_selected.title=No category selected
+view.dialog_resources.image.error_loading_image.text=Error loading image %s.\n%s
+view.dialog_resources.image.error_loading_image.title=Error loading image!
+view.dialog_resources.image.delete_image.text=Are you sure you want to delete the Image Resource?\nAll objects that use this resource will then display an error image!
+view.dialog_resources.image.delete_image.title=Delete Image Resource
+view.dialog_resources.image.change_no_category_selected.text=Select a category before adding an image!
+view.dialog_resources.image.change_image.text=If you change the image name, all objects that use these resources will display an error image!
+view.dialog_resources.image.change_image.title=Change image name
+view.dialog_resources.image.select_cat_first=Select a category before adding an image!
+view.dialog_resources.image.no_cat_selected=No category selected
+view.dialog_resources.image.unsupported_format.text=The image format is not supported.
+view.dialog_resources.image.unsupported_format.title=Unsupported format!
+view.dialog_resources.image.error_dragging.text=Error dragging image.\n%s
+view.dialog_resources.image.error_dragging.title=Error dragging image!
+view.dialog_resources.image.new_image_dialog.title=%s image resource
+
+# Resource dialog Tileset View
+view.dialog_resources.tileset.create=Create tileset
+view.dialog_resources.tileset.ts_cat=Texture category
+view.dialog_resources.tileset.no_texture_selected=No texture selected!
+view.dialog_resources.tileset.delete_tileset.text=Do you really want to delete the tileset?\nAll data in the tileset will be lost and maps that used it must be adjusted!
+view.dialog_resources.tileset.delete_tileset.title=Delete tileset
+
+# Resource dialog Audio View
+view.dialog_resources.audio.loading_files=Loading audio files
+view.dialog_resources.audio.input_name=Input audio name
+view.dialog_resources.audio.rename=Rename audio
+view.dialog_resources.audio.dragging_error.text=Error dragging audio.\n%s
+view.dialog_resources.audio.dragging_error.title=Error dragging audio!
+view.dialog_resources.audio.rename_category=Do you want to rename the category?\nAll components that use sounds in this category could have errors.
+view.dialog_resources.audio.delete_category=Do you really want to delete the category?\nAll components that use sounds in this category could have errors.
+view.dialog_resources.audio.default_value=Default Volume:
+
+# Dialog Language
+dialog.language.reload_editor.text=The new Language Pack has been loaded and is now being used. However, in order to update all texts, you need to restart the editor.
+dialog.language.reload_editor.title=Language Pack has been changed
+dialog.language.set_lang_failed.text=Loading the Language Pack failed
+dialog.language.set_lang_failed.title=Loading Language Pack
+dialog.language.remove_lang_pack.text=Are you sure you want to delete the Language Pack %s?
+dialog.language.remove_lang_pack.title=Remove Language Pack
+dialog.language.remove_lang_pack.cant_remove_default=You can't remove default Language Pack's
+dialog.language.load_lang.title=Load Language Pack
+dialog.language.no_lang_selected=No Language Pack selected!
+dialog.language.lang_not_found=Language Pack not found!
+dialog.language.en_fallback=Use English if translation is missing

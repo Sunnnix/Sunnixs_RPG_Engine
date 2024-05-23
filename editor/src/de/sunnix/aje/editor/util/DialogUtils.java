@@ -2,12 +2,11 @@ package de.sunnix.aje.editor.util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
 import static de.sunnix.aje.editor.util.FunctionUtils.createButton;
 import static javax.swing.JOptionPane.getRootFrame;
 
@@ -41,16 +40,23 @@ public class DialogUtils {
 
     public static boolean validateInput(Component parent, String text, Collection<String> duplicateCheck) {
         if (text.isEmpty()){
-            JOptionPane.showMessageDialog(parent, "The name can't be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parent, getString("dialog_utils.validate_input.name_cant_be_empty"), getString("name.error"), JOptionPane.ERROR_MESSAGE);
             return  false;
         } else if (!text.matches(FILE_REGEX)){
-            JOptionPane.showMessageDialog(parent, "Invalid input. Only letters (a-z, A-Z), numbers (0-9), and underscore (_) are allowed!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parent, getString("dialog_utils.validate_input.invalid_symbols", "(a-z, A-Z)", "(0-9)", "(_)"), getString("name.error"), JOptionPane.ERROR_MESSAGE);
             return  false;
         } else if(duplicateCheck != null && duplicateCheck.stream().anyMatch(s -> Objects.equals(s, text))) {
-            JOptionPane.showMessageDialog(parent, "The name " + text + " is already taken!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parent, getString("dialog_utils.validate_input.name_taken", text), getString("name.error"), JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
+    }
+
+    public static boolean validateInput(Component parent, String text, Enumeration<String> duplicateCheck){
+        var list = new ArrayList<String>();
+        while(duplicateCheck.hasMoreElements())
+            list.add(duplicateCheck.nextElement());
+        return validateInput(parent, text, list);
     }
 
     public static Object showLoadingDialog(Component parentComponent, String title, Consumer<LoadingDialog> process){
@@ -131,11 +137,11 @@ public class DialogUtils {
 
         private JPanel genButtons() {
             var panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-            panel.add(createButton("Apply", l -> {
+            panel.add(createButton(getString("button.apply"), l -> {
                 applied = true;
                 dispose();
             }));
-            panel.add(createButton("Cancel", l -> dispose()));
+            panel.add(createButton(getString("button.cancel"), l -> dispose()));
             return panel;
         }
 

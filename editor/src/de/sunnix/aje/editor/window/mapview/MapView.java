@@ -11,6 +11,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
+
 public class MapView extends JPanel {
 
     private final de.sunnix.aje.editor.window.Window window;
@@ -37,7 +39,7 @@ public class MapView extends JPanel {
         if(mapData == null) {
             g.setColor(Color.RED);
             g.setFont(g.getFont().deriveFont(Font.BOLD, 24f));
-            var text = "MapData not found!";
+            var text = getString("view.map.data_not_found");
             g.drawString(text, getWidth() / 2 - g.getFontMetrics().stringWidth(text) / 2, getHeight() / 2);
             return;
         }

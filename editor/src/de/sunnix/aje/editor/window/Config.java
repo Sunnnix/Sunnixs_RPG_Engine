@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static de.sunnix.aje.editor.lang.Language.getString;
+
 public class Config {
 
     public static final File saveFile = new File("ajee.config");
@@ -26,7 +28,7 @@ public class Config {
             try (var stream = new FileInputStream(saveFile)) {
                 data = new BetterJSONObject(new String(stream.readAllBytes()));
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "There was an error reading configuration!\n" + e.getMessage(), "Can't read config", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, getString("config.error_reading.text", e.getMessage()), getString("config.error_reading.title"), JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -40,13 +42,13 @@ public class Config {
                         parent.mkdirs();
                     saveFile.createNewFile();
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Config couldn't be created!\n" + e.getMessage(), "Can't create config", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, getString("config.error_creating.text", e.getMessage()), getString("config.error_creating.title"), JOptionPane.ERROR_MESSAGE);
                 }
             }
             try (var stream = new FileOutputStream(saveFile)) {
                 stream.write(data.toString(2).getBytes());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "There was an error saving configuration!\n" + e.getMessage(), "Can't save config", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, getString("config.error_saving.text", e.getMessage()), getString("config.error_saving.title"), JOptionPane.ERROR_MESSAGE);
             }
         }
     }

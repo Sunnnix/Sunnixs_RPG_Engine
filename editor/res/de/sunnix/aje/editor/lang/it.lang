@@ -1,0 +1,224 @@
+# Pulsanti
+button.ok=OK
+button.cancel=Annulla
+button.yes=Sì
+button.no=No
+button.apply=Applica
+button.close=Chiudi
+
+# Menu
+menu.file=File
+menu.file.new_project=Nuovo Progetto
+menu.file.open_project=Apri Progetto
+menu.file.recent_projects=Progetti Recenti...
+menu.file.recent_projects.no_project_found=Nessun progetto trovato
+menu.file.recent_projects.clear_list=Cancella lista
+menu.file.recent_projects.clear_list.dialog_txt=Sei sicuro di voler cancellare la lista dei progetti recenti?
+menu.file.recent_projects.remove_not_found_projects=Rimuovi progetti non trovati
+menu.file.save_project=Salva Progetto
+menu.file.save_project_as=Salva Progetto come...
+menu.file.open_resource_manager=Apri Gestore Risorse
+menu.file.close_project=Chiudi Progetto
+menu.file.exit=Esci
+menu.game=Giochi
+menu.game.show_profiler=Mostra Profiler
+menu.game.power_save_mode=Modalità Risparmio Energetico
+menu.game.vsync=VSync
+menu.help=Aiuto
+menu.help.user_guide=Guida Utente
+menu.help.language=Lingua
+menu.help.about=Info
+
+# Nomi
+name.new_project=Nuovo Progetto
+name.unnamed_project=Progetto Senza Nome
+name.game_is_running=IL GIOCO È IN ESECUZIONE
+name.game_console=Console di Gioco
+name.tileset=Tileset
+name.width=Larghezza
+name.height=Altezza
+name.none=Nessuno
+name.category=Categoria
+name.audio=Audio
+name.error=Errore
+name.create=Crea
+name.remove=Rimuovi
+name.change=Cambia
+name.add=Aggiungi
+name.image_file=File Immagine
+name.image=Immagine
+name.id_name=ID/Nome
+name.atlas_width=Larghezza Atlas
+name.atlas_height=Altezza Atlas
+name.delete=Elimina
+name.name=Nome
+name.texture=Texture
+name.tilesets=Tilesets
+name.tile=Tile
+name.categories=Categorie
+name.rename=Rinomina
+name.mono=Mono
+name.stereo=Stereo
+name.play=Riproduci
+name.pause=Pausa
+name.stop=Stop
+name.import=Importare
+name.load=Carico
+name.language_file=Pacchetto linguistico
+texts.error_loading_about=Errore durante il caricamento di AboutSite.html: %s
+
+# Dialoghi Principali
+dialog.unsaved_changes.title=Modifiche Non Salvate
+dialog.unsaved_changes.text=Ci sono modifiche non salvate. Vuoi salvarle?
+dialog.loading.setup_project_name=Imposta un nuovo titolo del progetto
+dialog.file_not_found.text=Il File %s non è stato trovato!
+dialog.file_not_found.title=File non trovato
+dialog.load_game_file.missing_config.text=File mancante game.config!
+dialog.load_game_file.missing_config.title=Configurazione mancante
+dialog.load_game_file.version_conflict.major.text=Le versioni principali dell'editor e del file non sono le stesse.\nÈ molto probabile che il caricamento del file comporti errori.\n\nProcedere comunque?
+dialog.load_game_file.version_conflict.minor.text=La versione del file è superiore a quella dell'editor.\nQuando viene caricato il file di gioco, potrebbe essere che non tutti i dati possano essere caricati.\n\nProcedere comunque?
+dialog.load_game_file.version_conflict.title=Conflitto di versione!
+dialog.load_game_file.problem_loading_project.text=C'è stato un problema durante il caricamento del progetto!\n%s
+dialog.load_game_file.problem_loading_project.title=Errore durante il caricamento del progetto
+dialog.name_cant_be_empty.text=Il nome non può essere vuoto!
+dialog.name_cant_be_empty.title=Nome non valido
+dialog.problem_writing_file=Problema nella scrittura del file
+dialog.save_file_failed=Salvataggio del progetto non riuscito
+dialog.loading.saving_project=Salvataggio del progetto...
+dialog.problem_saving_project=C'è stato un problema nel salvare il progetto!
+
+dialog.loading.setup_project=Impostazione di un Nuovo Progetto
+dialog.loading.load_game_file=Caricamento del file di gioco...
+
+# Barra degli Strumenti
+toolbar.play.name=Riproduci
+toolbar.play.tooltip=Avvia Gioco
+toolbar.mode.select.tooltip=Modalità Selezione
+toolbar.mode.draw_top.tooltip=Modalità Disegna Sopra
+toolbar.mode.wall.tooltip=Modalità Parete
+toolbar.tool.single_draw.tooltip=Disegno Singolo
+toolbar.tool.multi_draw_rect.tooltip=Disegno Multiplo "Rettangolo"
+toolbar.tool.fill.tooltip=Riempi
+toolbar.option.show_grid.tooltip=Mostra Griglia
+toolbar.dialog.no_start_map.text=Si prega di impostare una mappa di avvio!
+toolbar.dialog.no_start_map.title=Nessuna mappa di avvio!
+toolbar.dialog.project_must_be_saved.text=Tutte le modifiche devono essere salvate.\nVuoi salvare le modifiche attuali?
+toolbar.dialog.start_game_error.jar.title=Impossibile avviare il processo del gioco
+toolbar.dialog.start_game_error.jar.text=Il processo non può essere avviato perché il file Jar non è stato trovato.\nSe sei in un IDE, avvia l'editor con l'argomento "fromIDE"\n\n%s
+toolbar.dialog.game_process_error.text=C'è stato un problema con il processo di gioco:\n%s
+toolbar.dialog.game_process_error.title=Errore di processo
+
+# Vista Proprietà
+view.properties.wall_layer=Layer Parete:
+view.properties.floor_y=Piano Y:
+view.properties.wall_height=Altezza Parete:
+
+# Vista Elenco Mappe
+view.map_list.popup.set_as_start=Imposta come avvio
+view.map_list.popup.set_tileset=Imposta tileset
+view.map_list.popup.set_title=Imposta titolo
+view.map_list.popup.set_size=Imposta dimensione
+view.map_list.popup.set_bgm=Imposta BGM
+view.map_list.dialog.set_tileset.title=Imposta tileset
+view.map_list.dialog.set_tileset.text=Imposta il tileset per la mappa:
+view.map_list.dialog.change_map_name.text=Inserisci il nuovo nome della mappa
+view.map_list.dialog.change_map_name.title=Cambia nome mappa
+view.map_list.dialog.change_map_size.text=Imposta nuova dimensione mappa:
+view.map_list.dialog.change_map_size.title=Imposta dimensione mappa
+view.map_list.dialog.set_bgm.text=Imposta musica di sottofondo:
+view.map_list.dialog.delete_map.text=Vuoi davvero eliminare la mappa?
+view.map_list.dialog.delete_map.title=Elimina mappa
+
+# DialogUtils
+dialog_utils.validate_input.name_cant_be_empty=Il nome non può essere vuoto!
+dialog_utils.validate_input.invalid_symbols=Input non valido. Sono consentite solo lettere %s, numeri %s e trattini bassi %s!
+dialog_utils.validate_input.name_taken=Il nome %s è già utilizzato!
+
+# Configurazione
+config.error_reading.text=C'è stato un errore durante la lettura della configurazione!\n%s
+config.error_reading.title=Impossibile leggere la configurazione
+config.error_creating.text=Impossibile creare la configurazione!\n%s
+config.error_creating.title=Impossibile creare la configurazione
+config.error_saving.text=Impossibile salvare la configurazione!\n%s
+config.error_saving.title=Impossibile salvare la configurazione
+
+# Vista Mappa
+view.map.data_not_found=Dati mappa non trovati!
+
+# Modulo SelectTile
+view.map.module.select_tile.info=Tile(%s, %s) | Mouse: (%s, %s) | selezionato: (%s, %s, %s, %s) | Zoom: %s%%
+
+# Modulo TopDraw
+view.map.module.top_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
+
+# Modulo WallDraw
+view.map.module.wall_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
+
+# Dialogo Informazioni su
+dialog_about.exception_thrown=È stata generata un'eccezione!\n%s
+
+# Dialogo Risorse
+dialog_resources.title=Risorse
+dialog_resources.node.video=Video
+dialog_resources.node.video.images=Immagini
+dialog_resources.node.video.tilesets=Tilesets
+dialog_resources.node.audio=Audio
+dialog_resources.node.audio.raw=Grafica
+
+# Viste Dialogo Risorse
+view.dialog_resources.image.show_complete_image=Mostra immagine completa:
+view.dialog_resources.image.animate=Animare:
+view.dialog_resources.image.show_grid=Mostra griglia:
+view.dialog_resources.image.animation_speed=Velocità animazione:
+view.dialog_resources.image.insert_category_name=Inserisci nome categoria:
+view.dialog_resources.image.create_category=Crea nuova categoria
+view.dialog_resources.image.delete_category.text=Sei sicuro di voler eliminare la categoria %s?\nTutti gli oggetti che utilizzano questa categoria mostreranno un'immagine di errore!
+view.dialog_resources.image.delete_category.title=Elimina categoria
+view.dialog_resources.image.change_category.text=Sei sicuro di voler cambiare la categoria %s?\nTutti gli oggetti che utilizzano questa categoria mostreranno un'immagine di errore!
+view.dialog_resources.image.change_category.title=Cambia categoria
+view.dialog_resources.image.add_no_category_selected.text=Seleziona una categoria prima di aggiungere un'immagine!
+view.dialog_resources.image.no_category_selected.title=Nessuna categoria selezionata
+view.dialog_resources.image.error_loading_image.text=Errore durante il caricamento dell'immagine %s.\n%s
+view.dialog_resources.image.error_loading_image.title=Errore durante il caricamento dell'immagine!
+view.dialog_resources.image.delete_image.text=Sei sicuro di voler eliminare la risorsa immagine?\nTutti gli oggetti che utilizzano questa risorsa mostreranno un'immagine di errore!
+view.dialog_resources.image.delete_image.title=Elimina risorsa immagine
+view.dialog_resources.image.change_no_category_selected.text=Seleziona una categoria prima di aggiungere un'immagine!
+view.dialog_resources.image.change_image.text=Se cambi il nome dell'immagine, tutti gli oggetti che utilizzano questa risorsa mostreranno un'immagine di errore!
+view.dialog_resources.image.change_image.title=Cambia nome immagine
+view.dialog_resources.image.select_cat_first=Seleziona una categoria prima di aggiungere un'immagine!
+view.dialog_resources.image.no_cat_selected=Nessuna categoria selezionata
+view.dialog_resources.image.unsupported_format.text=Il formato dell'immagine non è supportato.
+view.dialog_resources.image.unsupported_format.title=Formato non supportato!
+view.dialog_resources.image.error_dragging.text=Errore durante il trascinamento dell'immagine.\n%s
+view.dialog_resources.image.error_dragging.title=Errore durante il trascinamento dell'immagine!
+view.dialog_resources.image.new_image_dialog.title=%s risorsa immagine
+
+# Vista Tileset del Dialogo Risorse
+view.dialog_resources.tileset.create=Crea tileset
+view.dialog_resources.tileset.ts_cat=Categoria Texture
+view.dialog_resources.tileset.no_texture_selected=Nessuna texture selezionata!
+view.dialog_resources.tileset.delete_tileset.text=Vuoi davvero eliminare il tileset?\nTutti i dati nel tileset andranno persi e le mappe che lo utilizzano devono essere modificate!
+view.dialog_resources.tileset.delete_tileset.title=Elimina tileset
+
+# Vista Audio del Dialogo Risorse
+view.dialog_resources.audio.loading_files=Caricamento file audio
+view.dialog_resources.audio.input_name=Nome input audio
+view.dialog_resources.audio.rename=Rinomina audio
+view.dialog_resources.audio.dragging_error.text=Errore durante il trascinamento audio.\n%s
+view.dialog_resources.audio.dragging_error.title=Errore durante il trascinamento audio!
+view.dialog_resources.audio.rename_category=Vuoi rinominare la categoria?\nTutti i componenti che utilizzano suoni in questa categoria potrebbero avere errori.
+view.dialog_resources.audio.delete_category=Vuoi davvero eliminare la categoria?\nTutti i componenti che utilizzano suoni in questa categoria potrebbero avere errori.
+view.dialog_resources.audio.default_value=Volume predefinito:
+
+# Dialog Language
+dialog.language.reload_editor.text=Il pacchetto lingua è stato caricato e ora è in uso. Per aggiornare tutti i testi è necessario riavviare l'editor!
+dialog.language.reload_editor.title=Il pacchetto linguistico è stato modificato
+dialog.language.set_lang_failed.text=Il caricamento del pacchetto lingua non è riuscito
+dialog.language.set_lang_failed.title=Carica il pacchetto lingua
+dialog.language.remove_lang_pack.text=Sei sicuro di voler eliminare il pacchetto lingua %s?
+dialog.language.remove_lang_pack.title=Rimuovere il pacchetto lingua
+dialog.language.remove_lang_pack.cant_remove_default=Non è possibile rimuovere i pacchetti lingua predefiniti
+dialog.language.load_lang.title=Carica il pacchetto lingua
+dialog.language.no_lang_selected=Nessun pacchetto di lingue selezionato!
+dialog.language.lang_not_found=Pacchetto linguistico non trovato!
+dialog.language.en_fallback=Usa l'inglese se manca la traduzione
