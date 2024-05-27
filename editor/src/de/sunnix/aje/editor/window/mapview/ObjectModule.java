@@ -1,20 +1,24 @@
 package de.sunnix.aje.editor.window.mapview;
 
+import de.sunnix.aje.editor.data.GameObject;
 import de.sunnix.aje.editor.data.MapData;
 import de.sunnix.aje.editor.window.Window;
+import de.sunnix.aje.editor.window.object.ObjectEditDialog;
 import de.sunnix.aje.editor.window.resource.Resources;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 import static de.sunnix.aje.editor.lang.Language.getString;
+import static de.sunnix.aje.editor.util.FunctionUtils.createMenuItem;
 import static de.sunnix.aje.editor.window.Window.TILE_HEIGHT;
 import static de.sunnix.aje.editor.window.Window.TILE_WIDTH;
 
-public class SelectTileModule extends MapViewModule {
+public class ObjectModule extends MapViewModule {
 
-    public SelectTileModule(Window window) {
+    public ObjectModule(Window window) {
         super(window);
     }
 
@@ -22,20 +26,29 @@ public class SelectTileModule extends MapViewModule {
 
     @Override
     public boolean onMousePresses(MapView view, MapData map, MouseEvent me, int mapX, int mapY, int tileX, int tileY) {
-        if(tileX < 0)
-            tileX = 0;
-        if(tileY < 0)
-            tileY = 0;
-        if(tileX >= map.getWidth())
-            tileX = map.getWidth() - 1;
-        if(tileY >= map.getHeight())
-            tileY = map.getHeight() - 1;
-        var sTiles = map.getSelectedTiles();
-        sTiles[0] = preX = tileX;
-        sTiles[1] = preY = tileY;
-        sTiles[2] = 1;
-        sTiles[3] = 1;
-        window.getPropertiesView().loadSelectedTileData();
+        var button = me.getButton();
+        var TW = (int)(TILE_WIDTH * view.getZoom());
+        var TH = (int)(TILE_HEIGHT * view.getZoom());
+        float x, y;
+        x = ((float)mapX / TW);
+        y = ((float)mapY / TH);
+        if(button == MouseEvent.BUTTON1) {
+            preX = mapX;
+            preY = mapY;
+            var obj = map.getObjectAt(x, y);
+            map.setSelectedObject(obj != null ? obj.ID : -1);
+            if(me.getClickCount() == 2)
+                if(obj == null) {
+                    obj = createNewObject(map, (float) mapX / TW, (float) mapY / TH);
+                    map.setSelectedObject(obj.getID());
+                } else
+                    openObjectEditor(map, obj);
+        } else {
+            var obj = map.getObjectAt(x, y);
+            map.setSelectedObject(obj != null ? obj.ID : -1);
+            showPopUp(view, map, obj, me.getX(), me.getY(), (float)mapX / TW, (float)mapY / TH);
+        }
+        updateInfo(view, map, mapX, mapY, tileX, tileY);
         return true;
     }
 
@@ -46,30 +59,30 @@ public class SelectTileModule extends MapViewModule {
 
     @Override
     public boolean onMouseMoved(MapView view, MapData map, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
-        var sTiles = map.getSelectedTiles();
-        window.getInfo().setText(getString("view.map.module.select_tile.info", tileX, tileY, mapX, mapY, sTiles[0], sTiles[1], sTiles[2], sTiles[3], (int)(view.getZoom() * 100)));
+        updateInfo(view, map, mapX, mapY, tileX, tileY);
         return false;
     }
 
     @Override
     public boolean onMouseDragged(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY, boolean sameTile) {
-        var sTiles = map.getSelectedTiles();
-        onMouseMoved(view, map, screenX, screenY, mapX, mapY, tileX, tileY);
-        if(sameTile)
-            return false;
-        if(tileX < 0)
-            tileX = 0;
-        if(tileY < 0)
-            tileY = 0;
-        if(tileX >= map.getWidth())
-            tileX = map.getWidth() - 1;
-        if(tileY >= map.getHeight())
-            tileY = map.getHeight() - 1;
-        sTiles[0] = Math.min(preX, tileX);
-        sTiles[1] = Math.min(preY, tileY);
-        sTiles[2] = Math.max(Math.abs(preX - tileX) + 1, 1);
-        sTiles[3] = Math.max(Math.abs(preY - tileY) + 1, 1);
-        return true;
+        if(button == MouseEvent.BUTTON1){
+            var obj = map.getObject(map.getSelectedObject());
+            if(obj == null)
+                return false;
+            var TW = (int)(TILE_WIDTH * view.getZoom());
+            var TH = (int)(TILE_HEIGHT * view.getZoom());
+            float diffX, diffY;
+            diffX = ((float)(mapX - preX) / TW);
+            diffY = ((float)(mapY - preY) / TH);
+            preX = mapX;
+            preY = mapY;
+            obj.setX(obj.getX() + diffX);
+            obj.setZ(obj.getZ() + diffY);
+            updateInfo(view, map, mapX, mapY, tileX, tileY);
+            return true;
+        }
+        updateInfo(view, map, mapX, mapY, tileX, tileY);
+        return false;
     }
 
     @Override
@@ -133,25 +146,17 @@ public class SelectTileModule extends MapViewModule {
                     g.drawRect(x + TW * i, y + TH * j, TW, TH);
         }
 
-        var selected = map.getSelectedTiles();
-        var sX = selected[0];
-        var sY = selected[1];
-        var sW = selected[2];
-        var sH = selected[3];
-
-        var groundY = tiles[sX + sY * map.getWidth()].getgroundY();
-
-        g.setColor(Color.MAGENTA);
-        g.drawLine(x + TW * sX, y + TH * sY, x + TW * sX + TW * sW, y + TH * sY);
-        g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * (sH + groundY));
-
-        g.setColor(Color.YELLOW);
-        g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * sH);
+        map.drawObjects(g, view.getZoom(), x, y);
     }
 
     @Override
-    public boolean omMouseWheelMoved(MapView view, MapData mapData, int mask, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean omMouseWheelMoved(MapView view, MapData map, int mask, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
         return false;
+    }
+
+    private void updateInfo(MapView view, MapData map, int mapX, int mapY, int tileX, int tileY){
+        var obj = map.getObject(map.getSelectedObject());
+        window.getInfo().setText(getString("view.map.module.object.info", tileX, tileY, mapX, mapY, (int)(view.getZoom() * 100), obj == null ? getString("view.map.module.object.no_object") : obj));
     }
 
     private BufferedImage[] loadTilesets(String[] tilesets){
@@ -163,4 +168,44 @@ public class SelectTileModule extends MapViewModule {
         }
         return images;
     }
+
+    private void showPopUp(MapView view, MapData map, GameObject obj, int x, int y, float mapX, float mapY) {
+        new JPopupMenu(){
+            {
+                if(obj != null){
+                    var label = new JLabel(obj.toString());
+                    label.getInsets().set(3, 5, 3, 5);
+                    add(label);
+                    add(new JSeparator(JSeparator.HORIZONTAL));
+                    add(createMenuItem(getString("name.edit"), l -> {
+                        openObjectEditor(map, obj);
+                        view.repaint();
+                    }));
+                    add(createMenuItem(getString("name.remove"), l -> {
+                        removeObject(map, obj);
+                        map.setSelectedObject(-1);
+                        view.repaint();
+                    }));
+                }
+                add(createMenuItem(getString("view.map.module.object.create_object"), l -> {
+                    createNewObject(map, mapX, mapY);
+                    view.repaint();
+                }));
+            }
+
+            private void removeObject(MapData map, GameObject obj) {
+                map.removeObject(obj);
+            }
+
+        }.show(view, x, y);
+    }
+
+    private void openObjectEditor(MapData map, GameObject obj) {
+        new ObjectEditDialog(window, map, obj);
+    }
+
+    private GameObject createNewObject(MapData map, float x, float y) {
+        return map.createNewObject(x, y);
+    }
+
 }

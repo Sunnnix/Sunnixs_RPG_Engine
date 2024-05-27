@@ -154,6 +154,10 @@ view.map.module.top_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
 # WallDrawModule
 view.map.module.wall_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
 
+# ObjectModule
+view.map.module.object.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%% | Object: %s
+view.map.module.object.no_object=No Object
+
 # About dialog
 dialog_about.exception_thrown=An exception was thrown!\n%s
 

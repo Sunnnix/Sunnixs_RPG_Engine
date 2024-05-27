@@ -169,7 +169,8 @@ public class Window extends JFrame {
         return new MapViewModule[]{
                 new SelectTileModule(this),
                 new TopDrawModule(this),
-                new WallDrawModule(this)
+                new WallDrawModule(this),
+                new ObjectModule(this)
         };
     }
 

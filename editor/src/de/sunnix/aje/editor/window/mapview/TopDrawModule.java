@@ -29,7 +29,9 @@ public class TopDrawModule extends MapViewModule {
     }
 
     @Override
-    public boolean onMousePresses(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean onMousePresses(MapView view, MapData map, MouseEvent me, int mapX, int mapY, int tileX, int tileY) {
+        var button = me.getButton();
+        var mask = me.getModifiersEx();
         var layer = (mask & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK ? 1 : 0;
         if(button == MouseEvent.BUTTON1){
             var texID = map.getSelectedTilesetTile();

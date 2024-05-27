@@ -3,7 +3,6 @@ package de.sunnix.aje.editor.window.mapview;
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.window.Window;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -88,7 +87,7 @@ public class MapView extends JPanel {
 
                 button = e.getButton();
 
-                if(window.getCurrentMapModule().onMousePresses(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
+                if(window.getCurrentMapModule().onMousePresses(MapView.this, mapData, e, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
                     repaint();
             }
 

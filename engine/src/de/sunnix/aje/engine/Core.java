@@ -34,7 +34,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class Core {
 
     public static final int MAJOR_VERSION = 0;
-    public static final int MINOR_VERSION = 5;
+    public static final int MINOR_VERSION = 6;
     public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
 
     public enum CoreStage {

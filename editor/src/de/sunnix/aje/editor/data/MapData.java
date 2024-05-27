@@ -4,7 +4,12 @@ import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import static de.sunnix.aje.editor.lang.Language.getString;
 
 public class MapData {
 
@@ -37,6 +42,12 @@ public class MapData {
 
     @Getter
     private int[] selectedTiles = {0, 0, 1, 1};
+
+    private List<GameObject> objects = new ArrayList<>();
+
+    @Getter
+    @Setter
+    private int selectedObject = -1;
 
     public MapData(int id, int width, int height){
         this.ID = id;
@@ -110,4 +121,55 @@ public class MapData {
         backgroundMusic = dso.getString("bgm", null);
     }
 
+    public void drawObjects(Graphics2D g, float zoom, int offsetX, int offsetY){
+        objects.forEach(o -> o.draw(g, zoom, offsetX, offsetY, o.ID == selectedObject));
+    }
+
+    public GameObject createNewObject(float x, float y) {
+        var obj = new GameObject(genNextID(), x, 0, y);
+        objects.add(obj);
+        return obj;
+    }
+
+    public int genNextID(){
+        var it = objects.stream().mapToInt(GameObject::getID).sorted().iterator();
+        var nextID = 0;
+        while(it.hasNext()){
+            var oID = it.next();
+            if(oID <= nextID)
+                nextID = oID + 1;
+            else
+                break;
+        }
+        if(nextID < 0)
+            throw new RuntimeException("no free id's!");
+        else
+            return nextID;
+    }
+
+    public GameObject getObjectAt(float x, float y) {
+        for(var o : objects){
+            if(o.intersects(x, y))
+                return o;
+        }
+        return null;
+    }
+
+    public GameObject getObject(int id) {
+        if(id < 0)
+            return null;
+        for(var obj : objects)
+            if(obj.ID == id)
+                return obj;
+        return null;
+    }
+
+    public GameObject removeObject(GameObject obj) {
+        objects.remove(obj);
+        return obj;
+    }
+
+    public GameObject removeObject(int id){
+        return removeObject(getObject(id));
+    }
 }

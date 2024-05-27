@@ -60,7 +60,8 @@ public class Toolbar extends JToolBar {
         Arrays.stream(createButtonGroup(
                 createToolbarButton(getString("toolbar.mode.select.tooltip"), "toolbar/propertieMode.png", "toolbar/propertieMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), l -> selectMode(0)),
                 createToolbarButton(getString("toolbar.mode.draw_top.tooltip") ,"toolbar/drawTopMode.png", "toolbar/drawTopMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), l -> selectMode(1)),
-                createToolbarButton(getString("toolbar.mode.wall.tooltip") ,"toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2))
+                createToolbarButton(getString("toolbar.mode.wall.tooltip") ,"toolbar/addWallMode.png", "toolbar/addWallMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), l -> selectMode(2)),
+                createToolbarButton(getString("toolbar.mode.object.tooltip") ,"toolbar/objectMode.png", "toolbar/objectMode_s.png", KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), l -> selectMode(3))
         )).forEach(panel::add);
 
         return panel;

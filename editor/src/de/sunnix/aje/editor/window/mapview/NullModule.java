@@ -4,6 +4,7 @@ import de.sunnix.aje.editor.data.MapData;
 import de.sunnix.aje.editor.window.Window;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 
 public class NullModule extends MapViewModule{
 
@@ -12,7 +13,7 @@ public class NullModule extends MapViewModule{
     }
 
     @Override
-    public boolean onMousePresses(MapView view, MapData map, int button, int mask, int mX, int mY, int sX, int sY, int tX, int tY) {
+    public boolean onMousePresses(MapView view, MapData map, MouseEvent me, int sX, int sY, int tX, int tY) {
         return false;
     }
 

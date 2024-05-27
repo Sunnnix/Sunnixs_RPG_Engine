@@ -16,19 +16,16 @@ public abstract class MapViewModule {
     }
 
     /**
-     * @param view    content of tab
-     * @param map     the map of the MapView
-     * @param button  pressed button
-     * @param mask    mask-key like {@link MouseEvent#CTRL_DOWN_MASK CTRL_DOWN_MASK}, {@link MouseEvent#SHIFT_DOWN_MASK SHIFT_DOWN_MASK}, {@link MouseEvent#ALT_DOWN_MASK ALT_DOWN_MASK}
-     * @param screenX screen coordinate X (position from 0 to MapView width)
-     * @param screenY screen coordinate Y (position from 0 to MapView height)
-     * @param mapX    map coordinate X (position relative to the map)
-     * @param mapY    map coordinate Y (position relative to the map)
-     * @param tileX   map tile coordinate X (tile position relative to the map)
-     * @param tileY   map tile coordinate Y (tile position relative to the map)
+     * @param view  content of tab
+     * @param map   the map of the MapView
+     * @param me    the mouse event
+     * @param mapX  map coordinate X (position relative to the map)
+     * @param mapY  map coordinate Y (position relative to the map)
+     * @param tileX map tile coordinate X (tile position relative to the map)
+     * @param tileY map tile coordinate Y (tile position relative to the map)
      * @return should repaint component?
      */
-    public abstract boolean onMousePresses(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY);
+    public abstract boolean onMousePresses(MapView view, MapData map, MouseEvent me, int mapX, int mapY, int tileX, int tileY);
 
     /**
      * @param view    content of tab

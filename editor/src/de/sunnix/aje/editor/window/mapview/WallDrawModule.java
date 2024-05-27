@@ -28,7 +28,9 @@ public class WallDrawModule extends MapViewModule {
     }
 
     @Override
-    public boolean onMousePresses(MapView view, MapData map, int button, int mask, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY) {
+    public boolean onMousePresses(MapView view, MapData map, MouseEvent me, int mapX, int mapY, int tileX, int tileY) {
+        var button = me.getButton();
+        var mask = me.getModifiersEx();
         var wallDrawLayer = window.getPropertiesView().getWallDrawLayer();
         var yDiff = wallDrawLayer - tileY;
         if(yDiff < 0)
