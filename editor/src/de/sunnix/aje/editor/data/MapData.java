@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.data;
 
 import de.sunnix.sdso.DataSaveObject;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -105,6 +106,7 @@ public class MapData {
             return tileDSO;
         }).toList());
         dso.putString("bgm", backgroundMusic);
+        dso.putList("objects", objects.stream().map(go -> go.save(new DataSaveObject())).toList());
     }
 
     private void loadMap(DataSaveObject dso, int[] version) {
@@ -119,6 +121,7 @@ public class MapData {
             tiles[i] = new Tile(tileList.get(i), version);
         }
         backgroundMusic = dso.getString("bgm", null);
+        objects.addAll(dso.<DataSaveObject>getList("objects").stream().map(o -> new GameObject(this, o)).toList());
     }
 
     public void drawObjects(Graphics2D g, float zoom, int offsetX, int offsetY){

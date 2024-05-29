@@ -8,6 +8,7 @@ import de.sunnix.aje.engine.ecs.data.IntData;
 import de.sunnix.aje.engine.memory.MemoryCategory;
 import de.sunnix.aje.engine.memory.MemoryHolder;
 import de.sunnix.aje.engine.stage.GameplayState;
+import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector2f;
@@ -62,6 +63,13 @@ public class GameObject extends MemoryHolder {
         data.put("test", 20);
         dataHolder.forEach((k, v) -> v.init(this));
         ((GameplayState) Core.GameState.GAMEPLAY.state).getWorld().addEntity(this);
+    }
+
+    public GameObject(DataSaveObject dso){
+        this.ID = dso.getInt("ID", -1);
+        this.name = dso.getString("name", null);
+        this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
+        this.position.set(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
     }
 
     public GameObject init(){

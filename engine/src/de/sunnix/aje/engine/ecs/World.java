@@ -50,6 +50,16 @@ public class World {
         RenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
         player.setName("Player");
 
+        // Load objects
+        mapDSO.<DataSaveObject>getList("objects").stream().map(o -> {
+            var object = new GameObject(o);
+            object.addComponent(Component.RENDER);
+            object.addComponent(new PhysicComponent());
+            object.init();
+            RenderComponent.TEXTURE.set(object, Textures.BOX);
+            return object;
+        }).forEach(o -> gameObjects.put(o.getID(), o));
+
         // ################################################################
 //        for (int i = 0; i < 200; i++) {
 //            tmp = new GameObject(1, 1);

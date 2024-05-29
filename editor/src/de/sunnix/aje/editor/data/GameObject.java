@@ -71,10 +71,10 @@ public class GameObject {
         this.width = dso.getFloat("width", 0);
         this.height = dso.getFloat("height", 0);
 
-        return dso.getInt("ID", map.genNextID());
+        return dso.getInt("ID", -1);
     }
 
-    public void save(DataSaveObject dso){
+    public DataSaveObject save(DataSaveObject dso){
         dso.putInt("ID", ID);
         dso.getString("name", name);
         dso.putFloat("x", x);
@@ -82,6 +82,7 @@ public class GameObject {
         dso.putFloat("z", z);
         dso.putFloat("width", width);
         dso.putFloat("height", height);
+        return dso;
     }
 
     @Override
