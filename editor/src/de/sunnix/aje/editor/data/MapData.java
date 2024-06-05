@@ -8,6 +8,7 @@ import lombok.Setter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static de.sunnix.aje.editor.lang.Language.getString;
@@ -174,5 +175,9 @@ public class MapData {
 
     public GameObject removeObject(int id){
         return removeObject(getObject(id));
+    }
+
+    public List<GameObject> getObjects() {
+        return new ArrayList<>(objects);
     }
 }

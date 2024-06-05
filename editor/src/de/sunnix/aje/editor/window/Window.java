@@ -5,6 +5,10 @@ import de.sunnix.aje.editor.lang.Language;
 import de.sunnix.aje.editor.util.DialogUtils;
 import de.sunnix.aje.editor.window.mapview.*;
 import de.sunnix.aje.editor.window.menubar.MenuBar;
+import de.sunnix.aje.editor.window.object.EventRegistry;
+import de.sunnix.aje.editor.window.object.event.MessageEvent;
+import de.sunnix.aje.editor.window.object.event.MoveEvent;
+import de.sunnix.aje.editor.window.object.event.WaitEvent;
 import de.sunnix.aje.editor.window.resource.Resources;
 import de.sunnix.aje.editor.window.tileset.TilesetTabView;
 import de.sunnix.aje.engine.Core;
@@ -14,6 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -21,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
@@ -78,7 +84,16 @@ public class Window extends JFrame {
 
     public Window(){
         super();
+
+        try(var stream = getClass().getResourceAsStream("/de/sunnix/aje/editor/window/icons/misc/editor_icon.png")){
+            var icon = ImageIO.read(stream);
+            setIconImage(icon);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         initSingletons();
+        registerEvents();
         var config = getSingleton(Config.class);
 
         var lang = config.get("language", Locale.getDefault().getCountry().toLowerCase());
@@ -136,6 +151,12 @@ public class Window extends JFrame {
         singletons.put(Config.class, config);
         singletons.put(Resources.class, new Resources());
         singletons.put(GameData.class, new GameData());
+    }
+
+    private void registerEvents(){
+        EventRegistry.registerEvent("move", "Move", MoveEvent::new);
+        EventRegistry.registerEvent("wait", "Wait", WaitEvent::new);
+        EventRegistry.registerEvent("message", "Message", MessageEvent::new);
     }
 
     private void setupViews(){

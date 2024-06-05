@@ -1,6 +1,7 @@
 package de.sunnix.aje.editor.data;
 
 import de.sunnix.aje.editor.window.Window;
+import de.sunnix.aje.editor.window.object.EventList;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,9 @@ public class GameObject {
     private String name;
     private float x, y, z;
     private float width, height;
+
+    @Getter
+    private EventList eventList = new EventList();
 
     public GameObject(int id, float x, float y, float z){
         this.ID = id;
@@ -71,6 +75,9 @@ public class GameObject {
         this.width = dso.getFloat("width", 0);
         this.height = dso.getFloat("height", 0);
 
+        var eventDSO = dso.getObject("events");
+        eventList.load(eventDSO == null ? new DataSaveObject() : eventDSO);
+
         return dso.getInt("ID", -1);
     }
 
@@ -82,6 +89,9 @@ public class GameObject {
         dso.putFloat("z", z);
         dso.putFloat("width", width);
         dso.putFloat("height", height);
+
+        dso.putObject("events", eventList.save(new DataSaveObject()));
+
         return dso;
     }
 

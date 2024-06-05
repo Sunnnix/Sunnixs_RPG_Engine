@@ -2,6 +2,7 @@ package de.sunnix.aje.engine;
 
 import de.sunnix.aje.engine.audio.AudioManager;
 import de.sunnix.aje.engine.audio.OpenALContext;
+import de.sunnix.aje.engine.ecs.event.*;
 import de.sunnix.aje.engine.memory.ContextQueue;
 import de.sunnix.aje.engine.memory.MemoryHandler;
 import de.sunnix.aje.engine.debug.FPSGenerator;
@@ -122,10 +123,18 @@ public class Core {
 
         OpenALContext.setUp();
 
+        registerEvents();
+
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             logException("UncaughtExceptionHandler", throwable);
             System.exit(1);
         });
+    }
+
+    private static void registerEvents(){
+        EventRegistry.registerEvent("move", MoveEvent::new);
+        EventRegistry.registerEvent("wait", WaitEvent::new);
+        EventRegistry.registerEvent("message", MessageEvent::new);
     }
 
     public static void enableGL_debug(boolean enable){

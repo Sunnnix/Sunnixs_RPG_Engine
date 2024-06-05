@@ -103,11 +103,11 @@ public class Main implements IRegistry {
 //                        amet. %s""", STOP_TOKEN, PS_X, PS_RECT, PS_TRI, PS_X, PS_CIR));
 
 
-            GUIManager.showSpeechBox("Sunnix", """
-                        Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
-                        sed diam nonumy eirmod tempor invidunt ut labore et
-                        dolore magna aliquyam erat, sed diam voluptua.
-                        At vero eos et accusam et justo duo dolores et ea rebum.""");
+//            GUIManager.showSpeechBox("Sunnix", """
+//                        Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
+//                        sed diam nonumy eirmod tempor invidunt ut labore et
+//                        dolore magna aliquyam erat, sed diam voluptua.
+//                        At vero eos et accusam et justo duo dolores et ea rebum.""");
 
 //                if(!GUIManager.isTextFinished())
 //                    GUIManager.scrollNext();

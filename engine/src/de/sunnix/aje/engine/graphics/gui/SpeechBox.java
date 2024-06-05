@@ -4,6 +4,7 @@ import de.sunnix.aje.engine.GlobalConfig;
 import de.sunnix.aje.engine.InputManager;
 import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.gui.text.Text;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -29,7 +30,9 @@ public class SpeechBox {
     private final Text text_arrow = new Text(false, tc -> tc.setText(Character.toString(CURSOR_0)).setExceptionalColoringChars(CURSOR_0, CURSOR_3 + 1)).setSize(10);
     private final Text name_line = new Text(false, tc -> tc.setColor(textColor[0], textColor[1], textColor[2], textColor[3]).setExceptionalColoringChars(ARROW_RIGHT, CURSOR_3 + 1).setDrawShadow(false)).setSize(10);
 
+    @Getter
     private boolean visible;
+    @Getter
     private boolean finished = true;
     private int action;
 

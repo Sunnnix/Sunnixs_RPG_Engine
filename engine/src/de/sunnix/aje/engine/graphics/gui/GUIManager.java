@@ -1,5 +1,6 @@
 package de.sunnix.aje.engine.graphics.gui;
 
+import lombok.Getter;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ public class GUIManager {
 
     static final List<IGUIComponent> components = new ArrayList<>();
 
+    @Getter
     private final static SpeechBox speechBox = new SpeechBox();
 
     public static void render(){
@@ -22,9 +24,12 @@ public class GUIManager {
 
     /**
      * Only works if the speech box is not showing
+     *
+     * @return
      */
-    public static void showSpeechBox(String name, String text){
+    public static SpeechBox showSpeechBox(String name, String text){
         speechBox.showText(name, text);
+        return speechBox;
     }
 
     public static void add(IGUIComponent component) {

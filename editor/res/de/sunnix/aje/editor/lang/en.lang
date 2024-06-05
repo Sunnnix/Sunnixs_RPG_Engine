@@ -226,3 +226,7 @@ dialog.language.load_lang.title=Load Language Pack
 dialog.language.no_lang_selected=No Language Pack selected!
 dialog.language.lang_not_found=Language Pack not found!
 dialog.language.en_fallback=Use English if translation is missing
+
+# Events
+event.dialog.edit=Edit %s
+event.name.move=MoveEvent

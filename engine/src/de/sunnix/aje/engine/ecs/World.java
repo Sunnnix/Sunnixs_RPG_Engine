@@ -79,7 +79,7 @@ public class World {
 
     public void update(){
         map.update();
-        gameObjects.values().forEach(GameObject::update);
+        gameObjects.values().forEach(go -> go.update(this));
         RenderSystem.prepareRender();
     }
 
@@ -92,10 +92,14 @@ public class World {
     }
 
     public void postUpdate(){
-        gameObjectsToAdd.forEach(GameObject::update);
+//        gameObjectsToAdd.forEach(GameObject::update);
         gameObjectsToAdd.forEach(o -> gameObjects.put(o.getID(), o));
         gameObjectsToAdd.clear();
         gameObjects.values().stream().filter(GameObject::isToDelete).forEach(o -> gameObjects.remove(o.getID()));
+    }
+
+    public GameObject getGameObject(long id){
+        return gameObjects.get(id);
     }
 
     public void onDestroy(){

@@ -5,6 +5,8 @@ import de.sunnix.aje.engine.debug.GameLogger;
 import de.sunnix.aje.engine.ecs.components.Component;
 import de.sunnix.aje.engine.ecs.data.Data;
 import de.sunnix.aje.engine.ecs.data.IntData;
+import de.sunnix.aje.engine.ecs.event.Event;
+import de.sunnix.aje.engine.ecs.event.EventRegistry;
 import de.sunnix.aje.engine.memory.MemoryCategory;
 import de.sunnix.aje.engine.memory.MemoryHolder;
 import de.sunnix.aje.engine.stage.GameplayState;
@@ -52,6 +54,9 @@ public class GameObject extends MemoryHolder {
     @Getter
     private boolean toDelete = false;
 
+    @Getter
+    private List<Event> events = new ArrayList<>();
+
     static {
         Data.registerDataToMap(GameObject.class, dataHolder);
     }
@@ -70,6 +75,8 @@ public class GameObject extends MemoryHolder {
         this.name = dso.getString("name", null);
         this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
         this.position.set(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
+
+        events.addAll(dso.getObject("events").<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.createEvent(eDSO.getString("ID", null), eDSO)).toList());
     }
 
     public GameObject init(){
@@ -102,11 +109,31 @@ public class GameObject extends MemoryHolder {
         components.put(component.getClass(), component);
     }
 
-    public void update(){
+    public void update(World world){
         if(!inited) {
             GameLogger.logI("GameObject", "Object " + name + " updated without initialisation!");
             return;
         }
+        handleEvents(world);
+    }
+
+    private int currentEvent = -1;
+
+    private void handleEvents(World world) {
+        if(events.isEmpty())
+            return;
+        Event event = null;
+        boolean finished = currentEvent == -1 || (event = events.get(currentEvent)).isFinished(world);
+        if(finished){
+            if(event != null)
+                event.finish(world);
+            currentEvent++;
+            if(currentEvent >= events.size())
+                currentEvent = 0;
+            event = events.get(currentEvent);
+            event.prepare(world);
+        }
+        event.run(world);
     }
 
     public void setToDelete() {
