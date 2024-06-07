@@ -32,6 +32,8 @@ public class GameObject extends MemoryHolder {
     @Getter
     private Vector3f position = new Vector3f();
     @Getter
+    private Vector3f velocity = new Vector3f();
+    @Getter
     public final Vector2f size = new Vector2f();
     @Getter
     @Setter
@@ -61,17 +63,21 @@ public class GameObject extends MemoryHolder {
         Data.registerDataToMap(GameObject.class, dataHolder);
     }
 
-    public GameObject(float width, float height){
-        this.ID = (long)((Math.random() * Long.MAX_VALUE * 2) - Long.MAX_VALUE);
+    private GameObject(World world, long id){
+        this.ID = id;
+        world.addEntity(this);
+    }
+
+    public GameObject(World world, float width, float height){
+        this(world, (long)((Math.random() * Long.MAX_VALUE * 2) - Long.MAX_VALUE));
         this.name = "Entity " + Long.toHexString(ID);
         this.size.set(width, height);
         data.put("test", 20);
         dataHolder.forEach((k, v) -> v.init(this));
-        ((GameplayState) Core.GameState.GAMEPLAY.state).getWorld().addEntity(this);
     }
 
-    public GameObject(DataSaveObject dso){
-        this.ID = dso.getInt("ID", -1);
+    public GameObject(World world, DataSaveObject dso){
+        this(world, dso.getInt("ID", -1));
         this.name = dso.getString("name", null);
         this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
         this.position.set(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
@@ -115,6 +121,9 @@ public class GameObject extends MemoryHolder {
             return;
         }
         handleEvents(world);
+        position.add(velocity);
+        velocity.set(0);
+        position.y = Math.max(position.y, 0);
     }
 
     private int currentEvent = -1;
@@ -132,6 +141,8 @@ public class GameObject extends MemoryHolder {
                 currentEvent = 0;
             event = events.get(currentEvent);
             event.prepare(world);
+            if((event.getBlockingType() & Event.BLOCK_UPDATE) == Event.BLOCK_UPDATE)
+                world.addBlockingEvent(event);
         }
         event.run(world);
     }

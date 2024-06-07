@@ -18,7 +18,9 @@ public class SpeechBox {
     private static final int ANIMATE_TEXT = 3;
     private static final int ANIMATE_TEXT_SHIFT = 4;
     private static final float[] textColor = { .15f, .17f, .1f, 1f };
-    private String text, name;
+    @Getter
+    private int id;
+    private String name, text;
     private final TextBoxRenderObject scroll = new TextBoxRenderObject();
     private final NameBoxRenderObject nameBoxSmall = new NameBoxRenderObject(scroll, 0);
     private final NameBoxRenderObject nameBoxMedium = new NameBoxRenderObject(scroll, 1);
@@ -67,40 +69,74 @@ public class SpeechBox {
         update();
     }
 
-    public void showText(String name, String text){
-        if(action != NULL)
-            return;
-        if (visible)
-            if (finished)
-                action = FADE_OUT;
-            else
-                action = ANIMATE_TEXT;
-        else {
-            action = FADE_IN;
-            if(GlobalConfig.isPsMode()){
-                text = text.replaceAll(String.valueOf(XBOX_X), String.valueOf(PS_RECT));
-                text = text.replaceAll(String.valueOf(XBOX_Y), String.valueOf(PS_TRI));
-                text = text.replaceAll(String.valueOf(XBOX_B), String.valueOf(PS_CIR));
-                text = text.replaceAll(String.valueOf(XBOX_A), String.valueOf(PS_X));
-            } else {
-                text = text.replaceAll(String.valueOf(PS_RECT), String.valueOf(XBOX_X));
-                text = text.replaceAll(String.valueOf(PS_TRI), String.valueOf(XBOX_Y));
-                text = text.replaceAll(String.valueOf(PS_CIR), String.valueOf(XBOX_B));
-                text = text.replaceAll(String.valueOf(PS_X), String.valueOf(XBOX_A));
-            }
-            this.text = text;
-            this.name = name;
-            this.name_line.change(tc -> tc.setText(name));
-            if(name_line.getWidth() > 120)
-                currentNameBox = nameBoxLarge;
-            else if(name_line.getWidth() > 68)
-                currentNameBox = nameBoxMedium;
-            else
-                currentNameBox = nameBoxSmall;
-            cursorPos = 0;
-            finished = false;
-            visible = true;
+    public void showText(int id, String name, String text){
+        if(this.visible)
+            throw new IllegalStateException("Can't create new text when speech box is showing");
+        this.finished = false;
+        this.cursorPos = 0;
+        this.visible = true;
+
+        // convert buttons
+        if(GlobalConfig.isPsMode()){
+            text = text.replaceAll(String.valueOf(XBOX_X), String.valueOf(PS_RECT));
+            text = text.replaceAll(String.valueOf(XBOX_Y), String.valueOf(PS_TRI));
+            text = text.replaceAll(String.valueOf(XBOX_B), String.valueOf(PS_CIR));
+            text = text.replaceAll(String.valueOf(XBOX_A), String.valueOf(PS_X));
+        } else {
+            text = text.replaceAll(String.valueOf(PS_RECT), String.valueOf(XBOX_X));
+            text = text.replaceAll(String.valueOf(PS_TRI), String.valueOf(XBOX_Y));
+            text = text.replaceAll(String.valueOf(PS_CIR), String.valueOf(XBOX_B));
+            text = text.replaceAll(String.valueOf(PS_X), String.valueOf(XBOX_A));
         }
+
+        this.id = id;
+        this.name = name == null || name.isBlank() ? null : name;
+        this.text = text;
+
+        // set name box
+        this.name_line.change(tc -> tc.setText(name));
+        if(this.name_line.getWidth() > 120)
+            this.currentNameBox = this.nameBoxLarge;
+        else if(this.name_line.getWidth() > 68)
+            this.currentNameBox = this.nameBoxMedium;
+        else
+            this.currentNameBox = this.nameBoxSmall;
+
+        this.action = FADE_IN;
+//
+//        if(action != NULL)
+//            return;
+//        if (visible)
+//            if (finished)
+//                action = FADE_OUT;
+//            else
+//                action = ANIMATE_TEXT;
+//        else {
+//            action = FADE_IN;
+//            if(GlobalConfig.isPsMode()){
+//                text = text.replaceAll(String.valueOf(XBOX_X), String.valueOf(PS_RECT));
+//                text = text.replaceAll(String.valueOf(XBOX_Y), String.valueOf(PS_TRI));
+//                text = text.replaceAll(String.valueOf(XBOX_B), String.valueOf(PS_CIR));
+//                text = text.replaceAll(String.valueOf(XBOX_A), String.valueOf(PS_X));
+//            } else {
+//                text = text.replaceAll(String.valueOf(PS_RECT), String.valueOf(XBOX_X));
+//                text = text.replaceAll(String.valueOf(PS_TRI), String.valueOf(XBOX_Y));
+//                text = text.replaceAll(String.valueOf(PS_CIR), String.valueOf(XBOX_B));
+//                text = text.replaceAll(String.valueOf(PS_X), String.valueOf(XBOX_A));
+//            }
+//            this.text = text;
+//            this.name = name;
+//            this.name_line.change(tc -> tc.setText(name));
+//            if(name_line.getWidth() > 120)
+//                currentNameBox = nameBoxLarge;
+//            else if(name_line.getWidth() > 68)
+//                currentNameBox = nameBoxMedium;
+//            else
+//                currentNameBox = nameBoxSmall;
+//            cursorPos = 0;
+//            finished = false;
+//            visible = true;
+//        }
     }
 
     private void renderText(){
@@ -119,7 +155,14 @@ public class SpeechBox {
             case FADE_IN -> updateFadeIn();
             case FADE_OUT -> updateFadeOut();
             case ANIMATE_TEXT, ANIMATE_TEXT_SHIFT -> updateText();
-            case NULL -> updateArrow();
+            case NULL -> {
+                updateArrow();
+                if(InputManager.PAD_A.startPressed())
+                    if(finished)
+                        action = FADE_OUT;
+                    else
+                        action = ANIMATE_TEXT;
+            }
         }
     }
 

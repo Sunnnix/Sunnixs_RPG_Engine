@@ -319,34 +319,34 @@ char id=254   x=224      y=144     width=9      height=16      xoffset=0    yoff
 char id=255   x=240      y=144     width=8      height=16      xoffset=0    yoffset=0    xadvance=8 
 
 // Arrow Right
-char id=310   x=0      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
+char id=57344   x=0      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Arrow Left
-char id=311   x=16      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57345   x=16      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Arrow Up
-char id=312   x=32      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57346   x=32      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Arrow Down
-char id=313   x=48      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57347   x=48      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton XBOX X
-char id=314   x=64      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57348   x=64      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton XBOX Y
-char id=315   x=80      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57349   x=80      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton XBOX B
-char id=316   x=96      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57350   x=96      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton XBOX A
-char id=317   x=112      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57351   x=112      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton PS Rect
-char id=318   x=128      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57352   x=128      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton PS Tri
-char id=319   x=144      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57353   x=144      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton PS Cir
-char id=320   x=160      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57354   x=160      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Buton PS X
-char id=321   x=176      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57355   x=176      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Cursor 1
-char id=322   x=192      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57356   x=192      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Cursor 2
-char id=323   x=208      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57357   x=208      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Cursor 3
-char id=324   x=224      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
+char id=57358   x=224      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16
 // Cursor 4
-char id=325   x=240      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16 
+char id=57359   x=240      y=160      width=16      height=16      xoffset=0    yoffset=0    xadvance=16

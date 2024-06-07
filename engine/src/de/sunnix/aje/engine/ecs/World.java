@@ -1,8 +1,9 @@
 package de.sunnix.aje.engine.ecs;
 
-import de.sunnix.aje.engine.ecs.components.PhysicComponent;
 import de.sunnix.aje.engine.ecs.components.Component;
+import de.sunnix.aje.engine.ecs.components.PhysicComponent;
 import de.sunnix.aje.engine.ecs.components.RenderComponent;
+import de.sunnix.aje.engine.ecs.event.Event;
 import de.sunnix.aje.engine.ecs.systems.RenderSystem;
 import de.sunnix.aje.engine.graphics.TestCubeRenderObject;
 import de.sunnix.aje.engine.util.BetterJSONObject;
@@ -33,6 +34,10 @@ public class World {
 
     private TestCubeRenderObject tcro = new TestCubeRenderObject();
 
+    private List<Event> blockingEventQueue = new ArrayList<>();
+
+    private int animTimer = -1;
+
     public void init(ZipFile zip, BetterJSONObject config) throws IOException {
         if(inited)
             return;
@@ -43,7 +48,7 @@ public class World {
         map = new TileMap(mapDSO);
 
         // Player
-        player = new GameObject(.8f, 1.7f);
+        player = new GameObject(this, .8f, 1.7f);
         player.addComponent(Component.RENDER);
         player.addComponent(new PhysicComponent());
         player.init();
@@ -51,14 +56,13 @@ public class World {
         player.setName("Player");
 
         // Load objects
-        mapDSO.<DataSaveObject>getList("objects").stream().map(o -> {
-            var object = new GameObject(o);
+        mapDSO.<DataSaveObject>getList("objects").forEach(o -> {
+            var object = new GameObject(this, o);
             object.addComponent(Component.RENDER);
             object.addComponent(new PhysicComponent());
             object.init();
             RenderComponent.TEXTURE.set(object, Textures.BOX);
-            return object;
-        }).forEach(o -> gameObjects.put(o.getID(), o));
+        });
 
         // ################################################################
 //        for (int i = 0; i < 200; i++) {
@@ -71,6 +75,8 @@ public class World {
 //            tmp.setName(String.format("Box Gen (%s)", i + 1));
 //        }
 
+        gameObjectsToAdd.forEach(go -> gameObjects.put(go.getID(), go));
+
     }
 
     public void addEntity(GameObject entity){
@@ -78,8 +84,20 @@ public class World {
     }
 
     public void update(){
-        map.update();
-        gameObjects.values().forEach(go -> go.update(this));
+        Event event = null;
+        if(!blockingEventQueue.isEmpty())
+            event = blockingEventQueue.get(0);
+        if(event != null){
+            if((event.getBlockingType() & Event.BLOCK_RENDERING) != Event.BLOCK_RENDERING)
+                animTimer++;
+            event.run(this);
+            if(event.isFinished(this))
+                blockingEventQueue.remove(event);
+        } else {
+            animTimer++;
+            map.update();
+            gameObjects.values().forEach(go -> go.update(this));
+        }
         RenderSystem.prepareRender();
     }
 
@@ -106,4 +124,7 @@ public class World {
         map.onDestroy();
     }
 
+    public void addBlockingEvent(Event event) {
+        blockingEventQueue.add(event);
+    }
 }

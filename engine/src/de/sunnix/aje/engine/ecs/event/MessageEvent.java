@@ -2,14 +2,16 @@ package de.sunnix.aje.engine.ecs.event;
 
 import de.sunnix.aje.engine.ecs.World;
 import de.sunnix.aje.engine.graphics.gui.GUIManager;
-import de.sunnix.aje.engine.graphics.gui.SpeechBox;
 import de.sunnix.sdso.DataSaveObject;
+
+import java.nio.charset.StandardCharsets;
 
 public class MessageEvent extends Event{
 
+    private String name;
     private String message;
 
-    private SpeechBox sb;
+    private int messageID;
 
     public MessageEvent() {
         super("message");
@@ -18,12 +20,13 @@ public class MessageEvent extends Event{
 
     @Override
     public void load(DataSaveObject dso) {
-        message = dso.getString("msg", "");
+        name = new String(dso.getByteArray("name"), StandardCharsets.UTF_8);
+        message = new String(dso.getByteArray("msg"), StandardCharsets.UTF_8);
     }
 
     @Override
     public void prepare(World world) {
-        sb = GUIManager.showSpeechBox(null, message);
+        messageID = GUIManager.showSpeechBox(name, message);
     }
 
     @Override
@@ -31,11 +34,11 @@ public class MessageEvent extends Event{
 
     @Override
     public boolean isFinished(World world) {
-        return sb != null && sb.isFinished() && !sb.isVisible();
+        return GUIManager.isSpeechBoxFinished(messageID);
     }
 
     @Override
     public void finish(World world) {
-        sb = null;
+        messageID = -1;
     }
 }

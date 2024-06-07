@@ -26,27 +26,27 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Text extends MemoryHolder implements IGUIComponent {
 
-    public static char ARROW_RIGHT = (char) 310;
-    public static char ARROW_LEFT = (char) 311;
-    public static char ARROW_UP = (char) 312;
-    public static char ARROW_DOWN = (char) 313;
-    public static char XBOX_X = (char) 314;
-    public static char XBOX_Y = (char) 315;
-    public static char XBOX_B = (char) 316;
-    public static char XBOX_A = (char) 317;
-    public static char PS_RECT = (char) 318;
-    public static char PS_TRI = (char) 319;
-    public static char PS_CIR = (char) 320;
-    public static char PS_X = (char) 321;
-    public static char CURSOR_0 = (char) 322;
-    public static char CURSOR_1 = (char) 323;
-    public static char CURSOR_2 = (char) 324;
-    public static char CURSOR_3 = (char) 325;
+    public static char ARROW_RIGHT = (char) 0xE000;
+    public static char ARROW_LEFT = (char) 0xE001;
+    public static char ARROW_UP = (char) 0xE002;
+    public static char ARROW_DOWN = (char) 0xE003;
+    public static char XBOX_X = (char) 0xE004;
+    public static char XBOX_Y = (char) 0xE005;
+    public static char XBOX_B = (char) 0xE006;
+    public static char XBOX_A = (char) 0xE007;
+    public static char PS_RECT = (char) 0xE008;
+    public static char PS_TRI = (char) 0xE009;
+    public static char PS_CIR = (char) 0xE00A;
+    public static char PS_X = (char) 0xE00B;
+    public static char CURSOR_0 = (char) 0xE00C;
+    public static char CURSOR_1 = (char) 0xE00D;
+    public static char CURSOR_2 = (char) 0xE00E;
+    public static char CURSOR_3 = (char) 0xE00F;
 
     /**
      * Stops the text of the {@link SpeechBox} and waits for input
      */
-    public static char STOP_TOKEN = (char) 326;
+    public static char STOP_TOKEN = (char) 0xE010;
     private static final float POINT_IN_PIXEL = 1.33f;
     private static final Shader shader = new Shader("/data/shader/text_shader");
 
