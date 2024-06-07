@@ -156,6 +156,7 @@ view.map.module.wall_draw.info=Tuile(%s, %s) | Souris : (%s, %s) | Zoom : %s%%
 
 # Dialogue À propos
 dialog_about.exception_thrown=Une exception a été lancée !\n%s
+dialog_about.bd_text=Joyeux anniversaire %s
 
 # Dialogue de ressources
 dialog_resources.title=Ressources

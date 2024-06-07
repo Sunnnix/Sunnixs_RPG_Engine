@@ -156,6 +156,7 @@ view.map.module.wall_draw.info=Kachel(%s, %s) | Maus: (%s, %s) | Zoom: %s%%
 
 # Über Dialog
 dialog_about.exception_thrown=Eine Ausnahme wurde ausgelöst!\n%s
+dialog_about.bd_text=Alles Gute zum Geburtstag %s
 
 # Ressourcen-Dialog
 dialog_resources.title=Ressourcen

@@ -160,6 +160,7 @@ view.map.module.object.no_object=No Object
 
 # About dialog
 dialog_about.exception_thrown=An exception was thrown!\n%s
+dialog_about.bd_text=Happy Birthday %s
 
 # Resource dialog
 dialog_resources.title=Resources

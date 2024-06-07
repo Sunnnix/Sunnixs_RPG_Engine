@@ -156,6 +156,7 @@ view.map.module.wall_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
 
 # Dialogo Informazioni su
 dialog_about.exception_thrown=È stata generata un'eccezione!\n%s
+dialog_about.bd_text=Buon compleanno %s
 
 # Dialogo Risorse
 dialog_resources.title=Risorse
