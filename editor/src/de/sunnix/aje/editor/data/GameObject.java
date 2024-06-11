@@ -83,7 +83,7 @@ public class GameObject {
 
     public DataSaveObject save(DataSaveObject dso){
         dso.putInt("ID", ID);
-        dso.getString("name", name);
+        dso.putString("name", name);
         dso.putFloat("x", x);
         dso.putFloat("y", y);
         dso.putFloat("z", z);

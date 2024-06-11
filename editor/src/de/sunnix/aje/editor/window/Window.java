@@ -154,9 +154,9 @@ public class Window extends JFrame {
     }
 
     private void registerEvents(){
-        EventRegistry.registerEvent("move", "Move", MoveEvent::new);
-        EventRegistry.registerEvent("wait", "Wait", WaitEvent::new);
-        EventRegistry.registerEvent("message", "Message", MessageEvent::new);
+        EventRegistry.registerEvent("move", getString("event.move.name"), MoveEvent::new);
+        EventRegistry.registerEvent("wait", getString("event.wait.name"), WaitEvent::new);
+        EventRegistry.registerEvent("message", getString("event.msg.name"), MessageEvent::new);
     }
 
     private void setupViews(){

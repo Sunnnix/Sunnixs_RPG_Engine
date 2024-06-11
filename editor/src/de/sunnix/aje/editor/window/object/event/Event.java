@@ -70,7 +70,7 @@ public abstract class Event implements Cloneable {
     public final boolean openDialog(JDialog parent, GameData gameData, MapData map, GameObject currentObject){
         var panel = new JPanel(new BorderLayout());
         var onSave = createEventEditDialog(gameData, map, currentObject, panel);
-        var dialog = new EventEditDialog(parent, Language.getString("event.dialog.edit", getEventDisplayName()), panel);
+        var dialog = new EventEditDialog(parent, Language.getString("event_dialog.edit", getEventDisplayName()), panel);
         var saved = dialog.isSaved();
         if(saved && onSave != null)
             onSave.run();

@@ -154,7 +154,6 @@ public class Main implements IRegistry {
                 pVel.set(h * .05f, y * .01f, v * .05f);
 //                pPos.set(pPos.x, Math.max(pPos.y, 0), pPos.z);
                 var pPos = player.getPosition();
-                Camera.getPos().set(pPos.x * 24, (-pPos.z + pPos.y) * 16);
 
                 playerCorrds.change(tc -> tc.setText(String.format("(%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos())));
             }

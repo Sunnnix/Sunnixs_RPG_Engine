@@ -3,6 +3,7 @@ package de.sunnix.aje.editor.window.object.event;
 import de.sunnix.aje.editor.data.GameData;
 import de.sunnix.aje.editor.data.GameObject;
 import de.sunnix.aje.editor.data.MapData;
+import de.sunnix.aje.editor.lang.Language;
 import de.sunnix.sdso.DataSaveObject;
 
 import javax.swing.*;
@@ -30,7 +31,7 @@ public class WaitEvent extends Event{
 
     @Override
     protected String getGUIText(MapData map) {
-        return String.format("/cv00 /b %s /n /cx frames", frames);
+        return Language.getString("event.wait.info", frames);
     }
 
     @Override
@@ -40,7 +41,7 @@ public class WaitEvent extends Event{
 
     @Override
     protected String getEventDisplayName() {
-        return "Wait";
+        return Language.getString("event.wait.name");
     }
 
     @Override
@@ -56,7 +57,7 @@ public class WaitEvent extends Event{
         gbc.insets.set(0, 5, 5, 0);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        content.add(new JLabel("Frames:"), gbc);
+        content.add(new JLabel(Language.getString("event.wait.dialog.frames")), gbc);
         gbc.gridx++;
         content.add(time, gbc);
         gbc.gridx = 0;

@@ -65,6 +65,7 @@ name.stop=Stopp
 name.import=Importieren
 name.load=Laden
 name.language_file=Sprachpaket
+name.edit=Bearbeiten
 texts.error_loading_about=Fehler beim Laden von AboutSite.html: %s
 
 # Hauptdialoge
@@ -96,6 +97,7 @@ toolbar.play.tooltip=Spiel starten
 toolbar.mode.select.tooltip=Auswahlmodus
 toolbar.mode.draw_top.tooltip=Oben zeichnen Modus
 toolbar.mode.wall.tooltip=Wandmodus
+toolbar.mode.object.tooltip=Objektmodus
 toolbar.tool.single_draw.tooltip=Einzeln zeichnen
 toolbar.tool.multi_draw_rect.tooltip=Mehrfach zeichnen "Rechteck"
 toolbar.tool.fill.tooltip=Füllen
@@ -153,6 +155,11 @@ view.map.module.top_draw.info=Kachel(%s, %s) | Maus: (%s, %s) | Zoom: %s%%
 
 # WallDrawModul
 view.map.module.wall_draw.info=Kachel(%s, %s) | Maus: (%s, %s) | Zoom: %s%%
+
+# ObjectModule
+view.map.module.object.info=Kachel(%s, %s) | Maus: (%s, %s) | Zoom: %s%% | Objekt: %s
+view.map.module.object.no_object=Kein Objekt
+view.map.module.object.create_object=Objekt erstellen
 
 # Über Dialog
 dialog_about.exception_thrown=Eine Ausnahme wurde ausgelöst!\n%s
@@ -223,3 +230,36 @@ dialog.language.load_lang.title=Sprachpaket laden
 dialog.language.no_lang_selected=Kein Sprachpaket ausgewählt!
 dialog.language.lang_not_found=Sprachpaket nicht gefunden!
 dialog.language.en_fallback=Englisch verwenden, wenn die Übersetzung fehlt
+
+# Dialog Objects
+dialog_object.title=Objekt bearbeiten
+dialog_object.add_event=Event hinzufügen
+dialog_object.edit_event=Event bearbeiten
+dialog_object.remove_event=Event löschen
+
+# Events
+event_dialog.edit=%s bearbeiten
+
+event.move.name=Bewegen
+event.move.info=bewege /cv00 /b %s /n /cx um /c0f0 /b (%.1f, %.1f, %.1f) /n /cx Geschwindigkeit: /c0f0 /b %.3f /cv00 /b %.2fs
+event.move.dialog.object=Objekt:
+event.move.dialog.speed=Geschwindigkeit:
+
+event.wait.name=Warten
+event.wait.info=/cv00 /b %s /n /cx Frames
+event.wait.dialog.frames=Frames:
+
+event.msg.name=Text
+event.msg.info=zeige /cv00 /b %s
+event.msg.dialog.arrows=Pfeile
+event.msg.dialog.arr_r=Pfeil rechts
+event.msg.dialog.arr_l=Pfeil links
+event.msg.dialog.arr_u=Pfeil hoch
+event.msg.dialog.arr_d=Pfeil runter
+event.msg.dialog.buttons=Tasten
+event.msg.dialog.btn_x=Taste X / Rechteck
+event.msg.dialog.btn_y=Taste Y / Dreieck
+event.msg.dialog.btn_b=Taste B / Kreis
+event.msg.dialog.btn_a=Taste A / X
+event.msg.dialog.tech=Technisch
+event.msg.dialog.token_wait=Auf Eingabe warten

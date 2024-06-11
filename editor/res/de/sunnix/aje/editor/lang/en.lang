@@ -65,6 +65,7 @@ name.stop=Stop
 name.import=Import
 name.load=Load
 name.language_file=Language Pack
+name.edit=Edit
 texts.error_loading_about=Error loading AboutSite.html: %s
 
 # Main dialogs
@@ -96,6 +97,7 @@ toolbar.play.tooltip=Start Game
 toolbar.mode.select.tooltip=Select Mode
 toolbar.mode.draw_top.tooltip=Draw Top Mode
 toolbar.mode.wall.tooltip=Wall Mode
+toolbar.mode.object.tooltip=Object Mode
 toolbar.tool.single_draw.tooltip=Single draw
 toolbar.tool.multi_draw_rect.tooltip=Multi draw "Rectangle"
 toolbar.tool.fill.tooltip=Fill
@@ -157,6 +159,7 @@ view.map.module.wall_draw.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%%
 # ObjectModule
 view.map.module.object.info=Tile(%s, %s) | Mouse: (%s, %s) | Zoom: %s%% | Object: %s
 view.map.module.object.no_object=No Object
+view.map.module.object.create_object=Create Object
 
 # About dialog
 dialog_about.exception_thrown=An exception was thrown!\n%s
@@ -228,6 +231,35 @@ dialog.language.no_lang_selected=No Language Pack selected!
 dialog.language.lang_not_found=Language Pack not found!
 dialog.language.en_fallback=Use English if translation is missing
 
+# Dialog Objects
+dialog_object.title=Edit Object
+dialog_object.add_event=Add Event
+dialog_object.edit_event=Edit Event
+dialog_object.remove_event=Remove Event
+
 # Events
-event.dialog.edit=Edit %s
-event.name.move=MoveEvent
+event_dialog.edit=Edit %s
+
+event.move.name=Move
+event.move.info=move /cv00 /b %s /n /cx by /c0f0 /b (%.1f, %.1f, %.1f) /n /cx speed: /c0f0 /b %.3f /cv00 /b %.2fs
+event.move.dialog.object=Object:
+event.move.dialog.speed=Speed:
+
+event.wait.name=Wait
+event.wait.info=/cv00 /b %s /n /cx frames
+event.wait.dialog.frames=Frames:
+
+event.msg.name=Message
+event.msg.info=show /cv00 /b %s
+event.msg.dialog.arrows=Arrows
+event.msg.dialog.arr_r=Arrow right
+event.msg.dialog.arr_l=Arrow left
+event.msg.dialog.arr_u=Arrow up
+event.msg.dialog.arr_d=Arrow down
+event.msg.dialog.buttons=Buttons
+event.msg.dialog.btn_x=Button X / Rect
+event.msg.dialog.btn_y=Button Y / Tri
+event.msg.dialog.btn_b=Button B / CIR
+event.msg.dialog.btn_a=Button A / X
+event.msg.dialog.tech=Technically
+event.msg.dialog.token_wait=Wait for input

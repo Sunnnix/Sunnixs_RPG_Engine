@@ -23,6 +23,8 @@ public class ObjectEditDialog extends JDialog {
     private final MapData map;
     private final GameObject object;
 
+    private JTextField name;
+    private JSpinner x, y, z;
     private JList<Event> events;
     private DefaultListModel<Event> listModel;
 
@@ -69,8 +71,33 @@ public class ObjectEditDialog extends JDialog {
         panel.add(new JLabel(getString("name.name")), gbc);
         gbc.gridx++;
 
-        var name = new JTextField(object.getName(), 10);
+        name = new JTextField(object.getName(), 10);
         panel.add(name, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        // Position
+        panel.add(new JLabel("X"), gbc);
+        gbc.gridx++;
+
+        x = new JSpinner(new SpinnerNumberModel(object.getX(), -10000, 10000, .1));
+        panel.add(x, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        panel.add(new JLabel("Y"), gbc);
+        gbc.gridx++;
+
+        y = new JSpinner(new SpinnerNumberModel(object.getY(), 0, 10000, .1));
+        panel.add(y, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        panel.add(new JLabel("Z"), gbc);
+        gbc.gridx++;
+
+        z = new JSpinner(new SpinnerNumberModel(object.getZ(), -10000, 10000, .1));
+        panel.add(z, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
 
@@ -94,16 +121,16 @@ public class ObjectEditDialog extends JDialog {
                 } else if (e.getButton() == MouseEvent.BUTTON3){
                     new JPopupMenu(){
                         {
-                            var menuAdd = new JMenuItem("Add Event");
+                            var menuAdd = new JMenuItem(getString("dialog_object.add_event"));
                             menuAdd.addActionListener(e -> showEventSelection());
                             add(menuAdd);
 
                             var index = events.getSelectedIndex();
                             if(index > -1){
-                                var menuEditEvent = new JMenuItem("Edit Event");
+                                var menuEditEvent = new JMenuItem(getString("dialog_object.edit_event"));
                                 menuEditEvent.addActionListener(e -> showEditEventDialog(events.getSelectedValue()));
                                 add(menuEditEvent);
-                                var menuRemoveEvent = new JMenuItem("Remove Event");
+                                var menuRemoveEvent = new JMenuItem(getString("dialog_object.remove_event"));
                                 menuRemoveEvent.addActionListener(e -> listModel.removeElementAt(index));
                                 add(menuRemoveEvent);
                             }
@@ -178,6 +205,13 @@ public class ObjectEditDialog extends JDialog {
         var elm = new ArrayList<Event>();
         listModel.elements().asIterator().forEachRemaining(elm::add);
         object.getEventList().putEvents(elm);
+        object.setName(name.getText().isBlank() ? null : name.getText());
+
+        object.setX(((Number)x.getValue()).floatValue());
+        object.setY(((Number)y.getValue()).floatValue());
+        object.setZ(((Number)z.getValue()).floatValue());
+        window.setProjectChanged();
+        window.getMapView().repaint();
     }
 
 }

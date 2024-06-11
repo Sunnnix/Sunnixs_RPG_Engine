@@ -79,6 +79,7 @@ public class ObjectModule extends MapViewModule {
             obj.setX(obj.getX() + diffX);
             obj.setZ(obj.getZ() + diffY);
             updateInfo(view, map, mapX, mapY, tileX, tileY);
+            window.setProjectChanged();
             return true;
         }
         updateInfo(view, map, mapX, mapY, tileX, tileY);
@@ -185,11 +186,13 @@ public class ObjectModule extends MapViewModule {
                         removeObject(map, obj);
                         map.setSelectedObject(-1);
                         view.repaint();
+                        window.setProjectChanged();
                     }));
                 }
                 add(createMenuItem(getString("view.map.module.object.create_object"), l -> {
                     createNewObject(map, mapX, mapY);
                     view.repaint();
+                    window.setProjectChanged();
                 }));
             }
 

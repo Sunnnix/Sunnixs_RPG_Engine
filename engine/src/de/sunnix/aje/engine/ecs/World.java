@@ -5,6 +5,7 @@ import de.sunnix.aje.engine.ecs.components.PhysicComponent;
 import de.sunnix.aje.engine.ecs.components.RenderComponent;
 import de.sunnix.aje.engine.ecs.event.Event;
 import de.sunnix.aje.engine.ecs.systems.RenderSystem;
+import de.sunnix.aje.engine.graphics.Camera;
 import de.sunnix.aje.engine.graphics.TestCubeRenderObject;
 import de.sunnix.aje.engine.util.BetterJSONObject;
 import de.sunnix.sdso.DataSaveObject;
@@ -98,6 +99,8 @@ public class World {
             map.update();
             gameObjects.values().forEach(go -> go.update(this));
         }
+        var pPos = player.getPosition();
+        Camera.getPos().set(pPos.x * 24, (-pPos.z + pPos.y) * 16);
         RenderSystem.prepareRender();
     }
 
