@@ -1,6 +1,6 @@
 package test;
 
-import de.sunnix.aje.engine.registry.IRegistry;
+import de.sunnix.srpge.engine.registry.IRegistry;
 
 public class Registry implements IRegistry {
 
