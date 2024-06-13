@@ -1,4 +1,4 @@
-package de.sunnix.srpge.editor.window.object.event;
+package de.sunnix.srpge.editor.window.object.events;
 
 import lombok.Getter;
 

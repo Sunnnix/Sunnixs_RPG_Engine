@@ -1,4 +1,4 @@
-package de.sunnix.srpge.editor.window.object.event;
+package de.sunnix.srpge.editor.window.object.events;
 
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
@@ -12,8 +12,9 @@ import java.awt.*;
 
 public abstract class Event implements Cloneable {
 
-    public static final byte BLOCK_UPDATE = 0b1;
-    public static final byte BLOCK_RENDERING = 0b10;
+    public static final byte BLOCK_GLOBAL_UPDATE = 0b1;
+    public static final byte BLOCK_USER_INPUT = 0b10;
+    public static final byte BLOCK_UPDATE_GRAPHICS = 0b100;
 
     @Getter
     protected byte blockingType = 0;

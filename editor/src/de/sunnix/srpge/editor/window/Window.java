@@ -6,9 +6,9 @@ import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
 import de.sunnix.srpge.editor.window.object.EventRegistry;
-import de.sunnix.srpge.editor.window.object.event.MessageEvent;
-import de.sunnix.srpge.editor.window.object.event.MoveEvent;
-import de.sunnix.srpge.editor.window.object.event.WaitEvent;
+import de.sunnix.srpge.editor.window.object.events.MessageEvent;
+import de.sunnix.srpge.editor.window.object.events.MoveEvent;
+import de.sunnix.srpge.editor.window.object.events.WaitEvent;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.tileset.TilesetTabView;
 import de.sunnix.srpge.engine.Core;
@@ -377,8 +377,8 @@ public class Window extends JFrame {
             saveFile = projectPath;
         if(saveFile == null)
             return false;
-        if(!saveFile.toString().endsWith(".aegf"))
-            saveFile = new File(saveFile + ".aegf");
+        if(!saveFile.toString().endsWith(".sgf") && !saveFile.toString().endsWith(".aegf"))
+            saveFile = new File(saveFile + ".sgf");
         projectPath = saveFile;
 
         var tmpFile = new File(saveFile.getParent(), "_" + saveFile.getName() + ".tmp");
@@ -446,7 +446,7 @@ public class Window extends JFrame {
     }
 
     private File chooseGameFile(boolean open){
-        var filter = new FileNameExtensionFilter("Alundra Engine Game File (.aegf)", "aegf");
+        var filter = new FileNameExtensionFilter("Sunnix's Game File (.sgf, .aegf)", "sgf", "aegf");
         JFileChooser fileChooser = new JFileChooser(getSingleton(Config.class).get("chooser_project_path", (String) null));
         fileChooser.setFileFilter(filter);
         if(open)

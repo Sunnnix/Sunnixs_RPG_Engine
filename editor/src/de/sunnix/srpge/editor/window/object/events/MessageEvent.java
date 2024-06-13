@@ -1,4 +1,4 @@
-package de.sunnix.srpge.editor.window.object.event;
+package de.sunnix.srpge.editor.window.object.events;
 
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
@@ -19,7 +19,7 @@ public class MessageEvent extends Event{
 
     public MessageEvent() {
         super("message");
-        super.blockingType = BLOCK_UPDATE;
+        super.blockingType = BLOCK_GLOBAL_UPDATE;
     }
 
     @Override

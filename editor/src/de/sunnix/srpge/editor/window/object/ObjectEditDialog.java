@@ -4,7 +4,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
-import de.sunnix.srpge.editor.window.object.event.Event;
+import de.sunnix.srpge.editor.window.object.events.Event;
 
 import javax.swing.*;
 import java.awt.*;

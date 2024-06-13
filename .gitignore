@@ -44,6 +44,7 @@ out/
 logs/
 /test
 /ajee.config
+*.sgf
 *.aegf
 META-INF
 *.idea/artifacts/

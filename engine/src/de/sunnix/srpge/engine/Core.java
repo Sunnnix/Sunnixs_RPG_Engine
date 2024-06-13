@@ -100,7 +100,7 @@ public class Core {
     // *************************************************************** //
     @Getter
     @Setter
-    private static String gameFile = "GameFile.aegf";
+    private static String gameFile = "GameFile.sgf";
 
     // *************************************************************** //
 
