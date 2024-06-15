@@ -1,6 +1,5 @@
-package de.sunnix.srpge.editor.window.object;
+package de.sunnix.srpge.editor.window.object.events;
 
-import de.sunnix.srpge.editor.window.object.events.Event;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 

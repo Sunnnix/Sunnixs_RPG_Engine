@@ -5,7 +5,9 @@ import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
-import de.sunnix.srpge.editor.window.object.EventRegistry;
+import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
+import de.sunnix.srpge.editor.window.object.components.RenderComponent;
+import de.sunnix.srpge.editor.window.object.events.EventRegistry;
 import de.sunnix.srpge.editor.window.object.events.MessageEvent;
 import de.sunnix.srpge.editor.window.object.events.MoveEvent;
 import de.sunnix.srpge.editor.window.object.events.WaitEvent;
@@ -93,6 +95,7 @@ public class Window extends JFrame {
 
         initSingletons();
         registerEvents();
+        registerComponents();
         var config = getSingleton(Config.class);
 
         var lang = config.get("language", Locale.getDefault().getCountry().toLowerCase());
@@ -156,6 +159,10 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("move", getString("event.move.name"), MoveEvent::new);
         EventRegistry.registerEvent("wait", getString("event.wait.name"), WaitEvent::new);
         EventRegistry.registerEvent("message", getString("event.msg.name"), MessageEvent::new);
+    }
+
+    private void registerComponents(){
+        ComponentRegistry.registerComponent("render", "Renderer", RenderComponent::new);
     }
 
     private void setupViews(){

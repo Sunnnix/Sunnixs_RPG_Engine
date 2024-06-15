@@ -1,11 +1,14 @@
 package de.sunnix.srpge.editor.data;
 
-import de.sunnix.srpge.editor.window.object.EventList;
+import de.sunnix.srpge.editor.window.object.components.Component;
+import de.sunnix.srpge.editor.window.object.events.EventList;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 
 import static de.sunnix.srpge.editor.window.Window.TILE_HEIGHT;
 import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
@@ -22,6 +25,8 @@ public class GameObject {
 
     @Getter
     private EventList eventList = new EventList();
+    @Getter
+    private List<Component> components = new ArrayList<>();
 
     public GameObject(int id, float x, float y, float z){
         this.ID = id;
@@ -66,6 +71,10 @@ public class GameObject {
         return !(x < this.x) && !(x >= this.x + this.width) && !(y < this.z - height) && !(y >= this.z + width);
     }
 
+    public boolean hasComponent(String id) {
+        return components.stream().anyMatch(comp -> comp.ID.equals(id));
+    }
+
     public int load(MapData map, DataSaveObject dso){
         this.name = dso.getString("name", null);
         this.x = dso.getFloat("x", 0);
@@ -98,4 +107,5 @@ public class GameObject {
     public String toString() {
         return String.format("GameObject(ID: %s, %s)", getID(), getName() == null ? "" : getName());
     }
+
 }

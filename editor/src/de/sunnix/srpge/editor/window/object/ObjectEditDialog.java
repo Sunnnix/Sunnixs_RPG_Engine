@@ -4,12 +4,16 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
 import de.sunnix.srpge.editor.window.object.events.Event;
+import de.sunnix.srpge.editor.window.object.events.EventSelectionDialog;
+import de.sunnix.srpge.editor.window.object.components.Component;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.ArrayList;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
@@ -28,13 +32,16 @@ public class ObjectEditDialog extends JDialog {
     private JList<Event> events;
     private DefaultListModel<Event> listModel;
 
+    private List<Component> componentList;
+    private JPanel componentsView;
+
     public ObjectEditDialog(Window window, MapData map, GameObject obj) {
         super(window, WINDOW_NAME + " - " + getString("dialog_object.title"), true);
         this.window = window;
         this.map = map;
         this.object = obj;
 
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(5, 5));
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5 ,5 ,5 , 5));
 
         add(setupProperties(), BorderLayout.EAST);
@@ -48,12 +55,17 @@ public class ObjectEditDialog extends JDialog {
     }
 
     private JPanel setupProperties() {
+        var mainPanel = new JPanel(new BorderLayout());
+
+        mainPanel.setPreferredSize(new Dimension(260, 0));
+
         var panel = new JPanel(new GridBagLayout());
         var gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
+        gbc.weightx = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.insets.set(0, 7, 5, 7);
@@ -101,9 +113,53 @@ public class ObjectEditDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        var tPanel = new JPanel(new FlowLayout());
-        tPanel.add(panel);
-        return tPanel;
+        mainPanel.add(panel, BorderLayout.NORTH);
+
+        mainPanel.add(createComponentPanel(), BorderLayout.CENTER);
+
+        return mainPanel;
+    }
+
+    private JComponent createComponentPanel(){
+        var panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        componentList = new ArrayList<>(object.getComponents().stream().map(Component::clone).toList());
+        componentsView = panel;
+
+        var addbtn = new JButton("+ Add Component");
+        addbtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, addbtn.getMinimumSize().height));
+        addbtn.addActionListener(a -> {
+            var component = ComponentCreateDialog.show(this, object);
+            if(component != null) {
+                componentList.add(component);
+                loadComponentsView();
+            }
+        });
+        addbtn.setAlignmentX(JButton.CENTER_ALIGNMENT);
+
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(addbtn);
+
+        var pane = new JScrollPane(panel);
+        loadComponentsView();
+        return pane;
+    }
+
+    private void loadComponentsView(){
+        while(componentsView.getComponents().length > 2)
+            componentsView.remove(0);
+        var comps = componentList;
+        for(var i = 0; i < comps.size(); i++){
+            var component = comps.get(i);
+            var panel = new JPanel();
+            panel.setBorder(BorderFactory.createTitledBorder(component.genName()));
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            component.createView(window, object, panel);
+            componentsView.add(panel, i);
+        }
+        componentsView.revalidate();
+        componentsView.repaint();
     }
 
     private JPanel setupEventList() {
@@ -141,7 +197,7 @@ public class ObjectEditDialog extends JDialog {
             }
 
             private void showEventSelection() {
-                var event = openEventSelectionDialog(map, object);
+                var event = EventSelectionDialog.show(window, ObjectEditDialog.this, map, object);
                 if(event != null)
                     listModel.add(events.getSelectedIndex() + 1, event);
             }
@@ -180,7 +236,7 @@ public class ObjectEditDialog extends JDialog {
     private final Color panleBG = UIManager.getColor("Panel.background");
     private final Color panleBG_B = panleBG.brighter();
 
-    private Component cellRenderer(JList<? extends Event> jList, Event event, int index, boolean selected, boolean b) {
+    private JComponent cellRenderer(JList<? extends Event> jList, Event event, int index, boolean selected, boolean b) {
         var label = new JLabel(convertToHTML(event.getString(map)));
         label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5,5));
         label.setPreferredSize(new Dimension(label.getPreferredSize().width, 20));
@@ -196,15 +252,12 @@ public class ObjectEditDialog extends JDialog {
         return label;
     }
 
-    private Event openEventSelectionDialog(MapData map, GameObject object){
-        var dialog = new EventSelectionDialog(window, this, map, object);
-        return dialog.getEvent();
-    }
-
     private void applyData() {
         var elm = new ArrayList<Event>();
         listModel.elements().asIterator().forEachRemaining(elm::add);
         object.getEventList().putEvents(elm);
+        object.getComponents().clear();
+        object.getComponents().addAll(componentList);
         object.setName(name.getText().isBlank() ? null : name.getText());
 
         object.setX(((Number)x.getValue()).floatValue());

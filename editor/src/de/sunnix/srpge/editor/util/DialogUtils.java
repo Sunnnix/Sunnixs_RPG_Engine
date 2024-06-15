@@ -87,7 +87,7 @@ public class DialogUtils {
         return dialog.getResult();
     }
 
-    private static Window getWindowForComponent(Component parentComponent)
+    public static Window getWindowForComponent(Component parentComponent)
             throws HeadlessException {
         if (parentComponent == null)
             return getRootFrame();

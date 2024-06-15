@@ -1,10 +1,10 @@
-package de.sunnix.srpge.editor.window.object;
+package de.sunnix.srpge.editor.window.object.events;
 
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
-import de.sunnix.srpge.editor.window.object.events.Event;
+import de.sunnix.srpge.editor.window.object.ObjectEditDialog;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -46,6 +46,11 @@ public class EventSelectionDialog extends JDialog {
             });
             add(btn);
         });
+    }
+
+    public static Event show(Window window, ObjectEditDialog parent, MapData map, GameObject object){
+        var dialog = new EventSelectionDialog(window, parent, map, object);
+        return dialog.event;
     }
 
 }

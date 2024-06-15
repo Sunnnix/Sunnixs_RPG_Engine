@@ -1,15 +1,21 @@
 package de.sunnix.srpge.editor.window.resource;
 
+import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.util.LoadingDialog;
+import de.sunnix.srpge.editor.window.customswing.DefaultValueComboboxModel;
 import de.sunnix.srpge.editor.window.resource.audio.AudioResource;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.util.Utils;
 
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -111,6 +117,34 @@ public class Resources {
         if(cat == null)
             return false;
         return cat.containsKey(resName);
+    }
+
+    public String[] image_showSelectDialog(JComponent parent, String title, String current){
+        String cat = null, img = null;
+        if(current != null) {
+            var split = current.split("/");
+            if (split.length > 1) {
+                cat = split[0];
+                img = split[1];
+            }
+        }
+        return image_showSelectDialog(parent, title, cat, img);
+    }
+
+    public String[] image_showSelectDialog(JComponent parent, String title, String category, String image){
+        var categories = new JComboBox<>(new DefaultValueComboboxModel<>("none", image_getAllCategories().toArray(String[]::new)));
+        var images = new JComboBox<String>();
+        categories.addActionListener(a -> {
+            images.removeAllItems();
+            image_getCategoryContent((String) categories.getSelectedItem()).forEach(images::addItem);
+        });
+        categories.setSelectedItem(category);
+        images.setSelectedItem(image);
+        if(!DialogUtils.showMultiInputDialog(parent, title, null, new String[] { "Category", "Image" }, new JComponent[]{ categories, images }))
+            return null;
+        if(categories.getSelectedIndex() == 0)
+            return new String[2];
+        return new String[] { (String) categories.getSelectedItem(), (String) images.getSelectedItem()};
     }
 
     // ###################    Tileset Resource    ###################
