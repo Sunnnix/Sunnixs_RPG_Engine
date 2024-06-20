@@ -141,7 +141,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
 
         // Categories
         var catModel = new DefaultListModel<String>();
-        window.getSingleton(Resources.class).image_getAllCategories().forEach(catModel::addElement);
+        window.getSingleton(Resources.class).images.getCategoryNames().forEach(catModel::addElement);
         categoryList = new JList<>(catModel);
         categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         categoryList.addListSelectionListener(e -> onCategorySelected());
@@ -206,7 +206,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
             if (input == null)
                 return;
         } while (!DialogUtils.validateInput(parent, input, model.elements()));
-        window.getSingleton(Resources.class).image_createCategory(input);
+        window.getSingleton(Resources.class).images.addCategory(input);
         model.addElement(input);
         list.setSelectedValue(input, true);
         window.setProjectChanged();
@@ -221,7 +221,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
             return;
         var index = list.getSelectedIndex();
         var model = (DefaultListModel<String>) list.getModel();
-        window.getSingleton(Resources.class).image_removeCategory(category);
+        window.getSingleton(Resources.class).images.removeCategory(category);
         model.remove(index);
         if(model.isEmpty())
             return;
@@ -249,8 +249,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         } while (!DialogUtils.validateInput(parent, input, model.elements()));
 
         var res = window.getSingleton(Resources.class);
-        var catData = res.image_removeCategory(category);
-        res.image_setCategory(input, catData);
+        res.images.renameCategory(category, input);
 
         var index = list.getSelectedIndex();
         model.remove(index);
@@ -301,9 +300,9 @@ public class ResourceImageView extends JPanel implements IResourceView {
             window.getSingleton(Config.class).set("chooser_image_resource", file.getParent());
         }
 
-        var res = window.getSingleton(Resources.class);
+        var res = window.getSingleton(Resources.class).images;
         var category = categoryList.getSelectedValue();
-        if(!res.image_containsCategory(category)) {
+        if(!res.containsCategory(category)) {
             JOptionPane.showMessageDialog(this, getString("view.dialog_resources.image.add_no_category_selected.text"), getString("view.dialog_resources.image.no_category_selected.title"), JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -336,7 +335,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
             if(validateInput(name))
                 break;
         }
-        res.image_addResource(category, new ImageResource((String)data[0], (int)data[1], (int)data[2], image));
+        res.addData(category, (String)data[0], new ImageResource((String)data[0], (int)data[1], (int)data[2], image));
         window.setProjectChanged();
         var model = ((DefaultListModel<String>) imageList.getModel());
         model.addElement((String)data[0]);
@@ -355,7 +354,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
             return;
         var model = ((DefaultListModel<String>) imageList.getModel());
         var index = model.indexOf(image);
-        window.getSingleton(Resources.class).image_removeResource(categoryList.getSelectedValue(), image);
+        window.getSingleton(Resources.class).images.removeData(categoryList.getSelectedValue(), image);
         model.removeElementAt(index);
         if(model.getSize() > index)
             imageList.setSelectedIndex(index);
@@ -367,7 +366,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
 
     private void changeImage(String selected) {
         var res = window.getSingleton(Resources.class);
-        var image = res.image_get(categoryList.getSelectedValue(), selected);
+        var image = res.images.getData(categoryList.getSelectedValue(), selected);
         if(image == null) {
             JOptionPane.showMessageDialog(this,
                     getString("view.dialog_resources.image.change_no_category_selected.text"),
@@ -399,11 +398,10 @@ public class ResourceImageView extends JPanel implements IResourceView {
                         JOptionPane.WARNING_MESSAGE
                 ) != JOptionPane.OK_OPTION)
             return;
-        res.image_removeResource(categoryList.getSelectedValue(), selected);
         image.setName(newName);
         image.setWidth((int)data[1]);
         image.setHeight((int)data[2]);
-        res.image_addResource(categoryList.getSelectedValue(), image);
+        res.images.renameData(categoryList.getSelectedValue(), selected, newName);
 
         var selectedIndex = imageList.getSelectedIndex();
         var model = (DefaultListModel<String>) imageList.getModel();
@@ -417,7 +415,8 @@ public class ResourceImageView extends JPanel implements IResourceView {
 
     private boolean validateInput(String name) {
         var res = window.getSingleton(Resources.class);
-        if (!res.image_containsCategory(categoryList.getSelectedValue())) {
+        var category = categoryList.getSelectedValue();
+        if (!res.images.containsCategory(category)) {
             JOptionPane.showMessageDialog(this,
                     getString("view.dialog_resources.image.select_cat_first"),
                     getString("view.dialog_resources.image.no_cat_selected"),
@@ -425,7 +424,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
             );
             return false;
         }
-        return DialogUtils.validateInput(parent, name, res.image_getAllCategories());
+        return DialogUtils.validateInput(parent, name, res.images.getDataNames(category));
     }
 
     private void onCategorySelected(){
@@ -433,7 +432,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         model.clear();
         var selectedCat = categoryList.getSelectedValue();
         if(selectedCat != null) {
-            window.getSingleton(Resources.class).image_getCategoryContent(selectedCat).forEach(model::addElement);
+            window.getSingleton(Resources.class).images.getDataNames(selectedCat).forEach(model::addElement);
             if(model.getSize() > 0)
                 imageList.setSelectedIndex(0);
         }
@@ -447,7 +446,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
         selectedText.setText(imageID);
         ImageResource imageRes = null;
         if(enable)
-            imageRes = window.getSingleton(Resources.class).image_get(categoryList.getSelectedValue(), imageID);
+            imageRes = window.getSingleton(Resources.class).images.getData(categoryList.getSelectedValue(), imageID);
         atlasWidth.setText(imageRes == null ? "" : Integer.toString(imageRes.getWidth()));
         atlasHeight.setText(imageRes == null ? "" : Integer.toString(imageRes.getHeight()));
         imageComponent.repaint();
@@ -466,7 +465,7 @@ public class ResourceImageView extends JPanel implements IResourceView {
                 var id = imageList.getSelectedValue();
                 if(id == null)
                     return;
-                var imageRes = window.getSingleton(Resources.class).image_get(categoryList.getSelectedValue(), id);
+                var imageRes = window.getSingleton(Resources.class).images.getData(categoryList.getSelectedValue(), id);
                 if(imageRes == null)
                     return;
                 var image = imageRes.getImage();

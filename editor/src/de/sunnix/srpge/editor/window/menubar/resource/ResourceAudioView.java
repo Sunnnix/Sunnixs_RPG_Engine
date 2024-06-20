@@ -66,11 +66,11 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                                             JOptionPane.PLAIN_MESSAGE, null, null, name);
                                     if (name == null)
                                         break;
-                                } while (!DialogUtils.validateInput(parent, name, res.audio_getAllNames(categories.getSelectedValue())));
+                                } while (!DialogUtils.validateInput(parent, name, res.audio.getDataNames(categories.getSelectedValue())));
                                 if(name == null)
                                     continue;
                                 var audio = new AudioResource(name, file.getPath());
-                                window.getSingleton(Resources.class).audio_add(categories.getSelectedValue(), audio);
+                                window.getSingleton(Resources.class).audio.addData(categories.getSelectedValue(), audio.getName(), audio);
                                 listPanel.add(new AudioView(new AudioSpeaker(audio), audio.getName()));
                                 changed = true;
                             }
@@ -107,14 +107,14 @@ public class ResourceAudioView extends JPanel implements IResourceView{
         var model = new DefaultListModel<String>();
         categories = new JList<>(model);
 
-        window.getSingleton(Resources.class).audio_getCategories().forEach(model::addElement);
+        window.getSingleton(Resources.class).audio.getCategoryNames().forEach(model::addElement);
 
         categories.setSelectedIndex(-1);
         categories.addListSelectionListener(l -> {
             unloadAudioViews();
             listPanel.removeAll();
             if(categories.getSelectedIndex() != -1)
-                window.getSingleton(Resources.class).audio_getAll(categories.getSelectedValue())
+                window.getSingleton(Resources.class).audio.getAllData(categories.getSelectedValue())
                         .forEach(audio -> listPanel.add(new AudioView(new AudioSpeaker(audio), audio.getName())));
             listPanel.revalidate();
             listPanel.repaint();
@@ -167,8 +167,8 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                             JOptionPane.PLAIN_MESSAGE, null, null, name);
                     if (name == null)
                         return;
-                } while (!DialogUtils.validateInput(parent, name, res.audio_getCategories()));
-                res.audio_addCategory(name);
+                } while (!DialogUtils.validateInput(parent, name, res.audio.getCategoryNames()));
+                res.audio.addCategory(name);
                 ((DefaultListModel<String>)categories.getModel()).addElement(name);
                 categories.setSelectedValue(name, true);
                 window.setProjectChanged();
@@ -190,9 +190,8 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                     name = (String) JOptionPane.showInputDialog(parent, getString("view.dialog_resources.image.insert_category_name"), getString("view.dialog_resources.image.create_category"), JOptionPane.PLAIN_MESSAGE, null, null, name);
                     if (name == null || name.equals(preName))
                         return;
-                } while (!DialogUtils.validateInput(parent, name, res.audio_getCategories()));
-                var cat = res.audio_removeCategory(preName);
-                res.audio_addCategory(name, cat);
+                } while (!DialogUtils.validateInput(parent, name, res.audio.getCategoryNames()));
+                res.audio.renameCategory(preName, name);
                 var model = (DefaultListModel<String>) categories.getModel();
                 var index = model.indexOf(preName);
                 model.removeElement(preName);
@@ -210,7 +209,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                         JOptionPane.WARNING_MESSAGE
                 ) != JOptionPane.YES_OPTION)
                     return;
-                window.getSingleton(Resources.class).audio_removeCategory(categories.getSelectedValue(), true);
+                window.getSingleton(Resources.class).audio.removeCategory(categories.getSelectedValue());
                 ((DefaultListModel<String>)categories.getModel()).remove(categories.getSelectedIndex());
                 window.setProjectChanged();
             }
@@ -398,12 +397,12 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                 name = (String) JOptionPane.showInputDialog(parent, "Input audio name:", "Rename audio", JOptionPane.PLAIN_MESSAGE, null, null, name);
                 if (name == null || name.equals(this.name))
                     return;
-            } while (!DialogUtils.validateInput(parent, name, res.audio_getAllNames(categories.getSelectedValue())));
-            var audio = res.audio_remove(categories.getSelectedValue(), this.name);
+            } while (!DialogUtils.validateInput(parent, name, res.audio.getDataNames(categories.getSelectedValue())));
+            var audio = res.audio.renameData(categories.getSelectedValue(), this.name, name);
             audio.setName(name);
             this.name = name;
             genLabel();
-            res.audio_add(categories.getSelectedValue(), audio);
+            res.audio.addData(categories.getSelectedValue(), audio.getName(), audio);
             revalidate();
             repaint();
             window.setProjectChanged();
@@ -419,7 +418,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
                     JOptionPane.WARNING_MESSAGE
             ) != JOptionPane.YES_OPTION)
                 return;
-            window.getSingleton(Resources.class).audio_remove(categories.getSelectedValue(), name, true);
+            window.getSingleton(Resources.class).audio.removeData(categories.getSelectedValue(), name);
             destroy();
             listPanel.remove(this);
             listPanel.revalidate();

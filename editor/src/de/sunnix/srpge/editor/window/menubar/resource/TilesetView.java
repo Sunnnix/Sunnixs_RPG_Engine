@@ -77,12 +77,12 @@ public class TilesetView extends JPanel implements IResourceView{
                         private void createTileset(ActionEvent e) {
                             var res = window.getSingleton(Resources.class);
                             var input = new JTextField(20);
-                            var cat = new JComboBox<String>(res.image_getAllCategories().toArray(String[]::new));
+                            var cat = new JComboBox<>(res.images.getCategoryNames().toArray(String[]::new));
                             cat.setSelectedIndex(-1);
                             var tex = new JComboBox<String>();
                             cat.addActionListener(a -> {
                                 tex.removeAllItems();
-                                res.image_getCategoryContent((String)cat.getSelectedItem()).forEach(tex::addItem);
+                                res.images.getDataNames((String)cat.getSelectedItem()).forEach(tex::addItem);
                             });
                             while (DialogUtils.showMultiInputDialog(parent, getString("view.dialog_resources.tileset.create"), null, new String[]{getString("name.name"), getString("view.dialog_resources.tileset.ts_cat"), getString("name.texture")}, new JComponent[]{input, cat, tex})) {
                                 if(cat.getSelectedIndex() == -1 || tex.getSelectedIndex() == -1)

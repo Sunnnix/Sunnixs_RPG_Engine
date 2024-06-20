@@ -342,7 +342,7 @@ public class Window extends JFrame {
                 projectName = config.get("project_name", getString("name.unnamed_project"));
                 startMap = config.get("start_map", -1);
                 dialog.addProgress(500);
-                getSingleton(Resources.class).loadResources(dialog, 5000, zip);
+                getSingleton(Resources.class).loadResources(dialog, 5000, zip, version);
                 getSingleton(GameData.class).loadData(dialog, 3500, zip, version);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(

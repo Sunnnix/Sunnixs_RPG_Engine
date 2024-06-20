@@ -56,7 +56,7 @@ public class Tileset {
     }
 
     public ImageResource getImageResource(Window window){
-        return window.getSingleton(Resources.class).image_get(res);
+        return window.getSingleton(Resources.class).images.getData(res);
     }
 
 

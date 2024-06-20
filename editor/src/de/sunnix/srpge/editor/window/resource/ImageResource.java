@@ -29,7 +29,7 @@ public class ImageResource {
     }
 
 
-    public ImageResource(DataSaveObject imageFile) throws IOException, InvocationTargetException, IllegalAccessException {
+    public ImageResource(DataSaveObject imageFile) throws IOException {
         this.name = imageFile.getString("name", "null");
         this.width = imageFile.getInt("width", 1);
         this.height = imageFile.getInt("height", 1);

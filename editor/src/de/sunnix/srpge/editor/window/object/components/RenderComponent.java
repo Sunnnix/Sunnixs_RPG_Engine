@@ -57,10 +57,10 @@ public class RenderComponent extends Component{
         }, 250);
 
         setSpriteBtn.addActionListener(a -> {
-            var newSprite = window.getSingleton(Resources.class).image_showSelectDialog(parent, "Select sprite", sprite);
+            var newSprite = window.getSingleton(Resources.class).images.showSelectDialogSinglePath(parent, "Select sprite", null, "Sprite", sprite);
             if(newSprite == null)
                 return;
-            sprite = newSprite[0] + "/" + newSprite[1];
+            sprite = newSprite;
             parent.repaint();
         });
     }

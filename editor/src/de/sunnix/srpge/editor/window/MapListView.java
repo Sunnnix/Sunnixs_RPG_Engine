@@ -153,7 +153,7 @@ public class MapListView extends JScrollPane {
             return;
         var bgm = map.getBackgroundMusic();
         var res = window.getSingleton(Resources.class);
-        var soundCats = createComboBox(getString("name.none"), res.audio_getCategories().toArray(String[]::new));
+        var soundCats = createComboBox(getString("name.none"), res.audio.getCategoryNames().toArray(String[]::new));
         soundCats.setPreferredSize(new Dimension(200, soundCats.getPreferredSize().height));
 
         var sounds = new JComboBox<String>();
@@ -161,7 +161,7 @@ public class MapListView extends JScrollPane {
         soundCats.addActionListener(l -> {
             sounds.removeAllItems();
             if(soundCats.getSelectedIndex() > 0)
-                ((DefaultComboBoxModel<String>)sounds.getModel()).addAll(res.audio_getAllNames((String)soundCats.getSelectedItem()));
+                ((DefaultComboBoxModel<String>)sounds.getModel()).addAll(res.audio.getDataNames((String)soundCats.getSelectedItem()));
         });
 
         if(bgm != null) {
