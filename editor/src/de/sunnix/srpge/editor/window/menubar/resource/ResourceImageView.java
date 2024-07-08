@@ -275,10 +275,6 @@ public class ResourceImageView extends JPanel implements IResourceView {
                     remove.addActionListener(a -> removeImage(selected));
                     var change = new JMenuItem(getString("name.change"));
                     change.addActionListener(a -> changeImage(selected));
-                    if (selected.equals("default")) {
-                        remove.setEnabled(false);
-                        change.setEnabled(false);
-                    }
                     popup.add(remove);
                     popup.add(change);
                 }

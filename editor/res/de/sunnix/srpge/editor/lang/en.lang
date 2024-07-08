@@ -66,6 +66,12 @@ name.import=Import
 name.load=Load
 name.language_file=Language Pack
 name.edit=Edit
+name.data=Data
+name.move=Move
+name.sprite=Sprite
+name.sound_type=Sound Type
+name.animation=Animation
+
 texts.error_loading_about=Error loading AboutSite.html: %s
 
 # Main dialogs
@@ -173,6 +179,13 @@ dialog_resources.node.video.tilesets=Tilesets
 dialog_resources.node.audio=Audio
 dialog_resources.node.audio.raw=Raw
 
+dialog_resources.create_category=Create new category
+dialog_resources.insert_category_name=Insert category name:
+
+dialog_resources.move_data.title=Move %s
+dialog_resources.move_data.text=Move %s to another category
+dialog_resources.move_data.data_name_exists_already=Name of %s already exists
+
 # Resource dialog views
 view.dialog_resources.image.show_complete_image=Show complete image:
 view.dialog_resources.image.animate=Animate:
@@ -180,9 +193,9 @@ view.dialog_resources.image.show_grid=show Grid:
 view.dialog_resources.image.animation_speed=Animation speed:
 view.dialog_resources.image.insert_category_name=Insert category name:
 view.dialog_resources.image.create_category=Create new Category
-view.dialog_resources.image.delete_category.text=Are you sure you want to delete the category %s?\nAll objects that use this category will then display an error image!
+view.dialog_resources.image.delete_category.text=Are you sure you want to delete the category %s?\nAll objects using this category may be broken!
 view.dialog_resources.image.delete_category.title=Delete Category
-view.dialog_resources.image.change_category.text=Are you sure you want to change the category %s?\nAll objects that use this category will then display an error image!
+view.dialog_resources.image.change_category.text=Are you sure you want to change the category %s?\nAll objects using this category may be broken!
 view.dialog_resources.image.change_category.title=Change Category
 view.dialog_resources.image.add_no_category_selected.text=Select a category before adding an image!
 view.dialog_resources.image.no_category_selected.title=No category selected
@@ -207,6 +220,14 @@ view.dialog_resources.tileset.ts_cat=Texture category
 view.dialog_resources.tileset.no_texture_selected=No texture selected!
 view.dialog_resources.tileset.delete_tileset.text=Do you really want to delete the tileset?\nAll data in the tileset will be lost and maps that used it must be adjusted!
 view.dialog_resources.tileset.delete_tileset.title=Delete tileset
+
+# Resource dialog sprite view
+view.dialog_resources.sprite.texture=Texture:
+view.dialog_resources.sprite.direction_type=Direction type:
+view.dialog_resources.sprite.animation_type=Animation type:
+view.dialog_resources.sprite.direction=Direction:
+view.dialog_resources.sprite.show_indices=Show indices
+view.dialog_resources.sprite.animation_speed=Animation speed
 
 # Resource dialog Audio View
 view.dialog_resources.audio.loading_files=Loading audio files

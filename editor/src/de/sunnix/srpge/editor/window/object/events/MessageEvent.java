@@ -4,6 +4,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
+import de.sunnix.srpge.engine.graphics.gui.SpeechBox;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
 import de.sunnix.sdso.DataSaveObject;
 
@@ -11,11 +12,13 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class MessageEvent extends Event{
 
     private String name = "";
     private String message = "";
+    private SpeechBox.SoundType soundType = SpeechBox.SoundType.NONE;
 
     public MessageEvent() {
         super("message");
@@ -26,6 +29,7 @@ public class MessageEvent extends Event{
     public DataSaveObject load(DataSaveObject dso) {
         name = new String(dso.getByteArray("name"), StandardCharsets.UTF_8);
         message = new String(dso.getByteArray("msg"), StandardCharsets.UTF_8);
+        soundType = SpeechBox.SoundType.values()[dso.getByte("st", (byte) 0)];
         return dso;
     }
 
@@ -34,6 +38,8 @@ public class MessageEvent extends Event{
         if(!name.isBlank())
             dso.putArray("name", name.getBytes(StandardCharsets.UTF_8));
         dso.putArray("msg", message.getBytes(StandardCharsets.UTF_8));
+        if(soundType != SpeechBox.SoundType.NONE)
+            dso.putByte("st", (byte) soundType.ordinal());
         return dso;
     }
 
@@ -70,6 +76,15 @@ public class MessageEvent extends Event{
         var specialCharPanel = new JPanel();
         specialCharPanel.setLayout(new BoxLayout(specialCharPanel, BoxLayout.Y_AXIS));
 
+        var stPanel = new JPanel(new GridLayout(1, 0));
+
+        stPanel.add(new JLabel(Language.getString("name.sound_type")));
+        var soundType = new JComboBox<>(SpeechBox.SoundType.values());
+        soundType.setSelectedItem(this.soundType);
+        stPanel.add(soundType);
+
+        specialCharPanel.add(stPanel);
+
         var arrowsPanel = new JPanel(new GridLayout(0, 2));
         arrowsPanel.setBorder(new TitledBorder(Language.getString("event.msg.dialog.arrows")));
 
@@ -102,6 +117,7 @@ public class MessageEvent extends Event{
         return () -> {
             message = text.getText();
             this.name = name.getText();
+            this.soundType = (SpeechBox.SoundType) soundType.getSelectedItem();
         };
     }
 

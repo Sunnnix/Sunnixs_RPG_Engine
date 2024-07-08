@@ -14,14 +14,14 @@ public class GUIManager {
     @Getter
     private final static SpeechBox speechBox = new SpeechBox();
 
-    private static List<Tuple.Tuple3<Integer, String, String>> messageQueue = new ArrayList<>();
+    private static List<Tuple.Tuple4<Integer, String, String, SpeechBox.SoundType>> messageQueue = new ArrayList<>();
 
     public static void render(){
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         if(speechBox.isVisible() || !messageQueue.isEmpty()) {
             if(!speechBox.isVisible()){
                 var message = messageQueue.remove(0);
-                speechBox.showText(message.t1(), message.t2(), message.t3());
+                speechBox.showText(message.t1(), message.t2(), message.t3(), message.t4());
             }
             speechBox.render();
         }
@@ -36,8 +36,8 @@ public class GUIManager {
      *
      * @return id of the message
      */
-    public static int showSpeechBox(String name, String text){
-        var message = new Tuple.Tuple3<>((int)(Math.random() * Integer.MAX_VALUE), name, text);
+    public static int showSpeechBox(String name, String text, SpeechBox.SoundType soundType){
+        var message = new Tuple.Tuple4<>((int)(Math.random() * Integer.MAX_VALUE), name, text, soundType);
         messageQueue.add(message);
         return message.t1();
     }

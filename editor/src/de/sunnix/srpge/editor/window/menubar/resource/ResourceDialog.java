@@ -43,7 +43,8 @@ public class ResourceDialog extends JDialog {
         var root = createNode("Root",
                 createNode(getString("dialog_resources.node.video"),
                         createNode(getString("dialog_resources.node.video.images"), p -> new ResourceImageView(parent, p)),
-                        createNode(getString("dialog_resources.node.video.tilesets"), p -> new TilesetView(parent, p))
+                        createNode(getString("dialog_resources.node.video.tilesets"), p -> new TilesetView(parent, p)),
+                        createNode("Sprite", p -> new SpriteView(parent, p))
                 ),
                 createNode(getString("dialog_resources.node.audio"),
                         createNode(getString("dialog_resources.node.audio.raw"), p -> new ResourceAudioView(parent, p))

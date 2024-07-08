@@ -3,6 +3,8 @@ package de.sunnix.srpge.editor.window.customswing;
 import lombok.Getter;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,45 +17,43 @@ public class NumberPicker extends JPanel {
     private final JButton dec, inc;
 
     @Getter
-    private int min, max;
+    private int min, max, value;
 
     private final java.util.List<ChangeListener> changeListeners = new ArrayList<>();
 
     public NumberPicker(String title, int initialValue, int columns, int min, int max){
-        this.setLayout(new GridBagLayout());
-        var gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridheight = 1;
+        this.setLayout(new BorderLayout());
         this.text = new JTextField(Integer.toString(initialValue), columns);
         this.dec = new JButton("-");
         this.inc = new JButton("+");
         this.min = min;
         this.max = max;
-        if(title != null){
-            gbc.gridwidth = 3;
-            add(new JLabel(title), gbc);
-            gbc.gridy++;
-        }
-        gbc.gridwidth = 1;
+        if(title != null)
+            add(new JLabel(title), BorderLayout.NORTH);
 
-//        dec.addActionListener(l -> changeValue(-1));
         dec.addMouseListener(genHoldingFunction(-1));
-        add(dec, gbc);
-        gbc.gridx++;
+        add(dec, BorderLayout.WEST);
 
         text.setHorizontalAlignment(JTextField.CENTER);
         text.setEditable(false);
-        add(text, gbc);
-        gbc.gridx++;
+        text.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if(text.getText().isBlank())
+                    return;
+                value = Integer.parseInt(text.getText());
+            }
 
-//        inc.addActionListener(l -> changeValue(1));
+            @Override
+            public void removeUpdate(DocumentEvent e) {}
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {}
+        });
+        add(text, BorderLayout.CENTER);
+
         inc.addMouseListener(genHoldingFunction(1));
-        add(inc, gbc);
-    }
-
-    public int getValue(){
-        return Integer.parseInt(text.getText());
+        add(inc, BorderLayout.EAST);
     }
 
     public void setValue(int value, boolean ignoreListeners){
@@ -140,6 +140,12 @@ public class NumberPicker extends JPanel {
 
     public void addChangeListener(ChangeListener l){
         changeListeners.add(l);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        inc.setEnabled(enabled);
+        dec.setEnabled(enabled);
     }
 
     public ChangeListener[] getChangeListeners(){

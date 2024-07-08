@@ -21,6 +21,7 @@ public final class Resources {
 
     public final ResourceList<ImageResource> images = new ResourceList<>("images");
     public final ResourceList<Tileset> tilesets = new ResourceList<>("tilesets");
+    public final ResourceList<Sprite> sprites = new ResourceList<>("sprites");
     public final ResourceList<AudioResource> audio = new ResourceList<>("audio", AudioResource::cleanup);
 
     public Resources(){}
@@ -29,6 +30,7 @@ public final class Resources {
         images.reset();
         tilesets.reset();
         tilesets.addCategory("default");
+        sprites.reset();
         audio.reset();
     }
 
@@ -39,34 +41,6 @@ public final class Resources {
         if(res == null)
             return null;
         return res.getImage();
-    }
-
-    public String[] image_showSelectDialog(JComponent parent, String title, String current){
-        String cat = null, img = null;
-        if(current != null) {
-            var split = current.split("/");
-            if (split.length > 1) {
-                cat = split[0];
-                img = split[1];
-            }
-        }
-        return image_showSelectDialog(parent, title, cat, img);
-    }
-
-    public String[] image_showSelectDialog(JComponent parent, String title, String category, String image){
-        var categories = new JComboBox<>(new DefaultValueComboboxModel<>("none", images.getCategoryNames().toArray(String[]::new)));
-        var images = new JComboBox<String>();
-        categories.addActionListener(a -> {
-            images.removeAllItems();
-            this.images.getDataNames((String) categories.getSelectedItem()).forEach(images::addItem);
-        });
-        categories.setSelectedItem(category);
-        images.setSelectedItem(image);
-        if(!DialogUtils.showMultiInputDialog(parent, title, null, new String[] { "Category", "Image" }, new JComponent[]{ categories, images }))
-            return null;
-        if(categories.getSelectedIndex() == 0)
-            return new String[2];
-        return new String[] { (String) categories.getSelectedItem(), (String) images.getSelectedItem()};
     }
 
     // ###################    Tileset Resource    ###################
@@ -98,10 +72,10 @@ public final class Resources {
 
     public void loadResources(LoadingDialog dialog, int progress, ZipFile zip, int[] version) throws Exception {
         reset();
-        var resFolder = new File("res");
 
-        loadImageResources(dialog, (int)(progress * .25), zip);
-        loadTilesets(dialog, (int)(progress * .10), zip, version);
+        loadImageResources(dialog, (int)(progress * .20), zip);
+        loadTilesets(dialog, (int)(progress * .05), zip, version);
+        loadSprites(dialog, (int) (progress * .1), zip);
         loadAudioResources(dialog, (int)(progress * .65), zip, version);
     }
 
@@ -134,6 +108,10 @@ public final class Resources {
                 dialog.addProgress(progressPerFile);
             });
         }
+    }
+
+    public void loadSprites(LoadingDialog dialog, int progress, ZipFile zip){
+        sprites.load(dialog, progress, zip, Sprite::new);
     }
 
     private void loadAudioResources(LoadingDialog dialog, int progress, ZipFile zip, int[] version) throws Exception {
@@ -172,6 +150,7 @@ public final class Resources {
     public void saveResources(LoadingDialog dialog, int progress, ZipOutputStream zip) {
         saveImageResources(dialog, progress, zip);
         saveTilesets(dialog, progress, zip);
+        saveSprites(dialog, progress, zip);
         saveAudioResources(dialog, progress, zip);
     }
 
@@ -189,7 +168,12 @@ public final class Resources {
         tilesets.save(dialog, progress, zip, (dso, tileset) -> tileset.save(dso));
     }
 
+    private void saveSprites(LoadingDialog dialog, int progress, ZipOutputStream zip){
+        sprites.save(dialog, progress, zip, (dso, sprite) -> sprite.save(dso));
+    }
+
     private void saveAudioResources(LoadingDialog dialog, int progress, ZipOutputStream zip){
         audio.save(dialog, progress, zip, (dso, audio) -> audio.save(dso));
     }
+
 }

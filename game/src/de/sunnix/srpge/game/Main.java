@@ -83,7 +83,7 @@ public class Main implements IRegistry {
 //                );
 
         Core.subscribeLoop("test", 4, ticks -> {
-            if(InputManager.PAD_A.startPressed())
+//            if(InputManager.PAD_A.startPressed())
 //                GUIManager.showSpeechBox("Sunnix", "Kleiner test!");//\nZweite Linie! (ZONK)\nDrücke " + PS_X +  STOP_TOKEN + " um fortzufahren!\nZum Abbrechen drücke " + PS_RECT + "!\nAnsonsten kannst du dieses Spiel jetzt beenden.");
 //                GUIManager.showSpeechBox("Sunnix", String.format("""
 //                        Lorem ipsum dolor sit amet, %s consetetur sadipscing elitr,

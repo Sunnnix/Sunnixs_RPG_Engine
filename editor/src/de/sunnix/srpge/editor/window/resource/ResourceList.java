@@ -6,6 +6,9 @@ import de.sunnix.srpge.editor.util.LoadingDialog;
 import de.sunnix.srpge.editor.window.customswing.DefaultValueComboboxModel;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +16,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -374,9 +378,10 @@ public class ResourceList<T> {
             for(var category : resources.entrySet()){
                 var dsos = new DataSaveObject();
                 var list = new ArrayList<DataSaveObject>();
-                for(var imageRes: category.getValue().values()){
+                for(var entry: category.getValue().entrySet()){
                     var dso = new DataSaveObject();
-                    saveData.accept(dso, imageRes);
+                    dso.putString("name", entry.getKey());
+                    saveData.accept(dso, entry.getValue());
                     list.add(dso);
                 }
                 dsos.putList(name, list);
@@ -395,13 +400,18 @@ public class ResourceList<T> {
     }
 
     /**
-     * Creates and returns an array of two JComboBox components for selecting categories and data names.
+     * Creates and returns an array of two JComboBox components for selecting categories and data names.<br>
      *
+     * @param withDefaultValue determines if the first one (for the categories) contains a default none value for selection of no category
      * @return An array of two JComboBox components where the first JComboBox contains category names
      *         and the second JComboBox contains data names within the selected category.
      */
-    public JComboBox<String>[] getSelectionBoxes(){
-        var categories = new JComboBox<>(new DefaultValueComboboxModel<>(getString("name.none"), resources.keySet().toArray(String[]::new)));
+    public JComboBox<String>[] getSelectionBoxes(boolean withDefaultValue){
+        JComboBox<String> categories;
+        if(withDefaultValue)
+            categories = new JComboBox<>(new DefaultValueComboboxModel<>(getString("name.none"), resources.keySet().toArray(String[]::new)));
+        else
+            categories = new JComboBox<>(resources.keySet().toArray(String[]::new));
         var data = new JComboBox<String>(new DefaultComboBoxModel<>());
         categories.addActionListener(l -> {
             data.removeAllItems();
@@ -410,6 +420,17 @@ public class ResourceList<T> {
             ((DefaultComboBoxModel<String>)data.getModel()).addAll(getDataNames((String)categories.getSelectedItem()));
         });
         return new JComboBox[] { categories, data };
+    }
+
+    /**
+     * Creates and returns an array of two JComboBox components for selecting categories and data names.<br>
+     * The first one (for the categories) contains a default none value for selection of no category
+     *
+     * @return An array of two JComboBox components where the first JComboBox contains category names
+     *         and the second JComboBox contains data names within the selected category.
+     */
+    public JComboBox<String>[] getSelectionBoxes(){
+        return getSelectionBoxes(true);
     }
 
     /**
@@ -513,6 +534,323 @@ public class ResourceList<T> {
             }
         }
         return showSelectDialogSinglePath(parent, title, message, dataDisplayName, category, data);
+    }
+
+    /**
+     * Creates a builder for building two JLists to access and modify the data of these resources
+     * @param dataGenerator a generator for creating new data
+     * @return the builder
+     */
+    public JListBuilder getJListBuilder(Supplier<T> dataGenerator){
+        return new JListBuilder(dataGenerator);
+    }
+
+    /**
+     * A builder class for creating and configuring JList components for categories and data.
+     */
+    public final class JListBuilder {
+
+        private Supplier<T> dataGenerator;
+        private DefaultListModel<String> categoryModel, dataModel;
+        private JList<String> categoryList, dataList;
+        private JComponent parent;
+        private String dataName = getString("name.data");
+        private Runnable onChanged = () -> {};
+
+        /**
+         * Constructs a JListBuilder with the specified data generator.
+         *
+         * @param dataGenerator A Supplier that generates data of type T.
+         */
+        public JListBuilder(Supplier<T> dataGenerator){
+            this.dataGenerator = dataGenerator;
+        }
+
+        /**
+         * Sets the parent component for this JListBuilder.<br>
+         * All Dialogs that open will align to the parent.
+         *
+         * @param parent The parent JComponent.
+         * @return The current JListBuilder instance for method chaining.
+         */
+        public JListBuilder setParent(JComponent parent){
+            this.parent = parent;
+            return this;
+        }
+
+        /**
+         * Sets the data type name used in dialogs and other UI components.
+         *
+         * @param dataName The name of the data type.
+         * @return The current JListBuilder instance for method chaining.
+         */
+        public JListBuilder setDataName(String dataName) {
+            this.dataName = dataName;
+            return this;
+        }
+
+        /**
+         * Sets a Runnable to be executed when changes occur.
+         *
+         * @param onChanged The Runnable to be executed on change.
+         * @return The current JListBuilder instance for method chaining.
+         */
+        public JListBuilder setOnChange(Runnable onChanged){
+            this.onChanged = onChanged;
+            return this;
+        }
+
+        /**
+         * Builds and returns an array containing the category and data JLists.
+         *
+         * @return An array containing the category JList at index 0 and the data JList at index 1.
+         */
+        public JList<String>[] build(){
+            categoryList = new JList<>(categoryModel = new DefaultListModel<>());
+            dataList = new JList<>(dataModel = new DefaultListModel<>());
+
+            categoryModel.addAll(getCategoryNames());
+
+            categoryList.addListSelectionListener(l -> {
+                dataModel.clear();
+                var selectedCat = categoryList.getSelectedValue();
+                if(selectedCat == null)
+                    return;
+                dataModel.addAll(getDataNames(selectedCat));
+            });
+
+            categoryList.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if(e.getButton() != MouseEvent.BUTTON3)
+                        return;
+                    new JPopupMenu(){
+                        {
+                            var create = new JMenuItem(getString("name.create"));
+                            create.addActionListener(this::createCategory);
+                            add(create);
+                            if(categoryList.getSelectedIndex() != -1){
+                                var change = new JMenuItem(getString("name.change"));
+                                change.addActionListener(this::changeCategory);
+                                add(change);
+                                var remove = new JMenuItem(getString("name.remove"));
+                                remove.addActionListener(this::removeCategory);
+                                add(remove);
+                            }
+                        }
+
+                        private void createCategory(ActionEvent actionEvent) {
+                            String input = null;
+                            do {
+                                input = (String) JOptionPane.showInputDialog(
+                                        parent,
+                                        getString("dialog_resources.insert_category_name"),
+                                        getString("dialog_resources.create_category"),
+                                        JOptionPane.PLAIN_MESSAGE,
+                                        null,
+                                        null,
+                                        input
+                                );
+                                if (input == null)
+                                    return;
+                            } while (!DialogUtils.validateInput(parent, input, categoryModel.elements()));
+                            addCategory(input);
+                            categoryModel.addElement(input);
+                            categoryList.setSelectedValue(input, true);
+                            onChanged.run();
+                        }
+
+                        private void changeCategory(ActionEvent actionEvent) {
+                            var category = categoryList.getSelectedValue();
+                            var option = JOptionPane.showConfirmDialog(parent,
+                                    getString("view.dialog_resources.image.change_category.text", category),
+                                    getString("view.dialog_resources.image.change_category.title"),
+                                    JOptionPane.YES_NO_OPTION);
+                            if(option != JOptionPane.YES_OPTION)
+                                return;
+
+                            String input = category;
+                            do {
+                                input = (String) JOptionPane.showInputDialog(
+                                        parent,
+                                        getString("view.dialog_resources.image.change_category.text"),
+                                        getString("view.dialog_resources.image.change_category.title"),
+                                        JOptionPane.PLAIN_MESSAGE,
+                                        null,
+                                        null,
+                                        input
+                                );
+                                if (input == null || input.equals(category))
+                                    return;
+                            } while (!DialogUtils.validateInput(parent, input, categoryModel.elements()));
+
+                            renameCategory(category, input);
+
+                            var index = categoryList.getSelectedIndex();
+                            categoryModel.remove(index);
+                            categoryModel.add(index, input);
+                            categoryList.setSelectedIndex(index);
+                            onChanged.run();
+                        }
+
+                        private void removeCategory(ActionEvent actionEvent) {
+                            var category = categoryList.getSelectedValue();
+                            var option = JOptionPane.showConfirmDialog(parent,
+                                    getString("view.dialog_resources.image.delete_category.text", category),
+                                    getString("view.dialog_resources.image.delete_category.title"),
+                                    JOptionPane.YES_NO_OPTION);
+                            if(option != JOptionPane.YES_OPTION)
+                                return;
+                            var index = categoryList.getSelectedIndex();
+                            ResourceList.this.removeCategory(category);
+                            categoryModel.remove(index);
+                            if(categoryModel.isEmpty())
+                                return;
+                            if(categoryModel.getSize() <= index)
+                                categoryList.setSelectedIndex(index - 1);
+                            else
+                                categoryList.setSelectedIndex(index);
+                            onChanged.run();
+                        }
+
+                    }.show(categoryList, e.getX(), e.getY());
+                }
+            });
+
+            dataList.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if(e.getButton() != MouseEvent.BUTTON3 || categoryList.getSelectedIndex() == -1)
+                        return;
+                    new JPopupMenu(){
+                        {
+                            var create = new JMenuItem(getString("name.create"));
+                            create.addActionListener(this::createData);
+                            add(create);
+                            if(dataList.getSelectedIndex() != -1){
+                                var change = new JMenuItem(getString("name.change"));
+                                change.addActionListener(this::changeData);
+                                add(change);
+                                var move = new JMenuItem(getString("name.move"));
+                                move.addActionListener(this::moveData);
+                                add(move);
+                                var remove = new JMenuItem(getString("name.remove"));
+                                remove.addActionListener(this::removeData);
+                                add(remove);
+                            }
+                        }
+
+                        private void createData(ActionEvent actionEvent) {
+                            String input = null;
+                            do {
+                                input = (String) JOptionPane.showInputDialog(
+                                        parent,
+                                        getString("view.dialog_resources.image.insert_category_name"),
+                                        getString("view.dialog_resources.image.create_category"),
+                                        JOptionPane.PLAIN_MESSAGE,
+                                        null,
+                                        null,
+                                        input
+                                );
+                                if (input == null)
+                                    return;
+                            } while (!DialogUtils.validateInput(parent, input, dataModel.elements()));
+                            addData(categoryList.getSelectedValue(), input, dataGenerator.get());
+                            dataModel.addElement(input);
+                            dataList.setSelectedValue(input, true);
+                            onChanged.run();
+                        }
+
+                        private void changeData(ActionEvent actionEvent) {
+                            var data = dataList.getSelectedValue();
+                            var option = JOptionPane.showConfirmDialog(parent,
+                                    getString("view.dialog_resources.image.change_category.text", data),
+                                    getString("view.dialog_resources.image.change_category.title"),
+                                    JOptionPane.YES_NO_OPTION);
+                            if(option != JOptionPane.YES_OPTION)
+                                return;
+
+                            String input = data;
+                            do {
+                                input = (String) JOptionPane.showInputDialog(
+                                        parent,
+                                        getString("view.dialog_resources.image.insert_category_name"),
+                                        getString("view.dialog_resources.image.change_category.title"),
+                                        JOptionPane.PLAIN_MESSAGE,
+                                        null,
+                                        null,
+                                        input
+                                );
+                                if (input == null || input.equals(data))
+                                    return;
+                            } while (!DialogUtils.validateInput(parent, input, dataModel.elements()));
+
+                            renameData(categoryList.getSelectedValue(), data, input);
+
+                            var index = dataList.getSelectedIndex();
+                            dataModel.remove(index);
+                            dataModel.add(index, input);
+                            dataList.setSelectedIndex(index);
+                            onChanged.run();
+                        }
+
+                        private void moveData(ActionEvent actionEvent) {
+                            var preCategory = categoryList.getSelectedValue();
+                            var categories = getSelectionBoxes(false)[0];
+                            categories.setSelectedItem(preCategory);
+                            if(!DialogUtils.showMultiInputDialog(
+                                    parent,
+                                    getString("dialog_resources.move_data.title", dataName),
+                                    getString("dialog_resources.move_data.text", dataName),
+                                    new String[]{ getString("name.category") },
+                                    new JComponent[] { categories }
+                            ))
+                                return;
+                            var newCategory = (String) categories.getSelectedItem();
+                            var dataName = dataList.getSelectedValue();
+                            if(ResourceList.this.containsDataName(newCategory, dataName)){
+                                JOptionPane.showMessageDialog(
+                                        parent,
+                                        getString("dialog_resources.move_data.data_name_exists_already", dataName),
+                                        getString("name.error"),
+                                        JOptionPane.ERROR_MESSAGE
+                                );
+                                return;
+                            }
+                            if(newCategory == null || newCategory.equals(preCategory))
+                                return;
+                            ResourceList.this.moveData(preCategory, newCategory, dataName);
+                            categoryList.setSelectedValue(newCategory, true);
+                            dataList.setSelectedValue(dataName, true);
+                        }
+
+                        private void removeData(ActionEvent actionEvent) {
+                            var data = dataList.getSelectedValue();
+                            var option = JOptionPane.showConfirmDialog(parent,
+                                    getString("view.dialog_resources.image.delete_category.text", data),
+                                    getString("view.dialog_resources.image.delete_category.title"),
+                                    JOptionPane.YES_NO_OPTION);
+                            if(option != JOptionPane.YES_OPTION)
+                                return;
+                            var index = dataList.getSelectedIndex();
+                            ResourceList.this.removeCategory(data);
+                            dataModel.remove(index);
+                            if(dataModel.isEmpty())
+                                return;
+                            if(dataModel.getSize() <= index)
+                                dataList.setSelectedIndex(index - 1);
+                            else
+                                dataList.setSelectedIndex(index);
+                            onChanged.run();
+                        }
+
+                    }.show(dataList, e.getX(), e.getY());
+                }
+            });
+
+            return new JList[] { categoryList, dataList };
+        }
+
     }
 
 }

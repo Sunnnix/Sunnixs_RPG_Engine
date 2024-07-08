@@ -1,11 +1,16 @@
 package de.sunnix.srpge.engine.graphics.gui;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.GlobalConfig;
 import de.sunnix.srpge.engine.InputManager;
+import de.sunnix.srpge.engine.audio.AudioDecoder;
+import de.sunnix.srpge.engine.audio.AudioManager;
+import de.sunnix.srpge.engine.audio.AudioResource;
 import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
 import lombok.Getter;
 
+import java.io.BufferedInputStream;
 import java.util.Arrays;
 
 import static de.sunnix.srpge.engine.graphics.gui.text.Text.*;
@@ -45,7 +50,73 @@ public class SpeechBox {
 
     private int cursorPos;
 
+    public enum SoundType{
+        NONE, MALE, FEMALE, CHILD, EVIL
+    }
+
+    private SoundType soundType = SoundType.NONE;
+
+    private final AudioResource open;
+    private final AudioResource close;
+    private final AudioResource male;
+    private final AudioResource female;
+    private final AudioResource child;
+    private final AudioResource evil;
+
     public SpeechBox() {
+        try {
+            open = new AudioResource(new DataSaveObject() {
+                {
+                    putString("name", "open");
+                    putFloat("def_gain", 2);
+                    putArray("data", new BufferedInputStream(getClass().getResourceAsStream("/data/sounds/Text_open.wav")).readAllBytes());
+                    putString("extension", "wav");
+                }
+            });
+            close = new AudioResource(new DataSaveObject() {
+                {
+                    putString("name", "close");
+                    putFloat("def_gain", 2);
+                    putArray("data", new BufferedInputStream(getClass().getResourceAsStream("/data/sounds/Text_close.wav")).readAllBytes());
+                    putString("extension", "wav");
+                }
+            });
+            male = new AudioResource(new DataSaveObject() {
+                {
+                    putString("name", "male");
+                    putFloat("def_gain", 2);
+                    putArray("data", new BufferedInputStream(getClass().getResourceAsStream("/data/sounds/Text_male.wav")).readAllBytes());
+                    putString("extension", "wav");
+                }
+            });
+            female = new AudioResource(new DataSaveObject() {
+                {
+                    putString("name", "female");
+                    putFloat("def_gain", 2);
+                    putArray("data", new BufferedInputStream(getClass().getResourceAsStream("/data/sounds/Text_female.wav")).readAllBytes());
+                    putString("extension", "wav");
+                }
+            });
+            child = new AudioResource(new DataSaveObject() {
+                {
+                    putString("name", "child");
+                    putFloat("def_gain", 2);
+                    putArray("data", new BufferedInputStream(getClass().getResourceAsStream("/data/sounds/Text_child.wav")).readAllBytes());
+                    putString("extension", "wav");
+                }
+            });
+            evil = new AudioResource(new DataSaveObject() {
+                {
+                    putString("name", "evil");
+                    putFloat("def_gain", 2);
+                    putArray("data", new BufferedInputStream(getClass().getResourceAsStream("/data/sounds/Text_evil.wav")).readAllBytes());
+                    putString("extension", "wav");
+                }
+            });
+        } catch (Exception e){
+            throw new RuntimeException("Error loading Soundfiles for SpeechBox", e);
+        }
+
         first_line.setPos(26, 182 + scroll.getOffsetY());
         second_line.setPos(first_line.getPos().x, first_line.getPos().y + first_line.getHeight());
         third_line.setPos(second_line.getPos().x, second_line.getPos().y + second_line.getHeight());
@@ -70,8 +141,13 @@ public class SpeechBox {
     }
 
     public void showText(int id, String name, String text){
+        showText(id, name, text, SoundType.NONE);
+    }
+
+    public void showText(int id, String name, String text, SoundType soundType){
         if(this.visible)
             throw new IllegalStateException("Can't create new text when speech box is showing");
+        this.soundType = soundType;
         this.finished = false;
         this.cursorPos = 0;
         this.visible = true;
@@ -103,6 +179,8 @@ public class SpeechBox {
             this.currentNameBox = this.nameBoxSmall;
 
         this.action = FADE_IN;
+        AudioManager.get().playSound(open);
+
 //
 //        if(action != NULL)
 //            return;
@@ -158,8 +236,10 @@ public class SpeechBox {
             case NULL -> {
                 updateArrow();
                 if(InputManager.PAD_A.startPressed())
-                    if(finished)
+                    if(finished) {
+                        AudioManager.get().playSound(close);
                         action = FADE_OUT;
+                    }
                     else
                         action = ANIMATE_TEXT;
             }
@@ -215,6 +295,13 @@ public class SpeechBox {
                 third_line.change(tc -> tc.setText(""));
             }
         }
+        if(timer % (InputManager.PAD_A.isPressed() ? 4 : 8) == 0)
+            switch (soundType){
+                case MALE -> AudioManager.get().playSound(male);
+                case FEMALE -> AudioManager.get().playSound(female);
+                case CHILD -> AudioManager.get().playSound(child);
+                case EVIL -> AudioManager.get().playSound(evil);
+            }
         if(!ignoreCheck && (!InputManager.PAD_A.isPressed() && timer % 6 != 0))
             return;
         cursorPos++;
