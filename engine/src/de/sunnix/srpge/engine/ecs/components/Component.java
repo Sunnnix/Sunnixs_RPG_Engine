@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs.components;
 
+import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
 import de.sunnix.srpge.engine.registry.Registry;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 public abstract class Component extends MemoryHolder {
 
-    public static RenderComponent RENDER = new RenderComponent();
+    public static OldRenderComponent RENDER = new OldRenderComponent();
 
     private final Map<String, Data<Object>> dataHolder = new HashMap<>();
     protected GameObject parent;
@@ -25,7 +26,7 @@ public abstract class Component extends MemoryHolder {
         registrar.register("render", RENDER);
     }
 
-    public void init(GameObject parent){
+    public void init(World world, GameObject parent){
         this.parent = parent;
         if(firstInit){
             firstInit = false;

@@ -13,6 +13,7 @@ public class Resources {
 
     private final ResourceList<TextureAtlas> textures = new ResourceList<>("images");
     private final ResourceList<Tileset> tilesets = new ResourceList<>("tilesets");
+    private final ResourceList<Sprite> sprites = new ResourceList<>("sprites");
     private final ResourceList<AudioResource> audioResources = new ResourceList<>("audio");
 
     private static Resources instance;
@@ -28,6 +29,7 @@ public class Resources {
 
         loadImageResources(zip, resFolder);
         loadTilesets(zip, resFolder);
+        loadSprites(zip);
         loadAudioResources(zip, resFolder);
     }
 
@@ -39,6 +41,9 @@ public class Resources {
         tilesets.load(zip, Tileset::new);
     }
 
+    private void loadSprites(ZipFile zip){
+        sprites.load(zip, Sprite::new);
+    }
 
     private void loadAudioResources(ZipFile zip, File res) {
         audioResources.load(zip, dso -> {
@@ -88,4 +93,7 @@ public class Resources {
         return getAudio(split[0], split[1]);
     }
 
+    public Sprite getSprite(String sprite) {
+        return this.sprites.getData(sprite);
+    }
 }

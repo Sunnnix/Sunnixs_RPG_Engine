@@ -35,9 +35,12 @@ public class RenderComponent extends Component{
     }
 
     @Override
-    public void createView(Window window, GameObject object, JPanel parent) {
+    public Runnable createView(Window window, GameObject object, JPanel parent) {
         var setSpriteBtn = addView(parent, new JButton("Set Sprite"));
-        addView(parent, new JPanel(){
+        var spriteView = addView(parent, new JPanel(){
+
+            long timer;
+            int currentSpriteIndex = -1;
 
             {
                 setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
@@ -46,23 +49,67 @@ public class RenderComponent extends Component{
             @Override
             public void paint(Graphics g) {
                 super.paint(g);
-                if(sprite == null || sprite.isBlank())
+                if(currentSpriteIndex == -1 || sprite == null || sprite.isBlank())
                     return;
-                var res = window.getSingleton(Resources.class);
-                var image = res.image_getRaw(sprite);
+
+                var sprite = window.getSingleton(Resources.class).sprites.getData(RenderComponent.this.sprite);
+                if(sprite == null)
+                    return;
+
+                var texture = sprite.getImage(window);
+                if(texture == null)
+                    return;
+                var image = texture.getImage();
                 if(image == null)
                     return;
-                g.drawImage(image, getWidth() / 2 - image.getWidth() / 2, getHeight() / 2 - image.getHeight() / 2, null);
+                var aWidth = texture.getWidth();
+                var aHeight = texture.getHeight();
+
+                currentSpriteIndex %= aWidth * aHeight;
+
+                var spriteWidth = image.getWidth() / aWidth;
+                var spriteHeight = image.getHeight() / aHeight;
+
+                var x = getWidth() / 2 - spriteWidth / 2;
+                var y = getHeight() / 2 - spriteHeight / 2;
+
+                var srcX1 = (currentSpriteIndex % aWidth) * spriteWidth;
+                var srcY1 = (currentSpriteIndex / aWidth % aHeight) * spriteHeight;
+                var srcX2 = srcX1 + spriteWidth;
+                var srcY2 = srcY1 + spriteHeight;
+
+                g.drawImage(image, x, y, x + spriteWidth, y + spriteHeight, srcX1, srcY1, srcX2, srcY2, null);
             }
         }, 250);
 
         setSpriteBtn.addActionListener(a -> {
-            var newSprite = window.getSingleton(Resources.class).images.showSelectDialogSinglePath(parent, "Select sprite", null, "Sprite", sprite);
+            var newSprite = window.getSingleton(Resources.class).sprites.showSelectDialogSinglePath(parent, "Select sprite", null, "Sprite", sprite);
             if(newSprite == null)
                 return;
             sprite = newSprite;
+            spriteView.timer = 0;
             parent.repaint();
         });
+        return () -> {
+            if(RenderComponent.this.sprite == null || RenderComponent.this.sprite.isBlank())
+                return;
+            var sprite = window.getSingleton(Resources.class).sprites.getData(RenderComponent.this.sprite);
+            if(sprite == null)
+                return;
+            spriteView.timer++;
+            var index = sprite.getTextureIndexForAnimation(spriteView.timer, 0);
+            if(index != spriteView.currentSpriteIndex){
+                spriteView.currentSpriteIndex = index;
+                parent.repaint();
+            }
+        };
     }
 
+    @Override
+    public void onDraw(Window window, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {
+        var sprite = window.getSingleton(Resources.class).sprites.getData(this.sprite);
+        if(sprite == null)
+            return;
+        sprite.drawSprite(window, g, 0, 0, zoom, x, y);
+    }
 }

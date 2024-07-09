@@ -474,7 +474,6 @@ public class SpriteView extends JPanel implements IResourceView{
                     Thread.sleep(16, 666666);
                     var sprite = getCurrentSprite();
                     if(sprite != null){
-                        animTimer++;
                         var nTexPos = sprite.getTextureIndexForAnimation(animTimer, direction.getSelectedIndex());
                         if(nTexPos != texPos){
                             texPos = nTexPos;
@@ -483,7 +482,7 @@ public class SpriteView extends JPanel implements IResourceView{
                     }
                     animTimer++;
                 } catch (InterruptedException e) {
-                    continue;
+                    throw new RuntimeException(e);
                 }
             }
         });

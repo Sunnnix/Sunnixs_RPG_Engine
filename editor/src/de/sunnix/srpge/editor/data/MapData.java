@@ -1,6 +1,7 @@
 package de.sunnix.srpge.editor.data;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.editor.window.Window;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -123,8 +124,8 @@ public class MapData {
         objects.addAll(dso.<DataSaveObject>getList("objects").stream().map(o -> new GameObject(this, o)).toList());
     }
 
-    public void drawObjects(Graphics2D g, float zoom, int offsetX, int offsetY){
-        objects.forEach(o -> o.draw(g, zoom, offsetX, offsetY, o.ID == selectedObject));
+    public void drawObjects(Window window, Graphics2D g, float zoom, int offsetX, int offsetY){
+        objects.forEach(o -> o.draw(window, g, zoom, offsetX, offsetY, o.ID == selectedObject));
     }
 
     public GameObject createNewObject(float x, float y) {

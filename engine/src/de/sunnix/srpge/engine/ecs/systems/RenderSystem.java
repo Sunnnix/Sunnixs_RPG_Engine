@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs.systems;
 
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.GameObject;
+import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 
 import java.util.*;
 import java.util.function.Function;
@@ -11,7 +12,13 @@ public class RenderSystem {
     private static final ArrayList<GameObject> objects = new ArrayList<>();
 
     public static void renderObjects() {
-        objects.forEach(Component.RENDER::render);
+        objects.forEach(go -> {
+            var rc = go.getComponent(RenderComponent.class);
+            if(rc == null)
+                Component.RENDER.render(go); // Old Renderer
+            else
+                rc.render(go); // New Renderer
+        });
     }
 
     public static void addGO(GameObject go) {

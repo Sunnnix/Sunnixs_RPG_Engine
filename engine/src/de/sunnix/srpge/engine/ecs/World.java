@@ -2,7 +2,7 @@ package de.sunnix.srpge.engine.ecs;
 
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
-import de.sunnix.srpge.engine.ecs.components.RenderComponent;
+import de.sunnix.srpge.engine.ecs.components.OldRenderComponent;
 import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.graphics.Camera;
@@ -52,17 +52,15 @@ public class World {
         player = new GameObject(this, .8f, 1.7f);
         player.addComponent(Component.RENDER);
         player.addComponent(new PhysicComponent());
-        player.init();
-        RenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
+        player.init(this);
+        OldRenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
         player.setName("Player");
 
         // Load objects
         mapDSO.<DataSaveObject>getList("objects").forEach(o -> {
             var object = new GameObject(this, o);
-            object.addComponent(Component.RENDER);
             object.addComponent(new PhysicComponent());
-            object.init();
-            RenderComponent.TEXTURE.set(object, Textures.BOX);
+            object.init(this);
         });
 
         // ################################################################

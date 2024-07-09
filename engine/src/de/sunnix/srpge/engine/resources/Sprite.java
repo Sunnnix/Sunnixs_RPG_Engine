@@ -1,12 +1,9 @@
-package de.sunnix.srpge.editor.window.resource;
+package de.sunnix.srpge.engine.resources;
 
 import de.sunnix.sdso.DataSaveObject;
-import de.sunnix.srpge.editor.window.Window;
-import lombok.Getter;
-import lombok.Setter;
+import de.sunnix.srpge.engine.graphics.TextureAtlas;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Sprite {
@@ -19,33 +16,14 @@ public class Sprite {
         NONE, NORMAL, BOUNCE, SINGLE
     }
 
-    @Setter
     private String image;
-    @Getter
     private DirectionType directionType;
-    @Getter
-    @Setter
     private AnimationType animationType = AnimationType.NONE;
     private List<List<Integer>> animPattern;
-    @Getter
-    @Setter
     private int animationSpeed = 8;
 
-    public Sprite(){
-        setDirectionType(DirectionType.SINGLE);
-    }
-
     public Sprite(DataSaveObject dso){
-        this();
         load(dso);
-    }
-
-    public String getImageName(){
-        return image;
-    }
-
-    public ImageResource getImage(Window window){
-        return window.getSingleton(Resources.class).images.getData(image);
     }
 
     public void setDirectionType(DirectionType directionType) {
@@ -66,17 +44,6 @@ public class Sprite {
                     animPattern.add(new ArrayList<>());
             }
         }
-    }
-
-    public Collection<String> getDirectionsFromType(){
-        return Arrays.stream((switch (directionType){
-            case SINGLE -> new String[] { "Any" };
-            default -> new String[] { "South", "West", "East", "North" };
-        })).toList();
-    }
-
-    public List<Integer> getPattern(int direction){
-        return animPattern.get(direction);
     }
 
     public int getTextureIndexForAnimation(long timer, int direction){
@@ -114,51 +81,8 @@ public class Sprite {
         animationType = AnimationType.values()[dso.getByte("anim-type", (byte) 0)];
     }
 
-    public DataSaveObject save(DataSaveObject dso){
-        if(image != null)
-            dso.putString("image", image);
-        if(directionType != DirectionType.SINGLE)
-            dso.putByte("dir-type", (byte) directionType.ordinal());
-        var patternDSO = new DataSaveObject();
-        patternDSO.putInt("s", animPattern.size());
-        for (int i = 0; i < animPattern.size(); i++)
-            patternDSO.putList(Integer.toString(i), animPattern.get(i));
-        dso.putObject("pattern", patternDSO);
-        if(animationSpeed != 0)
-            dso.putInt("animSpeed", animationSpeed);
-        if(animationType != AnimationType.NONE)
-            dso.putByte("anim-type", (byte) animationType.ordinal());
-        return dso;
-    }
-
-    public void drawSprite(Window window, Graphics g, int direction, int index, float zoom, int x, int y){
-        var pattern = animPattern.get(direction % animPattern.size());
-        if(pattern == null || pattern.isEmpty())
-            return;
-        var tex = getImage(window);
-        if(tex == null)
-            return;
-        var image = tex.getImage();
-        if(image == null)
-            return;
-
-        var aWidth = tex.getWidth();
-        var aHeight = tex.getHeight();
-
-        index %= aWidth * aHeight;
-
-        var spriteWidth = image.getWidth() / aWidth;
-        var spriteHeight = image.getHeight() / aHeight;
-
-        x -= (int) (spriteWidth / 2 * zoom);
-        y -= (int) (spriteHeight * zoom);
-
-        var srcX1 = (index % aWidth) * spriteWidth;
-        var srcY1 = (index / aWidth % aHeight) * spriteHeight;
-        var srcX2 = srcX1 + spriteWidth;
-        var srcY2 = srcY1 + spriteHeight;
-
-        g.drawImage(image, x, y, x + (int)(spriteWidth * zoom), y + (int)(spriteHeight * zoom), srcX1, srcY1, srcX2, srcY2, null);
+    public TextureAtlas getTexture(){
+        return Resources.get().getTexture(image);
     }
 
 }

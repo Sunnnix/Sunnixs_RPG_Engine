@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 
 public class MoveEvent extends Event{
 
@@ -9,6 +10,11 @@ public class MoveEvent extends Event{
 
     private float posX, posY, posZ, init_posX, init_posY, init_posZ;
     private float speed = .035f;
+
+    private final int DIRECTION_SOUTH = 0;
+    private final int DIRECTION_WEST = 1;
+    private final int DIRECTION_EAST = 2;
+    private final int DIRECTION_NORTH = 3;
 
     public MoveEvent() {
         super("move");
@@ -38,6 +44,29 @@ public class MoveEvent extends Event{
             var velY = posY < 0 ? Math.max(posY, -speed) : Math.min(posY, speed);
             var velZ = posZ < 0 ? Math.max(posZ, -speed) : Math.min(posZ, speed);
             go.getPosition().add(velX, velY, velZ);
+            var render = go.getComponent(RenderComponent.class);
+            if(render != null){
+                var direction = -1;
+                var maxValue = 0f;
+                if(velX != 0) {
+                    if(velX > 0)
+                        direction = DIRECTION_EAST;
+                    else
+                        direction = DIRECTION_WEST;
+                    maxValue = Math.abs(velX);
+                }
+                if(velZ != 0){
+                    var tmp = Math.abs(velZ);
+                    if(tmp > maxValue) {
+                        if(velZ > 0)
+                            direction = DIRECTION_SOUTH;
+                        else
+                            direction = DIRECTION_NORTH;
+                    }
+                }
+                if(direction != -1)
+                    render.setDirection(direction);
+            }
         }
         if(posX < 0)
             posX -= Math.max(posX, -speed);

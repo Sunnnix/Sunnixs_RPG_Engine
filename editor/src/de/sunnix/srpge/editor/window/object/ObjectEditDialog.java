@@ -11,10 +11,11 @@ import de.sunnix.srpge.editor.window.object.components.Component;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.util.StringToHTMLConverter.convertToHTML;
@@ -35,6 +36,8 @@ public class ObjectEditDialog extends JDialog {
     private List<Component> componentList;
     private JPanel componentsView;
 
+    private Map<JComponent, Runnable> loopFunctions = new HashMap<>();
+
     public ObjectEditDialog(Window window, MapData map, GameObject obj) {
         super(window, WINDOW_NAME + " - " + getString("dialog_object.title"), true);
         this.window = window;
@@ -47,6 +50,8 @@ public class ObjectEditDialog extends JDialog {
         add(setupProperties(), BorderLayout.EAST);
         add(setupEventList(), BorderLayout.CENTER);
         add(setupButtons(), BorderLayout.SOUTH);
+
+        addWindowListener(createWindowListener());
 
         setResizable(false);
         pack();
@@ -155,7 +160,9 @@ public class ObjectEditDialog extends JDialog {
             var panel = new JPanel();
             panel.setBorder(BorderFactory.createTitledBorder(component.genName()));
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            component.createView(window, object, panel);
+            var loop = component.createView(window, object, panel);
+            if(loop != null)
+                loopFunctions.put(panel, loop);
             componentsView.add(panel, i);
         }
         componentsView.revalidate();
@@ -265,6 +272,33 @@ public class ObjectEditDialog extends JDialog {
         object.setZ(((Number)z.getValue()).floatValue());
         window.setProjectChanged();
         window.getMapView().repaint();
+    }
+
+    private WindowListener createWindowListener() {
+        return new WindowAdapter() {
+            boolean shouldRun;
+            @Override
+            public void windowOpened(WindowEvent e) {
+                var t = new Thread(() -> {
+                    while (shouldRun){
+                        try {
+                            Thread.sleep(16, 666666);
+                            loopFunctions.values().forEach(Runnable::run);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }, "Object edit dialog looper");
+                t.setDaemon(true);
+                shouldRun = true;
+                t.start();
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                shouldRun = false;
+            }
+        };
     }
 
 }

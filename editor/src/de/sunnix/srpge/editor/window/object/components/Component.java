@@ -21,7 +21,14 @@ public abstract class Component implements Cloneable{
 
     public abstract DataSaveObject save(DataSaveObject dso);
 
-    public abstract void createView(Window window, GameObject object, JPanel parent);
+    /**
+     *
+     * @param window main Window
+     * @param object current object
+     * @param parent parent component panel
+     * @return a Runnable which will be called every 16.666 ms<br>can be <b>null</b>
+     */
+    public abstract Runnable createView(Window window, GameObject object, JPanel parent);
 
     protected <T extends JComponent> T addView(JPanel parent, T component){
         return addView(parent, component, component.getPreferredSize().height);
@@ -42,4 +49,7 @@ public abstract class Component implements Cloneable{
             throw new AssertionError();
         }
     }
+
+    public void onDraw(Window window, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {}
+
 }

@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs;
 
 import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.components.Component;
+import de.sunnix.srpge.engine.ecs.components.ComponentRegistry;
 import de.sunnix.srpge.engine.ecs.data.Data;
 import de.sunnix.srpge.engine.ecs.data.IntData;
 import de.sunnix.srpge.engine.ecs.event.Event;
@@ -81,11 +82,13 @@ public class GameObject extends MemoryHolder {
         this.position.set(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
 
         events.addAll(dso.getObject("events").<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.createEvent(eDSO.getString("ID", null), eDSO)).toList());
+
+        dso.<DataSaveObject>getList("components").forEach(x -> addComponent(ComponentRegistry.build(x)));
     }
 
-    public GameObject init(){
+    public GameObject init(World world){
         if(!inited) {
-            this.components.values().forEach(c -> c.init(this));
+            this.components.values().forEach(c -> c.init(world, this));
             this.inited = true;
         }
         return this;

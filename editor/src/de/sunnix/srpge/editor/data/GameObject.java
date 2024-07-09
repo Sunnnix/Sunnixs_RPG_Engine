@@ -1,8 +1,10 @@
 package de.sunnix.srpge.editor.data;
 
 import de.sunnix.srpge.editor.window.object.components.Component;
+import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
 import de.sunnix.srpge.editor.window.object.events.EventList;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.editor.window.Window;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,7 +50,15 @@ public class GameObject {
     private static final Color OBJECT_SIDE_COLOR = new Color(.0f, .5f, 1f, .65f);
     private static final Color OBJECT_SIDE_COLOR_S = new Color(.6f, .6f, 0f, .65f);
 
-    public void draw(Graphics2D g, float zoom, int offsetX, int offsetY, boolean selected){
+    public void draw(Window window, Graphics2D g, float zoom, int offsetX, int offsetY, boolean selected){
+        var TW = (int)(TILE_WIDTH * zoom);
+        var TH = (int)(TILE_HEIGHT * zoom);
+        var x = (int)(this.x * TW) + offsetX;
+        var y = (int)(this.z * TH) + offsetY;
+        var w = (int)(this.width * TW);
+        var h = (int)(this.height * TH);
+        var d = (int)(this.width * TH);
+        components.forEach(comp -> comp.onDraw(window, g, zoom, x, y, w, h, d, selected));
         drawHitbox(g, zoom, offsetX, offsetY, selected);
     }
 
@@ -86,6 +96,11 @@ public class GameObject {
         var eventDSO = dso.getObject("events");
         eventList.load(eventDSO == null ? new DataSaveObject() : eventDSO);
 
+        components.clear();
+        components.addAll(dso.<DataSaveObject>getList("components").stream().map(x ->
+            ComponentRegistry.loadComponent(x.getString("id", null), x)
+        ).toList());
+
         return dso.getInt("ID", -1);
     }
 
@@ -99,6 +114,12 @@ public class GameObject {
         dso.putFloat("height", height);
 
         dso.putObject("events", eventList.save(new DataSaveObject()));
+
+        dso.putList("components", components.stream().map(x -> {
+            var xDSO = new DataSaveObject();
+            xDSO.putString("id", x.ID);
+            return x.save(xDSO);
+        }).toList());
 
         return dso;
     }

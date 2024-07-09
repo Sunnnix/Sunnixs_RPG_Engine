@@ -147,7 +147,7 @@ public class ObjectModule extends MapViewModule {
                     g.drawRect(x + TW * i, y + TH * j, TW, TH);
         }
 
-        map.drawObjects(g, view.getZoom(), x, y);
+        map.drawObjects(window, g, view.getZoom(), x, y);
     }
 
     @Override

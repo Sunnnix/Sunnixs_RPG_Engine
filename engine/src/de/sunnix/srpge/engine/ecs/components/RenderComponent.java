@@ -1,56 +1,63 @@
 package de.sunnix.srpge.engine.ecs.components;
 
-import de.sunnix.srpge.engine.graphics.TextureAtlas;
-import de.sunnix.srpge.engine.registry.Registry;
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.GameObject;
-import de.sunnix.srpge.engine.ecs.data.StringData;
+import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.graphics.TextureRenderObject;
+import de.sunnix.srpge.engine.resources.Resources;
+import de.sunnix.srpge.engine.resources.Sprite;
+import lombok.Setter;
 import org.joml.Vector3f;
 
-public class RenderComponent extends Component {
+public class RenderComponent extends Component{
 
-    public static final StringData TEXTURE = new StringData("comp_render", null);
+    private String sSprite;
+    private Sprite sprite;
 
-    private final TextureRenderObject renderObject = new TextureRenderObject(null);
+    private long animTimer;
+    private int animPos = -1;
+
+    @Setter
+    private int direction;
+
+    private TextureRenderObject renderObject;
+
+    public RenderComponent(DataSaveObject dso){
+        sSprite = dso.getString("sprite", null);
+    }
 
     @Override
-    public void init(GameObject parent) {
-        super.init(parent);
+    public void init(World world, GameObject parent) {
+        super.init(world, parent);
+        sprite = Resources.get().getSprite(sSprite);
+        if(sprite == null)
+            return;
+        var tex = sprite.getTexture();
+        renderObject = new TextureRenderObject(tex);
+        renderObject.getSize().set((float) tex.getWidth() / tex.getTileWidth(), (float) tex.getHeight() / tex.getTileHeight());
         RenderSystem.addGO(parent);
     }
 
-    public void render(GameObject go){
-        if(isValid()) {
-            var key = TEXTURE.get(go);
-            if(key == null)
-                return;
-            var tex = Registry.TEXTURE.get(key);
-            renderObject.setTexture(tex);
-            if(tex instanceof TextureAtlas ta) {
-                renderObject.getMesh().changeBuffer(1, ta.getTexturePositions(0));
-                renderObject.getSize().set((float) ta.getWidth() / ta.getTileWidth(), (float) ta.getHeight() / ta.getTileHeight());
-            }
-            renderObject.render(go.getPosition().mul(1, -1, 1, new Vector3f()), go.size.x, go.getZ_pos());
-            if(tex instanceof TextureAtlas) {
-                renderObject.getMesh().changeBuffer(1, new float[]{
-                        0f, 1f,
-                        0f, 0f,
-                        1f, 0f,
-                        1f, 1f
-                });
+    public void render(GameObject go) {
+        if(!isValid() || sprite == null)
+            return;
+        animTimer++;
+        var index = sprite.getTextureIndexForAnimation(animTimer, direction);
+        if(index != animPos){
+            animPos = index;
+            var texture = sprite.getTexture();
+            if(texture != null){
+                var texPos = texture.getTexturePositions(index);
+                renderObject.getMesh().changeBuffer(1, texPos);
             }
         }
+
+        renderObject.render(go.getPosition().mul(1, -1, 1, new Vector3f()), go.size.x, go.getZ_pos());
     }
 
     @Override
     public boolean isValid() {
-        return renderObject.isValid();
+        return renderObject != null && renderObject.isValid();
     }
-
-    @Override
-    protected void free() {
-        renderObject.freeMemory();
-    }
-
 }
