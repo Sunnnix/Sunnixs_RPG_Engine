@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs.event;
 
+import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
@@ -34,6 +35,10 @@ public class MoveEvent extends Event{
         posX = init_posX;
         posY = init_posY;
         posZ = init_posZ;
+        var go = world.getGameObject(object);
+        if(go == null)
+            return;
+        go.addState(States.MOVING.id());
     }
 
     @Override
@@ -88,6 +93,11 @@ public class MoveEvent extends Event{
     }
 
     @Override
-    public void finish(World world) {}
+    public void finish(World world) {
+        var go = world.getGameObject(object);
+        if(go == null)
+            return;
+        go.removeState(States.MOVING.id());
+    }
 
 }

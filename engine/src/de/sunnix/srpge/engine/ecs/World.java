@@ -108,6 +108,7 @@ public class World {
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         tcro.render();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
+        gameObjects.values().forEach(GameObject::postRender);
     }
 
     public void postUpdate(){

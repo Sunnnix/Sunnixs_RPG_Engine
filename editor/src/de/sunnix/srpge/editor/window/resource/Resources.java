@@ -1,17 +1,17 @@
 package de.sunnix.srpge.editor.window.resource;
 
-import de.sunnix.srpge.editor.util.DialogUtils;
-import de.sunnix.srpge.editor.util.LoadingDialog;
-import de.sunnix.srpge.editor.window.customswing.DefaultValueComboboxModel;
-import de.sunnix.srpge.editor.window.resource.audio.AudioResource;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.editor.util.LoadingDialog;
+import de.sunnix.srpge.editor.window.resource.audio.AudioResource;
+import de.sunnix.srpge.editor.window.object.States;
 import lombok.Getter;
 
-import javax.swing.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -77,6 +77,8 @@ public final class Resources {
         loadTilesets(dialog, (int)(progress * .05), zip, version);
         loadSprites(dialog, (int) (progress * .1), zip);
         loadAudioResources(dialog, (int)(progress * .65), zip, version);
+
+        loadStates(zip);
     }
 
     private void loadImageResources(LoadingDialog dialog, int progress, ZipFile zip){
@@ -145,6 +147,17 @@ public final class Resources {
         }
     }
 
+    private void loadStates(ZipFile zip){
+        try (var stream = zip.getInputStream(new ZipEntry("res/states"))) {
+            if(stream == null)
+                return;
+            var dso = new DataSaveObject().load(stream);
+            States.load(dso);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // ###################    Save    ###################
 
     public void saveResources(LoadingDialog dialog, int progress, ZipOutputStream zip) {
@@ -152,6 +165,8 @@ public final class Resources {
         saveTilesets(dialog, progress, zip);
         saveSprites(dialog, progress, zip);
         saveAudioResources(dialog, progress, zip);
+
+        saveStates(zip);
     }
 
     private void saveImageResources(LoadingDialog dialog, int progress, ZipOutputStream zip){
@@ -174,6 +189,16 @@ public final class Resources {
 
     private void saveAudioResources(LoadingDialog dialog, int progress, ZipOutputStream zip){
         audio.save(dialog, progress, zip, (dso, audio) -> audio.save(dso));
+    }
+
+    private void saveStates(ZipOutputStream zip){
+        try (var stream = new ByteArrayOutputStream()) {
+            States.save(new DataSaveObject()).save(stream);
+            zip.putNextEntry(new ZipEntry("res/states"));
+            zip.write(stream.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

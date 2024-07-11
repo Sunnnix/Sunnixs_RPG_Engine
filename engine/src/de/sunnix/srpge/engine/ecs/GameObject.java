@@ -23,6 +23,10 @@ public class GameObject extends MemoryHolder {
 
     private final Map<Class<? extends Component>, Component> components = new HashMap<>();
 
+    private final HashSet<State> states = new HashSet<>();
+    @Getter
+    private boolean statesChanged;
+
     @Getter
     private final long ID; // TODO prevent duplicates by World impl.
 
@@ -127,6 +131,10 @@ public class GameObject extends MemoryHolder {
         position.y = Math.max(position.y, 0);
     }
 
+    public void postRender(){
+        statesChanged = false;
+    }
+
     private int currentEvent = -1;
 
     private void handleEvents(World world) {
@@ -148,8 +156,25 @@ public class GameObject extends MemoryHolder {
         event.run(world);
     }
 
+    public void addState(String id){
+        var state = States.getState(id);
+        states.add(state);
+        System.out.println("Added state " + state + " to object " + name);
+        statesChanged = true;
+    }
+
+    public void removeState(String id){
+        var state = states.remove(States.getState(id));
+        System.out.println("Removed state " + state + " from object " + name);
+        statesChanged = true;
+    }
+
     public void setToDelete() {
         this.toDelete = true;
+    }
+
+    public Collection<State> getStates(){
+        return states.stream().toList();
     }
 
     @Override

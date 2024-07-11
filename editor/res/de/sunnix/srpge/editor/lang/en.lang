@@ -178,6 +178,8 @@ dialog_resources.node.video.images=Images
 dialog_resources.node.video.tilesets=Tilesets
 dialog_resources.node.audio=Audio
 dialog_resources.node.audio.raw=Raw
+dialog_resources.node.variables=Variables
+dialog_resources.node.variables.states=States
 
 dialog_resources.create_category=Create new category
 dialog_resources.insert_category_name=Insert category name:
@@ -238,6 +240,10 @@ view.dialog_resources.audio.dragging_error.title=Error dragging audio!
 view.dialog_resources.audio.rename_category=Do you want to rename the category?\nAll components that use sounds in this category could have errors.
 view.dialog_resources.audio.delete_category=Do you really want to delete the category?\nAll components that use sounds in this category could have errors.
 view.dialog_resources.audio.default_value=Default Volume:
+
+# States View
+view.dialog_resources.variables.states.id=ID
+view.dialog_resources.variables.states.prio=Priority
 
 # Dialog Language
 dialog.language.reload_editor.text=The new Language Pack has been loaded and is now being used. However, in order to update all texts, you need to restart the editor.

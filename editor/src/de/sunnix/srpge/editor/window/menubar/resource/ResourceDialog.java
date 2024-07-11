@@ -48,6 +48,9 @@ public class ResourceDialog extends JDialog {
                 ),
                 createNode(getString("dialog_resources.node.audio"),
                         createNode(getString("dialog_resources.node.audio.raw"), p -> new ResourceAudioView(parent, p))
+                ),
+                createNode(getString("dialog_resources.node.variables"),
+                        createNode(getString("dialog_resources.node.variables.states"), p -> new StatesView(parent, p))
                 )
         );
 

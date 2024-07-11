@@ -1,12 +1,16 @@
 package de.sunnix.srpge.engine.resources;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.audio.AudioResource;
 import de.sunnix.srpge.engine.debug.GameLogger;
+import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.graphics.Texture;
 import de.sunnix.srpge.engine.graphics.TextureAtlas;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Resources {
@@ -31,6 +35,8 @@ public class Resources {
         loadTilesets(zip, resFolder);
         loadSprites(zip);
         loadAudioResources(zip, resFolder);
+
+        loadStates(zip);
     }
 
     private void loadImageResources(ZipFile zip, File res){
@@ -96,4 +102,16 @@ public class Resources {
     public Sprite getSprite(String sprite) {
         return this.sprites.getData(sprite);
     }
+
+    private void loadStates(ZipFile zip) {
+        try (var stream = zip.getInputStream(new ZipEntry("res/states"))) {
+            if(stream == null)
+                return;
+            var dso = new DataSaveObject().load(stream);
+            States.load(dso);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
