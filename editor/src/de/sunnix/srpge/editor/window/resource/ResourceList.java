@@ -6,6 +6,7 @@ import de.sunnix.srpge.editor.util.LoadingDialog;
 import de.sunnix.srpge.editor.window.customswing.DefaultValueComboboxModel;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -412,6 +413,7 @@ public class ResourceList<T> {
             categories = new JComboBox<>(new DefaultValueComboboxModel<>(getString("name.none"), resources.keySet().toArray(String[]::new)));
         else
             categories = new JComboBox<>(resources.keySet().toArray(String[]::new));
+        categories.setPreferredSize(new Dimension(200, categories.getPreferredSize().height));
         var data = new JComboBox<String>(new DefaultComboBoxModel<>());
         categories.addActionListener(l -> {
             data.removeAllItems();
@@ -419,6 +421,7 @@ public class ResourceList<T> {
                 return;
             ((DefaultComboBoxModel<String>)data.getModel()).addAll(getDataNames((String)categories.getSelectedItem()));
         });
+        data.setPreferredSize(categories.getPreferredSize());
         return new JComboBox[] { categories, data };
     }
 

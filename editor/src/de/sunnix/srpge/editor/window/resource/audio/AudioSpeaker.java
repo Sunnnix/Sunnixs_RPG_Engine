@@ -9,16 +9,25 @@ public class AudioSpeaker {
 
     public final int ID;
     @Getter
-    private final AudioResource audio;
+    private AudioResource audio;
+    private float gain = 1;
 
-    public AudioSpeaker(AudioResource audio) throws RuntimeException{
-        this.audio = audio;
+    public AudioSpeaker() throws RuntimeException{
         ID = alGenSources();
         checkALError("creating speaker", true);
-        alSourcei(ID, AL_BUFFER, audio.ID);
+        alSourcef(ID, AL_MAX_GAIN, 4);
+    }
+
+    public AudioSpeaker(AudioResource audio) throws RuntimeException{
+        this();
+        setAudio(audio);
+    }
+
+    public void setAudio(AudioResource audio){
+        this.audio = audio;
+        alSourcei(ID, AL_BUFFER, audio == null ? 0 : audio.ID);
         checkALError("binding source", true);
-        alSourcef(ID, AL_MAX_GAIN, 2);
-        setGain(audio.getDefaultGain());
+        setGain(gain);
     }
 
     public void play() {
@@ -74,7 +83,7 @@ public class AudioSpeaker {
     }
 
     public void setGain(float gain){
-        alSourcef(ID, AL_GAIN, gain);
+        alSourcef(ID, AL_GAIN, gain * (audio == null ? 1 : audio.getDefaultGain()));
     }
 
     public void cleanup() {

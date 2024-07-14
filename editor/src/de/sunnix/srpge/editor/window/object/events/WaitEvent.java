@@ -5,6 +5,7 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.editor.window.Window;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +34,7 @@ public class WaitEvent extends de.sunnix.srpge.engine.ecs.event.WaitEvent implem
     }
 
     @Override
-    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel content) {
+    public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel content) {
         var time = new JSpinner(new SpinnerNumberModel(frames, 1, Integer.MAX_VALUE, 1));
 
         content.setLayout(new GridBagLayout());

@@ -74,10 +74,10 @@ To download and try out the editor/engine, you can download it from this website
 
 | Description                                       | Planned | Progress | Priority |
 |---------------------------------------------------|---------|----------|----------|
-| Objects with events and components                | 0.6     | 60%      | High     |
+| Objects with events and components                | 0.6     | 70%      | High     |
 | Event controlled textbox                          | 0.6     | 100%     | High     |
 | Object animation V1                               | 0.6     | 100%     | High     |
-| Audio System for playing Sounds                   | 0.6     | 15%      | High     |
+| Audio System for playing Sounds                   | 0.6     | 100%     | High     |
 | Object states                                     | 0.6     | 100%     | High     |
 | Tile animation                                    | n/a     | 0%       | Medium   |
 | Physics System                                    | n/a     | 0%       | High     |

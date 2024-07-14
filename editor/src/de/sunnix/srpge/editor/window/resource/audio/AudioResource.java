@@ -107,6 +107,10 @@ public class AudioResource {
         return (int)(bytes / (float)(frequency * bitDepth / 8 * channels) * 1000);
     }
 
+    public boolean isMono(){
+        return channels == 1;
+    }
+
     public DataSaveObject save(DataSaveObject dso) {
         dso.putString("name", name);
         dso.putString("extension", extension);

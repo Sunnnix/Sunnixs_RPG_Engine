@@ -40,7 +40,7 @@ public class EventSelectionDialog extends JDialog {
             var btn = new JButton(getString(t.t2()));
             btn.addActionListener(l -> {
                 var event = EventRegistry.createEvent(t.t1());
-                if(event.openDialog(this, window.getSingleton(GameData.class), map, object))
+                if(event.openDialog(window, this, window.getSingleton(GameData.class), map, object))
                     this.event = event;
                 dispose();
             });

@@ -5,7 +5,7 @@ import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 
 @Getter
-public abstract class Event {
+public abstract class Event implements Cloneable {
 
     public static final byte BLOCK_GLOBAL_UPDATE = 0b1;
     public static final byte BLOCK_USER_INPUT = 0b10;

@@ -17,7 +17,7 @@ public class AudioSpeaker {
         ID = alGenSources();
         setAudio(audio);
         checkALError("creating speaker", true);
-        alSourcef(ID, AL_MAX_GAIN, 2);
+        alSourcef(ID, AL_MAX_GAIN, 4);
     }
 
     public AudioSpeaker(){
@@ -33,6 +33,7 @@ public class AudioSpeaker {
             alSourcei(ID, AL_BUFFER, audio.ID);
         }
         checkALError("creating speaker", true);
+        alSourcei(ID, AL_SOURCE_RELATIVE, AL_TRUE);
     }
 
     public void play() {
@@ -71,8 +72,12 @@ public class AudioSpeaker {
         alSourcei(ID, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
     }
 
+    public void setLocation(float x, float y, float z) {
+        alSourcei(ID, AL_SOURCE_RELATIVE, AL_FALSE);
+        alSource3f(ID, AL_POSITION, x, y, z);
+    }
+
     public void cleanup() {
         alDeleteSources(ID);
     }
-
 }

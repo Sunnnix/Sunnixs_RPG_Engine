@@ -5,6 +5,7 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.editor.window.Window;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +41,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
     }
 
     @Override
-    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel content) {
+    public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel content) {
         JComboBox<String> objects;
         JSpinner tf_x, tf_y, tf_z, tf_speed;
 

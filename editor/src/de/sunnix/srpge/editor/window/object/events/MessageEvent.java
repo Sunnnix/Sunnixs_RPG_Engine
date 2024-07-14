@@ -4,6 +4,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
+import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.engine.graphics.gui.SpeechBox;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
 import de.sunnix.sdso.DataSaveObject;
@@ -46,7 +47,7 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
     }
 
     @Override
-    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
+    public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
         contentPanel.setLayout(new BorderLayout());
         var name = new JTextField(this.name, 30);
 
@@ -63,6 +64,8 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
         stPanel.add(new JLabel(Language.getString("name.sound_type")));
         var soundType = new JComboBox<>(SpeechBox.SoundType.values());
         soundType.setSelectedItem(this.soundType);
+        if(soundType.getSelectedIndex() == -1)
+            soundType.setSelectedIndex(0);
         stPanel.add(soundType);
 
         specialCharPanel.add(stPanel);

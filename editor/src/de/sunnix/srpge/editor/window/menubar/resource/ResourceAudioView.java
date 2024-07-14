@@ -277,7 +277,7 @@ public class ResourceAudioView extends JPanel implements IResourceView{
             gbc.gridx = 8;
             gbc.weightx = .1;
 
-            var type = new JLabel(speaker.getAudio().channels == 1 ? getString("name.mono") : getString("name.stereo"), JLabel.CENTER);
+            var type = new JLabel(speaker.getAudio().isMono() ? getString("name.mono") : getString("name.stereo"), JLabel.CENTER);
             type.setBorder(BorderFactory.createLineBorder(type.getForeground().darker(), 2, true));
             panel.add(type);
             gbc.gridx++;

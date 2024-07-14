@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs;
 
+import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.OldRenderComponent;
@@ -100,6 +101,7 @@ public class World {
         var pPos = player.getPosition();
         Camera.getPos().set(pPos.x * 24, (-pPos.z + pPos.y) * 16);
         RenderSystem.prepareRender();
+        AudioManager.get().setLocation(pPos.x, pPos.y, pPos.z);
     }
 
     public void render(){

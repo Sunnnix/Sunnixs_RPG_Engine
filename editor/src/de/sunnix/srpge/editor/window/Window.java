@@ -7,10 +7,7 @@ import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
 import de.sunnix.srpge.editor.window.object.components.RenderComponent;
-import de.sunnix.srpge.editor.window.object.events.EventRegistry;
-import de.sunnix.srpge.editor.window.object.events.MessageEvent;
-import de.sunnix.srpge.editor.window.object.events.MoveEvent;
-import de.sunnix.srpge.editor.window.object.events.WaitEvent;
+import de.sunnix.srpge.editor.window.object.events.*;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.tileset.TilesetTabView;
 import de.sunnix.srpge.engine.Core;
@@ -159,6 +156,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("move", getString("event.move.name"), MoveEvent::new);
         EventRegistry.registerEvent("wait", getString("event.wait.name"), WaitEvent::new);
         EventRegistry.registerEvent("message", getString("event.msg.name"), MessageEvent::new);
+        EventRegistry.registerEvent("playsound", getString("event.play_sound.name"), PlaySoundEvent::new);
     }
 
     private void registerComponents(){

@@ -4,6 +4,7 @@ import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
+import de.sunnix.srpge.editor.window.Window;
 
 import javax.swing.*;
 
@@ -30,7 +31,7 @@ public class NULLEvent extends de.sunnix.srpge.engine.ecs.event.NULLEvent implem
     }
 
     @Override
-    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
+    public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
         return () -> {};
     }
 }

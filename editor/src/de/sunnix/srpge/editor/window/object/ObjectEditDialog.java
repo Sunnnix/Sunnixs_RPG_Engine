@@ -210,7 +210,7 @@ public class ObjectEditDialog extends JDialog {
             }
 
             private void showEditEventDialog(IEvent event){
-                if(event.openDialog(ObjectEditDialog.this, window.getSingleton(GameData.class), map, object))
+                if(event.openDialog(window, ObjectEditDialog.this, window.getSingleton(GameData.class), map, object))
                     events.repaint();
             }
 

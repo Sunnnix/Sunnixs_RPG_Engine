@@ -135,6 +135,7 @@ public class Core {
         EventRegistry.registerEvent("move", MoveEvent::new);
         EventRegistry.registerEvent("wait", WaitEvent::new);
         EventRegistry.registerEvent("message", MessageEvent::new);
+        EventRegistry.registerEvent("playsound", PlaySoundEvent::new);
     }
 
     public static void enableGL_debug(boolean enable){

@@ -1,5 +1,7 @@
 package de.sunnix.srpge.engine.audio;
 
+import org.lwjgl.openal.AL10;
+
 public class AudioManager {
 
     private static AudioManager instance;
@@ -24,6 +26,10 @@ public class AudioManager {
         return instance;
     }
 
+    public void setLocation(float x, float y, float z){
+        AL10.alListener3f(AL10.AL_POSITION, x, y, z);
+    }
+
     public void setBGM(AudioResource audio){
         bgm.setAudio(audio);
     }
@@ -44,13 +50,25 @@ public class AudioManager {
         bgm.cleanup();
     }
 
-    public void playSound(AudioResource audio){
+    public AudioSpeaker playSound(AudioResource audio){
+        return playSound(audio, 1);
+    }
+
+    public AudioSpeaker playSound(AudioResource audio, float gain){
+        return playSound(audio, false, 0, 0, 0, gain);
+    }
+
+    public AudioSpeaker playSound(AudioResource audio, boolean use3DSound, float x, float y, float z, float gain){
         var speaker = sounds[soundPointer++];
         if(soundPointer >= soundBuffer)
             soundPointer = 0;
         speaker.stop();
         speaker.setAudio(audio);
+        if(use3DSound)
+            speaker.setLocation(x, y, z);
+        speaker.setGain(audio.defaultGain * gain);
         speaker.play();
+        return speaker;
     }
 
     public void stopAllSounds(){

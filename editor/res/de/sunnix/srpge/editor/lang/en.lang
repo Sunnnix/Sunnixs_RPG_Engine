@@ -290,3 +290,11 @@ event.msg.dialog.btn_b=Button B / CIR
 event.msg.dialog.btn_a=Button A / X
 event.msg.dialog.tech=Technically
 event.msg.dialog.token_wait=Wait for input
+
+event.play_sound.name=PlaySound
+event.play_sound.info_with_location=/cv00 /b %s /n /cx with gain /cv00 /b %s%% /n /cx at /cv00 /b (%.1f, %.1f, %.1f). wait: %s
+event.play_sound.info_no_location=/cv00 /b %s /n /cx with gain /cv00 /b %s%%. wait: %s
+event.play_sound.dialog.sound=Sound
+event.play_sound.dialog.use_loc=Use Location
+event.play_sound.dialog.use_obj_pos=Use Object Position
+event.play_sound.dialog.wait_for_end=Wait for end
