@@ -9,7 +9,7 @@ import java.util.List;
 public class EventList {
 
     @Getter
-    private List<Event> events = new ArrayList<>();
+    private List<IEvent> events = new ArrayList<>();
 
     public void load(DataSaveObject dso) {
         events.addAll(dso.<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.loadEvent(eDSO.getString("ID", null), eDSO)).toList());
@@ -17,18 +17,18 @@ public class EventList {
 
     public DataSaveObject save(DataSaveObject dso) {
         dso.putList("list", events.stream().map(e -> {
-            var eDSO = e._save(new DataSaveObject());
-            eDSO.putString("ID", e.ID);
+            var eDSO = e.save(new DataSaveObject());
+            eDSO.putString("ID", e.getID());
             return eDSO;
         }).toList());
         return dso;
     }
 
-    public List<Event> getEventsCopy(){
-        return events.stream().map(Event::clone).toList();
+    public List<IEvent> getEventsCopy(){
+        return events.stream().map(x -> (IEvent) x.clone()).toList();
     }
 
-    public void putEvents(List<Event> events) {
+    public void putEvents(List<IEvent> events) {
         this.events.clear();
         this.events.addAll(events);
     }

@@ -9,15 +9,15 @@ import java.nio.charset.StandardCharsets;
 
 public class MessageEvent extends Event{
 
-    private String name;
-    private String message;
-    private SpeechBox.SoundType soundType;
+    protected String name;
+    protected String message;
+    protected SpeechBox.SoundType soundType;
 
-    private int messageID;
+    private int messageID; // automatically generated
 
     public MessageEvent() {
         super("message");
-        super.blockingType = BLOCK_UPDATE;
+        super.blockingType = BLOCK_GLOBAL_UPDATE;
     }
 
     @Override

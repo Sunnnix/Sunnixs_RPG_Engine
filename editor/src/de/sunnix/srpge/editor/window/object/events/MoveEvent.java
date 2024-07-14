@@ -9,26 +9,7 @@ import de.sunnix.sdso.DataSaveObject;
 import javax.swing.*;
 import java.awt.*;
 
-public class MoveEvent extends Event {
-
-    private int object = -1;
-
-    private float posX, posY, posZ;
-    private float speed = .035f;
-
-    public MoveEvent() {
-        super("move");
-    }
-
-    @Override
-    public DataSaveObject load(DataSaveObject dso) {
-        object = dso.getInt("object", -1);
-        posX = dso.getFloat("x", 0);
-        posY = dso.getFloat("y", 0);
-        posZ = dso.getFloat("z", 0);
-        speed = dso.getFloat("s", .035f);
-        return dso;
-    }
+public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implements IEvent {
 
     @Override
     public DataSaveObject save(DataSaveObject dso) {
@@ -44,22 +25,22 @@ public class MoveEvent extends Event {
     }
 
     @Override
-    protected String getGUIText(MapData map) {
+    public String getGUIText(MapData map) {
         return Language.getString("event.move.info", map.getObject(object), posX, posY, posZ, speed, Math.max(Math.abs(posX), Math.abs(posZ)) / speed / 60);
     }
 
     @Override
-    protected String getMainColor() {
+    public String getMainColor() {
         return "/cff8";
     }
 
     @Override
-    protected String getEventDisplayName() {
+    public String getEventDisplayName() {
         return Language.getString("event.move.name");
     }
 
     @Override
-    protected Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel content) {
+    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel content) {
         JComboBox<String> objects;
         JSpinner tf_x, tf_y, tf_z, tf_speed;
 

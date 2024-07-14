@@ -5,7 +5,7 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
-import de.sunnix.srpge.editor.window.object.events.Event;
+import de.sunnix.srpge.editor.window.object.events.IEvent;
 import de.sunnix.srpge.editor.window.object.events.EventSelectionDialog;
 import de.sunnix.srpge.editor.window.object.components.Component;
 
@@ -30,8 +30,8 @@ public class ObjectEditDialog extends JDialog {
 
     private JTextField name;
     private JSpinner x, y, z;
-    private JList<Event> events;
-    private DefaultListModel<Event> listModel;
+    private JList<IEvent> events;
+    private DefaultListModel<IEvent> listModel;
 
     private List<Component> componentList;
     private JPanel componentsView;
@@ -209,7 +209,7 @@ public class ObjectEditDialog extends JDialog {
                     listModel.add(events.getSelectedIndex() + 1, event);
             }
 
-            private void showEditEventDialog(Event event){
+            private void showEditEventDialog(IEvent event){
                 if(event.openDialog(ObjectEditDialog.this, window.getSingleton(GameData.class), map, object))
                     events.repaint();
             }
@@ -243,7 +243,7 @@ public class ObjectEditDialog extends JDialog {
     private final Color panleBG = UIManager.getColor("Panel.background");
     private final Color panleBG_B = panleBG.brighter();
 
-    private JComponent cellRenderer(JList<? extends Event> jList, Event event, int index, boolean selected, boolean b) {
+    private JComponent cellRenderer(JList<? extends IEvent> jList, IEvent event, int index, boolean selected, boolean b) {
         var label = new JLabel(convertToHTML(event.getString(map)));
         label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5,5));
         label.setPreferredSize(new Dimension(label.getPreferredSize().width, 20));
@@ -260,7 +260,7 @@ public class ObjectEditDialog extends JDialog {
     }
 
     private void applyData() {
-        var elm = new ArrayList<Event>();
+        var elm = new ArrayList<IEvent>();
         listModel.elements().asIterator().forEachRemaining(elm::add);
         object.getEventList().putEvents(elm);
         object.getComponents().clear();

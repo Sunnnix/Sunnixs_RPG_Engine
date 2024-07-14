@@ -18,7 +18,7 @@ public class EventSelectionDialog extends JDialog {
     private final ObjectEditDialog parent;
 
     @Getter
-    private Event event;
+    private IEvent event;
 
     public EventSelectionDialog(Window window, ObjectEditDialog parent, MapData map, GameObject object) {
         super(parent, "", true);
@@ -48,7 +48,7 @@ public class EventSelectionDialog extends JDialog {
         });
     }
 
-    public static Event show(Window window, ObjectEditDialog parent, MapData map, GameObject object){
+    public static IEvent show(Window window, ObjectEditDialog parent, MapData map, GameObject object){
         var dialog = new EventSelectionDialog(window, parent, map, object);
         return dialog.event;
     }

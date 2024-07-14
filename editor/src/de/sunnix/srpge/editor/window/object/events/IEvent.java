@@ -9,35 +9,17 @@ import lombok.Getter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 
-public abstract class Event implements Cloneable {
+public interface IEvent extends Cloneable {
 
-    public static final byte BLOCK_GLOBAL_UPDATE = 0b1;
-    public static final byte BLOCK_USER_INPUT = 0b10;
-    public static final byte BLOCK_UPDATE_GRAPHICS = 0b100;
+    String getID();
 
-    @Getter
-    protected byte blockingType = 0;
+    DataSaveObject save(DataSaveObject dso);
 
-    public final String ID;
+    void load(DataSaveObject dso);
 
-    public Event(String id){
-        this.ID = id;
-    }
-
-    public final DataSaveObject _load(DataSaveObject dso){
-        return load(dso);
-    }
-
-    public abstract DataSaveObject load(DataSaveObject dso);
-
-    public final DataSaveObject _save(DataSaveObject dso){
-        return save(dso);
-    }
-
-    public abstract DataSaveObject save(DataSaveObject dso);
-
-    protected abstract String getGUIText(MapData map);
+    String getGUIText(MapData map);
 
     /**
      * html color command<br>
@@ -47,11 +29,11 @@ public abstract class Event implements Cloneable {
      * - "/cx" for base color<br>
      * - "" for default color
      */
-    protected abstract String getMainColor();
+    String getMainColor();
 
-    protected abstract String getEventDisplayName();
+    String getEventDisplayName();
 
-    public final String getString(MapData map){
+    default String getString(MapData map){
         return getMainColor() + "/b" + getEventDisplayName() + "/n " + getGUIText(map);
     }
 
@@ -62,13 +44,13 @@ public abstract class Event implements Cloneable {
      * @param contentPanel  the panel to display this event
      * @return called when the event is saved
      */
-    protected abstract Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel);
+    Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel);
 
     /**
      * Opens a Dialog to edit this event
      * @return if the dialog was canceled / not saved
      */
-    public final boolean openDialog(JDialog parent, GameData gameData, MapData map, GameObject currentObject){
+    default boolean openDialog(JDialog parent, GameData gameData, MapData map, GameObject currentObject){
         var panel = new JPanel(new BorderLayout());
         var onSave = createEventEditDialog(gameData, map, currentObject, panel);
         var dialog = new EventEditDialog(parent, Language.getString("event_dialog.edit", getEventDisplayName()), panel);
@@ -78,12 +60,6 @@ public abstract class Event implements Cloneable {
         return saved;
     }
 
-    @Override
-    public Event clone() {
-        try {
-            return (Event) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+    Object clone();
+
 }

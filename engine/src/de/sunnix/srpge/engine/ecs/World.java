@@ -87,7 +87,7 @@ public class World {
         if(!blockingEventQueue.isEmpty())
             event = blockingEventQueue.get(0);
         if(event != null){
-            if((event.getBlockingType() & Event.BLOCK_RENDERING) != Event.BLOCK_RENDERING)
+            if((event.getBlockingType() & Event.BLOCK_USER_INPUT) != Event.BLOCK_USER_INPUT)
                 animTimer++;
             event.run(this);
             if(event.isFinished(this))

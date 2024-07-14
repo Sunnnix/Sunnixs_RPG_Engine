@@ -1,22 +1,13 @@
 package de.sunnix.srpge.editor.window.object.events;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
-import de.sunnix.sdso.DataSaveObject;
 
 import javax.swing.*;
 
-public class NULLEvent extends Event{
-
-    public NULLEvent() {
-        super("NULL");
-    }
-
-    @Override
-    public DataSaveObject load(DataSaveObject dso) {
-        return dso;
-    }
+public class NULLEvent extends de.sunnix.srpge.engine.ecs.event.NULLEvent implements IEvent {
 
     @Override
     public DataSaveObject save(DataSaveObject dso) {
@@ -24,22 +15,22 @@ public class NULLEvent extends Event{
     }
 
     @Override
-    protected String getGUIText(MapData map) {
+    public String getGUIText(MapData map) {
         return "";
     }
 
     @Override
-    protected String getMainColor() {
+    public String getMainColor() {
         return "/c333";
     }
 
     @Override
-    protected String getEventDisplayName() {
+    public String getEventDisplayName() {
         return "NULL";
     }
 
     @Override
-    protected Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
+    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
         return () -> {};
     }
 }

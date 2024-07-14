@@ -7,15 +7,16 @@ import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 
 public class MoveEvent extends Event{
 
-    private int object = -1;
+    public static final int DIRECTION_SOUTH = 0;
+    public static final int DIRECTION_WEST = 1;
+    public static final int DIRECTION_EAST = 2;
+    public static final int DIRECTION_NORTH = 3;
 
-    private float posX, posY, posZ, init_posX, init_posY, init_posZ;
-    private float speed = .035f;
+    protected int object = -1;
 
-    private final int DIRECTION_SOUTH = 0;
-    private final int DIRECTION_WEST = 1;
-    private final int DIRECTION_EAST = 2;
-    private final int DIRECTION_NORTH = 3;
+    protected float posX, posY, posZ;
+    private float rPosX, rPosY, rPosZ; // remaining path
+    protected float speed = .035f;
 
     public MoveEvent() {
         super("move");
@@ -24,17 +25,17 @@ public class MoveEvent extends Event{
     @Override
     public void load(DataSaveObject dso) {
         object = dso.getInt("object", -1);
-        init_posX = dso.getFloat("x", 0);
-        init_posY = dso.getFloat("y", 0);
-        init_posZ = dso.getFloat("z", 0);
+        posX = dso.getFloat("x", 0);
+        posY = dso.getFloat("y", 0);
+        posZ = dso.getFloat("z", 0);
         speed = dso.getFloat("s", .035f);
     }
 
     @Override
     public void prepare(World world) {
-        posX = init_posX;
-        posY = init_posY;
-        posZ = init_posZ;
+        rPosX = posX;
+        rPosY = posY;
+        rPosZ = posZ;
         var go = world.getGameObject(object);
         if(go == null)
             return;
@@ -45,9 +46,9 @@ public class MoveEvent extends Event{
     public void run(World world) {
         var go = world.getGameObject(object);
         if(go != null){
-            var velX = posX < 0 ? Math.max(posX, -speed) : Math.min(posX, speed);
-            var velY = posY < 0 ? Math.max(posY, -speed) : Math.min(posY, speed);
-            var velZ = posZ < 0 ? Math.max(posZ, -speed) : Math.min(posZ, speed);
+            var velX = rPosX < 0 ? Math.max(rPosX, -speed) : Math.min(rPosX, speed);
+            var velY = rPosY < 0 ? Math.max(rPosY, -speed) : Math.min(rPosY, speed);
+            var velZ = rPosZ < 0 ? Math.max(rPosZ, -speed) : Math.min(rPosZ, speed);
             go.getPosition().add(velX, velY, velZ);
             var render = go.getComponent(RenderComponent.class);
             if(render != null){
@@ -73,23 +74,23 @@ public class MoveEvent extends Event{
                     render.setDirection(direction);
             }
         }
-        if(posX < 0)
-            posX -= Math.max(posX, -speed);
+        if(rPosX < 0)
+            rPosX -= Math.max(rPosX, -speed);
         else
-            posX -= Math.min(posX, speed);
-        if(posY < 0)
-            posY -= Math.max(posY, -speed);
+            rPosX -= Math.min(rPosX, speed);
+        if(rPosY < 0)
+            rPosY -= Math.max(rPosY, -speed);
         else
-            posY -= Math.min(posY, speed);
-        if(posZ < 0)
-            posZ -= Math.max(posZ, -speed);
+            rPosY -= Math.min(rPosY, speed);
+        if(rPosZ < 0)
+            rPosZ -= Math.max(rPosZ, -speed);
         else
-            posZ -= Math.min(posZ, speed);
+            rPosZ -= Math.min(rPosZ, speed);
     }
 
     @Override
     public boolean isFinished(World world) {
-        return posX == 0 && posY == 0 && posZ == 0;
+        return rPosX == 0 && rPosY == 0 && rPosZ == 0;
     }
 
     @Override

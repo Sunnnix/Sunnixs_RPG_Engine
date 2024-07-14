@@ -12,26 +12,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
-public class MessageEvent extends Event{
-
-    private String name = "";
-    private String message = "";
-    private SpeechBox.SoundType soundType = SpeechBox.SoundType.NONE;
-
-    public MessageEvent() {
-        super("message");
-        super.blockingType = BLOCK_GLOBAL_UPDATE;
-    }
-
-    @Override
-    public DataSaveObject load(DataSaveObject dso) {
-        name = new String(dso.getByteArray("name"), StandardCharsets.UTF_8);
-        message = new String(dso.getByteArray("msg"), StandardCharsets.UTF_8);
-        soundType = SpeechBox.SoundType.values()[dso.getByte("st", (byte) 0)];
-        return dso;
-    }
+public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent implements IEvent {
 
     @Override
     public DataSaveObject save(DataSaveObject dso) {
@@ -44,7 +26,7 @@ public class MessageEvent extends Event{
     }
 
     @Override
-    protected String getGUIText(MapData map) {
+    public String getGUIText(MapData map) {
         String text;
         if(name.isEmpty())
             text = message;
@@ -54,17 +36,17 @@ public class MessageEvent extends Event{
     }
 
     @Override
-    protected String getMainColor() {
+    public String getMainColor() {
         return "/c8c3";
     }
 
     @Override
-    protected String getEventDisplayName() {
+    public String getEventDisplayName() {
         return Language.getString("event.msg.name");
     }
 
     @Override
-    protected Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
+    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
         contentPanel.setLayout(new BorderLayout());
         var name = new JTextField(this.name, 30);
 

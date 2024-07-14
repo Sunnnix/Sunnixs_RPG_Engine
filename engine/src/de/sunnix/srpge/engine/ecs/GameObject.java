@@ -150,7 +150,7 @@ public class GameObject extends MemoryHolder {
                 currentEvent = 0;
             event = events.get(currentEvent);
             event.prepare(world);
-            if((event.getBlockingType() & Event.BLOCK_UPDATE) == Event.BLOCK_UPDATE)
+            if((event.getBlockingType() & Event.BLOCK_GLOBAL_UPDATE) == Event.BLOCK_GLOBAL_UPDATE)
                 world.addBlockingEvent(event);
         }
         event.run(world);
@@ -159,13 +159,11 @@ public class GameObject extends MemoryHolder {
     public void addState(String id){
         var state = States.getState(id);
         states.add(state);
-        System.out.println("Added state " + state + " to object " + name);
         statesChanged = true;
     }
 
     public void removeState(String id){
         var state = states.remove(States.getState(id));
-        System.out.println("Removed state " + state + " from object " + name);
         statesChanged = true;
     }
 

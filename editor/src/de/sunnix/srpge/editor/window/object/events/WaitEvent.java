@@ -9,19 +9,7 @@ import de.sunnix.sdso.DataSaveObject;
 import javax.swing.*;
 import java.awt.*;
 
-public class WaitEvent extends Event{
-
-    private int frames = 1;
-
-    public WaitEvent() {
-        super("wait");
-    }
-
-    @Override
-    public DataSaveObject load(DataSaveObject dso) {
-        frames = dso.getInt("f", 1);
-        return dso;
-    }
+public class WaitEvent extends de.sunnix.srpge.engine.ecs.event.WaitEvent implements IEvent {
 
     @Override
     public DataSaveObject save(DataSaveObject dso) {
@@ -30,22 +18,22 @@ public class WaitEvent extends Event{
     }
 
     @Override
-    protected String getGUIText(MapData map) {
+    public String getGUIText(MapData map) {
         return Language.getString("event.wait.info", frames);
     }
 
     @Override
-    protected String getMainColor() {
+    public String getMainColor() {
         return "/ca0a";
     }
 
     @Override
-    protected String getEventDisplayName() {
+    public String getEventDisplayName() {
         return Language.getString("event.wait.name");
     }
 
     @Override
-    protected Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel content) {
+    public Runnable createEventEditDialog(GameData gameData, MapData map, GameObject currentObject, JPanel content) {
         var time = new JSpinner(new SpinnerNumberModel(frames, 1, Integer.MAX_VALUE, 1));
 
         content.setLayout(new GridBagLayout());

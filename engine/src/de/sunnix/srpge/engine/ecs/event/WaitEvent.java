@@ -5,7 +5,7 @@ import de.sunnix.sdso.DataSaveObject;
 
 public class WaitEvent extends Event{
 
-    private int frames, framesLeft;
+    protected int frames, framesLeft;
 
     public WaitEvent() {
         super("wait");
