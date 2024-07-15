@@ -49,34 +49,15 @@ public class World {
         var mapDSO = new DataSaveObject().load(zip.getInputStream(new ZipEntry(String.format("maps\\%04d.map", startMapID))));
         map = new TileMap(mapDSO);
 
+        // Player
         player = new GameObject(this, new DataSaveObject().load(zip.getInputStream(new ZipEntry("player"))));
         player.init(this);
-
-        // Player
-//        player = new GameObject(this, .8f, 1.7f);
-//        player.addComponent(Component.RENDER);
-//        player.addComponent(new PhysicComponent());
-//        player.init(this);
-//        OldRenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
-//        player.setName("Player");
 
         // Load objects
         mapDSO.<DataSaveObject>getList("objects").forEach(o -> {
             var object = new GameObject(this, o);
-            object.addComponent(new PhysicComponent());
             object.init(this);
         });
-
-        // ################################################################
-//        for (int i = 0; i < 200; i++) {
-//            tmp = new GameObject(1, 1);
-//            tmp.addComponent(Component.RENDER);
-//            tmp.addComponent(new PhysicComponent());
-//            tmp.init();
-//            RenderComponent.TEXTURE.set(tmp, Textures.BOX);
-//            tmp.getPosition().set((int)(Math.random() * 50), 0, (int)(Math.random() * 50));
-//            tmp.setName(String.format("Box Gen (%s)", i + 1));
-//        }
 
         gameObjectsToAdd.forEach(go -> gameObjects.put(go.getID(), go));
 
@@ -117,7 +98,6 @@ public class World {
     }
 
     public void postUpdate(){
-//        gameObjectsToAdd.forEach(GameObject::update);
         gameObjectsToAdd.forEach(o -> gameObjects.put(o.getID(), o));
         gameObjectsToAdd.clear();
         gameObjects.values().stream().filter(GameObject::isToDelete).forEach(o -> gameObjects.remove(o.getID()));
