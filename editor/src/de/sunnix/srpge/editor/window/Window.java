@@ -1,6 +1,8 @@
 package de.sunnix.srpge.editor.window;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameData;
+import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.mapview.*;
@@ -23,8 +25,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
@@ -79,6 +83,9 @@ public class Window extends JFrame {
     private int startMap = -1;
     @Getter
     private boolean showGrid = true;
+
+    @Getter
+    private GameObject player;
 
     public Window(){
         super();
@@ -139,6 +146,8 @@ public class Window extends JFrame {
 
         OpenALContext.setUp();
 
+        setupPlayer();
+
         setProjectOpen(false);
         updateTitle();
         setVisible(true);
@@ -186,7 +195,7 @@ public class Window extends JFrame {
 
         addClosingAction(conf -> {
             conf.set("main-split-location", centerPanel.getDividerLocation());
-//            conf.set("right-split-location", dataPane.getDividerLocation());
+            conf.set("right-split-location", dataPane.getDividerLocation());
         });
     }
 
@@ -342,6 +351,14 @@ public class Window extends JFrame {
                 dialog.addProgress(500);
                 getSingleton(Resources.class).loadResources(dialog, 5000, zip, version);
                 getSingleton(GameData.class).loadData(dialog, 3500, zip, version);
+
+                if(version[1] > 5)
+                    try (var pStream = zip.getInputStream(new ZipEntry("player"))){
+                        loadPlayerData(new DataSaveObject().load(pStream));
+                    } catch (NullPointerException e){
+                        System.err.println("Playerdata not found!");
+                    }
+
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
                         this,
@@ -427,6 +444,9 @@ public class Window extends JFrame {
                 dialog.addProgress(500);
                 getSingleton(Resources.class).saveResources(dialog, 5000, zip);
                 getSingleton(GameData.class).saveData(dialog, 3500, zip);
+
+                zip.putNextEntry(new ZipEntry("player"));
+                zip.write(savePlayerData());
 
                 zip.putNextEntry(new ZipEntry("game.config"));
                 zip.write(config.toString(2).getBytes());
@@ -539,6 +559,31 @@ public class Window extends JFrame {
     public void setShowGrid(boolean show){
         showGrid = show;
         mapTabsView.repaint();
+    }
+
+    private void setupPlayer(){
+        player = new GameObject(999, 0, 0, 0);
+        player.setName("Player");
+        loadDefaultPlayerComponents();
+    }
+
+    private void loadPlayerData(DataSaveObject dso){
+        player.load(dso);
+        loadDefaultPlayerComponents();
+    }
+
+    private byte[] savePlayerData() {
+        try (var stream = new ByteArrayOutputStream()) {
+            player.save(new DataSaveObject()).save(stream);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadDefaultPlayerComponents(){
+        if(!player.hasComponent(RenderComponent.class))
+            player.getComponents().add(new RenderComponent());
     }
 
 }

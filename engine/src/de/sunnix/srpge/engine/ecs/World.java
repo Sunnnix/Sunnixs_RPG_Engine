@@ -49,13 +49,16 @@ public class World {
         var mapDSO = new DataSaveObject().load(zip.getInputStream(new ZipEntry(String.format("maps\\%04d.map", startMapID))));
         map = new TileMap(mapDSO);
 
-        // Player
-        player = new GameObject(this, .8f, 1.7f);
-        player.addComponent(Component.RENDER);
-        player.addComponent(new PhysicComponent());
+        player = new GameObject(this, new DataSaveObject().load(zip.getInputStream(new ZipEntry("player"))));
         player.init(this);
-        OldRenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
-        player.setName("Player");
+
+        // Player
+//        player = new GameObject(this, .8f, 1.7f);
+//        player.addComponent(Component.RENDER);
+//        player.addComponent(new PhysicComponent());
+//        player.init(this);
+//        OldRenderComponent.TEXTURE.set(player, Textures.ALUNDRA_WALKING);
+//        player.setName("Player");
 
         // Load objects
         mapDSO.<DataSaveObject>getList("objects").forEach(o -> {

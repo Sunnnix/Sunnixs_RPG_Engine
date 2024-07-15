@@ -24,6 +24,7 @@ public class MenuBar extends JMenuBar {
         this.window = parent;
         add(setUpMMFile());
         add(setUpMMGame());
+        add(addProjectDependentComponent(setUpMMPlayer()));
         add(setUpMMHelp());
     }
 
@@ -76,6 +77,12 @@ public class MenuBar extends JMenuBar {
         var menu = new JCheckBoxMenuItem(text, selected);
         menu.addActionListener(l -> onChange.accept(menu.isSelected()));
         return menu;
+    }
+
+    private JMenu setUpMMPlayer() {
+        var mm = new JMenu(getString("menu.player"));
+        mm.add(createDefaultMenuItem(getString("menu.player.manage_sprites"), e -> new PlayerSpriteManager(window)));
+        return mm;
     }
 
     private JMenu setUpMMHelp() {

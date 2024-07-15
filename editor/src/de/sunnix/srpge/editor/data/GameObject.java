@@ -2,6 +2,7 @@ package de.sunnix.srpge.editor.data;
 
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
+import de.sunnix.srpge.editor.window.object.components.RenderComponent;
 import de.sunnix.srpge.editor.window.object.events.EventList;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
@@ -41,8 +42,8 @@ public class GameObject {
         this.z -= width / 2;
     }
 
-    public GameObject(MapData map, DataSaveObject dso){
-        this.ID = load(map, dso);
+    public GameObject(DataSaveObject dso){
+        this.ID = load(dso);
     }
 
     private static final Color OBJECT_TOP_COLOR = new Color(.2f, .6f, .8f, .65f);
@@ -85,7 +86,21 @@ public class GameObject {
         return components.stream().anyMatch(comp -> comp.ID.equals(id));
     }
 
-    public int load(MapData map, DataSaveObject dso){
+    public boolean hasComponent(Class<? extends Component> clazz){
+        return components.stream().anyMatch(comp -> comp.getClass().equals(clazz));
+    }
+
+    public <T extends Component> T getComponent(Class<T> clazz) {
+        T comp = null;
+        for(var component : components)
+            if(component.getClass().equals(clazz)){
+                comp = (T) component;
+                break;
+            }
+        return comp;
+    }
+
+    public int load(DataSaveObject dso){
         this.name = dso.getString("name", null);
         this.x = dso.getFloat("x", 0);
         this.y = dso.getFloat("y", 0);

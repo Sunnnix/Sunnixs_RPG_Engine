@@ -121,7 +121,7 @@ public class MapData {
             tiles[i] = new Tile(tileList.get(i), version);
         }
         backgroundMusic = dso.getString("bgm", null);
-        objects.addAll(dso.<DataSaveObject>getList("objects").stream().map(o -> new GameObject(this, o)).toList());
+        objects.addAll(dso.<DataSaveObject>getList("objects").stream().map(o -> new GameObject(o)).toList());
     }
 
     public void drawObjects(Window window, Graphics2D g, float zoom, int offsetX, int offsetY){

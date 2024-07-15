@@ -129,6 +129,10 @@ public class GameObject extends MemoryHolder {
         position.add(velocity);
         velocity.set(0);
         position.y = Math.max(position.y, 0);
+        if(position.y > 0)
+            addState(States.FALLING.id());
+        else
+            removeState(States.FALLING.id());
     }
 
     public void postRender(){
@@ -157,14 +161,24 @@ public class GameObject extends MemoryHolder {
     }
 
     public void addState(String id){
+        addState(id, true);
+    }
+
+    public void addState(String id, boolean trackChange){
         var state = States.getState(id);
         states.add(state);
-        statesChanged = true;
+        if(trackChange)
+            statesChanged = true;
     }
 
     public void removeState(String id){
+        removeState(id, true);
+    }
+
+    public void removeState(String id, boolean trackChange){
         var state = states.remove(States.getState(id));
-        statesChanged = true;
+        if(trackChange)
+            statesChanged = true;
     }
 
     public void setToDelete() {

@@ -4,6 +4,8 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.InputManager;
 import de.sunnix.srpge.engine.debug.profiler.Profiler;
+import de.sunnix.srpge.engine.ecs.States;
+import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.graphics.Texture;
 import de.sunnix.srpge.engine.graphics.gui.text.Font;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
@@ -154,6 +156,22 @@ public class Main implements IRegistry {
                 var pPos = player.getPosition();
 
                 playerCorrds.change(tc -> tc.setText(String.format("(%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos())));
+                if(h != 0 || v != 0) {
+                    player.addState(States.MOVING.id());
+                    var comp = player.getComponent(RenderComponent.class);
+                    if(Math.abs(h) > Math.abs(v))
+                        if(h > 0)
+                            comp.setDirection(2);
+                        else
+                            comp.setDirection(1);
+                    else
+                    if(v > 0)
+                        comp.setDirection(0);
+                    else
+                        comp.setDirection(3);
+                } else
+                    player.removeState(States.MOVING.id());
+
             }
 
 

@@ -72,13 +72,14 @@ To download and try out the editor/engine, you can download it from this website
 
 ## Upcoming Features
 
-| Description                                       | Planned | Progress | Priority |
-|---------------------------------------------------|---------|----------|----------|
-| Objects with events and components                | 0.6     | 70%      | High     |
-| Event controlled textbox                          | 0.6     | 100%     | High     |
-| Object animation V1                               | 0.6     | 100%     | High     |
-| Audio System for playing Sounds                   | 0.6     | 100%     | High     |
-| Object states                                     | 0.6     | 100%     | High     |
-| Tile animation                                    | n/a     | 0%       | Medium   |
-| Physics System                                    | n/a     | 0%       | High     |
-| Plugin system for editor and engine customization | n/a     | 10%      | Low      |
+| Description                                           | Planned | Progress | Priority |
+|-------------------------------------------------------|---------|----------|----------|
+| Objects with events and components                    | 0.6     | 80%      | High     |
+| Event controlled textbox                              | 0.6     | 100%     | High     |
+| Object animation V1                                   | 0.6     | 100%     | High     |
+| Audio System for playing Sounds                       | 0.6     | 100%     | High     |
+| Object states                                         | 0.6     | 100%     | High     |
+| Tile animation                                        | 0.7     | 0%       | Medium   |
+| Physics System                                        | 0.7     | 0%       | High     |
+| Map Transition System / Teleporter objects and events | 0.7     | 0%       | High     |
+| Plugin system for editor and engine customization     | n/a     | 10%      | Low      |

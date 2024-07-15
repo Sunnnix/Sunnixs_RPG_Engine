@@ -24,6 +24,10 @@ menu.game=Game
 menu.game.show_profiler=Show Profiler
 menu.game.power_save_mode=Power save mode
 menu.game.vsync=VSync
+
+menu.player=Player
+menu.player.manage_sprites=Manage Sprites
+
 menu.help=Help
 menu.help.user_guide=User Guide
 menu.help.language=Language
