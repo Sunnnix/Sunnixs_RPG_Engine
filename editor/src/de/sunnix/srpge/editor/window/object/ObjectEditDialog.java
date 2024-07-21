@@ -4,6 +4,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ClosableTitledBorder;
 import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
 import de.sunnix.srpge.editor.window.object.events.IEvent;
 import de.sunnix.srpge.editor.window.object.events.EventSelectionDialog;
@@ -36,7 +37,7 @@ public class ObjectEditDialog extends JDialog {
     private List<Component> componentList;
     private JPanel componentsView;
 
-    private Map<JComponent, Runnable> loopFunctions = new HashMap<>();
+    private final Map<JComponent, Runnable> loopFunctions = new HashMap<>();
 
     public ObjectEditDialog(Window window, MapData map, GameObject obj) {
         super(window, WINDOW_NAME + " - " + getString("dialog_object.title"), true);
@@ -152,13 +153,21 @@ public class ObjectEditDialog extends JDialog {
     }
 
     private void loadComponentsView(){
+        synchronized (loopFunctions) {
+            loopFunctions.clear();
+        }
         while(componentsView.getComponents().length > 2)
             componentsView.remove(0);
         var comps = componentList;
         for(var i = 0; i < comps.size(); i++){
             var component = comps.get(i);
-            var panel = new JPanel();
-            panel.setBorder(BorderFactory.createTitledBorder(component.genName()));
+            var panel = ClosableTitledBorder.createClosableTitledPanel(component.genName(), c -> {
+                if(JOptionPane.showConfirmDialog(window, getString("dialog_object.remove_component.text"), getString("dialog_object.remove_component.title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
+                    return;
+                object.getComponents().remove(component);
+                componentList.remove(component);
+                loadComponentsView();
+            });
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             var loop = component.createView(window, object, panel);
             if(loop != null)
@@ -283,7 +292,9 @@ public class ObjectEditDialog extends JDialog {
                     while (shouldRun){
                         try {
                             Thread.sleep(16, 666666);
-                            loopFunctions.values().forEach(Runnable::run);
+                            synchronized (loopFunctions) {
+                                loopFunctions.values().forEach(Runnable::run);
+                            }
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }

@@ -273,6 +273,8 @@ dialog_object.title=Edit Object
 dialog_object.add_event=Add Event
 dialog_object.edit_event=Edit Event
 dialog_object.remove_event=Remove Event
+dialog_object.remove_component.text=Are you sure you want to delete this component?\nAll settings for this component will be lost
+dialog_object.remove_component.title=Delete component
 
 # Events
 event_dialog.edit=Edit %s
