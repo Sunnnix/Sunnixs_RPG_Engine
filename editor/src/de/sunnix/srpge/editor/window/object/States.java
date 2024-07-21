@@ -1,6 +1,7 @@
 package de.sunnix.srpge.editor.window.object;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.engine.ecs.State;
 
 import java.util.ArrayList;
@@ -53,17 +54,26 @@ public class States extends de.sunnix.srpge.engine.ecs.States {
         return dso;
     }
 
-    public static State changeStateId(State state, String newID) {
+    public static State changeStateId(Window window, State state, String newID) {
         newID = newID.toLowerCase();
+        if(state.id().equals(newID))
+            return state;
         states.remove(state.id());
         var newState = new State(newID, state.priority());
         states.put(newID, newState);
+        if(window != null)
+            window.setProjectChanged();
         return newState;
     }
 
-    public static State changeStatePrio(State state, int newPrio) {
+    public static State changeStatePrio(Window window, State state, int newPrio) {
+        var curState = states.get(state.id());
+        if(curState != null && curState.priority() == newPrio)
+            return state;
         var newState = new State(state.id(), newPrio);
         states.put(state.id(), newState);
+        if(window != null)
+            window.setProjectChanged();
         return newState;
     }
 
@@ -72,10 +82,12 @@ public class States extends de.sunnix.srpge.engine.ecs.States {
         return states.containsKey(id);
     }
 
-    public static State removeState(String id) {
+    public static State removeState(Window window, String id) {
         id = id.toLowerCase();
         if(!isRemovable(id))
             throw new RuntimeException("State " + id + " can't be removed!");
+        if(window != null)
+            window.setProjectChanged();
         return states.remove(id);
     }
 }

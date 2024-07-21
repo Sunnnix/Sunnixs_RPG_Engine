@@ -254,6 +254,8 @@ view.dialog_resources.audio.default_value=Default Volume:
 # States View
 view.dialog_resources.variables.states.id=ID
 view.dialog_resources.variables.states.prio=Priority
+view.dialog_resources.variables.states.add_state=Add State
+view.dialog_resources.variables.states.remove_state=Remove State
 
 # Dialog Language
 dialog.language.reload_editor.text=The new Language Pack has been loaded and is now being used. However, in order to update all texts, you need to restart the editor.
@@ -268,6 +270,9 @@ dialog.language.no_lang_selected=No Language Pack selected!
 dialog.language.lang_not_found=Language Pack not found!
 dialog.language.en_fallback=Use English if translation is missing
 
+# Dialog Player
+dialog.player.sprite.title=Edit player sprites
+
 # Dialog Objects
 dialog_object.title=Edit Object
 dialog_object.add_event=Add Event
@@ -275,6 +280,20 @@ dialog_object.edit_event=Edit Event
 dialog_object.remove_event=Remove Event
 dialog_object.remove_component.text=Are you sure you want to delete this component?\nAll settings for this component will be lost
 dialog_object.remove_component.title=Delete component
+dialog_object.add_component=+ Add Component
+
+# Components
+component.render =Renderer
+component.render.set_sprite=Set Sprite
+component.render.set_state_sprite=Set State Sprites
+component.render.state_dialog=State Sprite Editor
+component.render.state_dialog.add=Add State
+component.render.state_dialog.remove=Remove State
+component.render.state_dialog.no_state=No state availible!
+component.render.state_dialog.title=States
+component.render.state_dialog.select=Select state
+component.render.state_dialog.select_sprite.title=Select Sprite
+component.render.state_dialog.select_sprite.text=Select Sprite for State:
 
 # Events
 event_dialog.edit=Edit %s

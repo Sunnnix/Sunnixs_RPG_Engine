@@ -4,12 +4,30 @@ This game engine was developed to create and play role-playing games with jump-n
 The engine is currently still at an early stage, which means that essential functions may still be missing.
 A rough overview of the available features can be found in the table below.
 
-To download and try out the editor/engine, you can download it from this website: [Download](https://sunnix.de/downloads).
+To download and try out the editor/engine, you can download it from this [repo](https://github.com/Sunnnix/Sunnixs_RPG_Engine/releases/tag/V0.6) or from this website: [Download](https://sunnix.de/downloads).
 
 > [!NOTE]
 > The engine does not contain any graphics, music, or sounds; you have to add them yourself!
 
 ## Patch Notes
+
+<details>
+    <summary>V0.6</summary>
+
+- Objects with events and components
+    - Events
+        - Move
+        - Wait
+        - Message
+        - Play Sound
+    - Components
+        - Render
+- Event controlled textbox
+- Object animation V1
+- Audio System for playing Sounds
+- Object states
+
+</details>
 
 <details>
   <summary>V0.5</summary>
@@ -62,23 +80,23 @@ To download and try out the editor/engine, you can download it from this website
 
 ## Supported Features
 
-| Description                     | Since   |
-|---------------------------------|---------|
-| Set BGM from Map                | 0.4     |
-| Editor multi-language support   | 0.4     |
-| Load custom tilesets            | 0.3     |
-| Create 3D maps with walls       | 0.2     |
-| Start the game from the editor  | 0.1     |
+| Description                              | Since |
+|------------------------------------------|-------|
+| Audio System V2 (playable Sounds)        | 0.6   |
+| Sprite animation                         | 0.6   |
+| Dynamic Object properties via Components | 0.6   |
+| Object control via Events                | 0.6   |
+| Objects                                  | 0.6   |
+| Audio System V1 (only BGM)               | 0.4   |
+| Editor multi-language support            | 0.4   |
+| Load custom tilesets                     | 0.3   |
+| Create 3D maps with walls                | 0.2   |
+| Start the game from the editor           | 0.1   |
 
 ## Upcoming Features
 
 | Description                                           | Planned | Progress | Priority |
 |-------------------------------------------------------|---------|----------|----------|
-| Objects with events and components                    | 0.6     | 90%      | High     |
-| Event controlled textbox                              | 0.6     | 100%     | High     |
-| Object animation V1                                   | 0.6     | 100%     | High     |
-| Audio System for playing Sounds                       | 0.6     | 100%     | High     |
-| Object states                                         | 0.6     | 100%     | High     |
 | Tile animation                                        | 0.7     | 0%       | Medium   |
 | Physics System                                        | 0.7     | 0%       | High     |
 | Map Transition System / Teleporter objects and events | 0.7     | 0%       | High     |

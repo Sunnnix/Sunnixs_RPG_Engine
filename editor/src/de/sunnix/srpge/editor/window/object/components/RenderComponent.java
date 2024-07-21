@@ -31,7 +31,7 @@ public class RenderComponent extends Component{
 
     @Override
     public String genName() {
-        return "Renderer";
+        return getString("component.render");
     }
 
     @Override
@@ -103,7 +103,7 @@ public class RenderComponent extends Component{
         }, 250);
 
         setSpriteBtn.addActionListener(a -> {
-            var newSprite = window.getSingleton(Resources.class).sprites.showSelectDialogSinglePath(parent, "Select sprite", null, "Sprite", defaultSprite);
+            var newSprite = window.getSingleton(Resources.class).sprites.showSelectDialogSinglePath(parent, getString("component.render.set_sprite"), null, getString("name.sprite"), defaultSprite);
             if(newSprite == null)
                 return;
             defaultSprite = newSprite;
@@ -111,7 +111,7 @@ public class RenderComponent extends Component{
             parent.repaint();
         });
 
-        var setStateSpritesBtn = addView(parent, new JButton("Set State Sprites"));
+        var setStateSpritesBtn = addView(parent, new JButton(getString("component.render.set_state_sprite")));
         setStateSpritesBtn.addActionListener(l -> new StateSpriteEditDialog(window, parent, stateSprites));
 
         return () -> {
@@ -144,7 +144,7 @@ public class RenderComponent extends Component{
         private final Map<String, String> stateSprites;
 
         public StateSpriteEditDialog(Window window, JPanel parent, HashMap<String, String> stateSprites){
-            super(DialogUtils.getWindowForComponent(parent), "State Sprite Editor", ModalityType.APPLICATION_MODAL);
+            super(DialogUtils.getWindowForComponent(parent), getString("component.render.state_dialog"), ModalityType.APPLICATION_MODAL);
             this.window = window;
             this.parent = parent;
             var content = new JPanel(new BorderLayout(5, 5));
@@ -206,17 +206,17 @@ public class RenderComponent extends Component{
         private MouseAdapter genMouseListener(DefaultListModel<Map.Entry<String, String>> model, JList<Map.Entry<String, String>> list){
 
             var popup = new JPopupMenu();
-            var addMenu = new JMenuItem("Add State");
-            var removeMenu = new JMenuItem("Remove State");
+            var addMenu = new JMenuItem(getString("component.render.state_dialog.add"));
+            var removeMenu = new JMenuItem(getString("component.render.state_dialog.remove"));
 
             addMenu.addActionListener(a -> {
                 var states = States.getStates().stream().filter(x -> !stateSprites.containsKey(x.id())).toList();
                 if(states.isEmpty()) {
-                    JOptionPane.showMessageDialog(parent, "No state availible!", "States", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(parent, getString("component.render.state_dialog.no_state"), getString("component.render.state_dialog.title"), JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 var statestrings = states.stream().map(x -> String.format("(%s) %s", x.priority(), x.id())).toArray(String[]::new);
-                var selection = (String) JOptionPane.showInputDialog(parent, "Select state", "States", JOptionPane.PLAIN_MESSAGE, null, statestrings, statestrings[0]);
+                var selection = (String) JOptionPane.showInputDialog(parent, getString("component.render.state_dialog.select"), getString("component.render.state_dialog.title"), JOptionPane.PLAIN_MESSAGE, null, statestrings, statestrings[0]);
                 if(selection == null)
                     return;
                 var state = states.get(Arrays.stream(statestrings).toList().indexOf(selection));
@@ -246,9 +246,9 @@ public class RenderComponent extends Component{
                         var selection = window.getSingleton(Resources.class).sprites
                                 .showSelectDialog(
                                         StateSpriteEditDialog.this.rootPane,
-                                        "Select Sprite",
-                                        "Select Sprite for State:",
-                                        "Sprite",
+                                        getString("component.render.state_dialog.select_sprite.title"),
+                                        getString("component.render.state_dialog.select_sprite.text"),
+                                        getString("name.sprite"),
                                         stateSprites.get(list.getSelectedValue().getValue()
                                         )
                                 );
@@ -290,4 +290,12 @@ public class RenderComponent extends Component{
         }
 
     }
+
+    @Override
+    public Component clone() {
+        var comp = (RenderComponent) super.clone();
+        comp.stateSprites = new HashMap<>(comp.stateSprites);
+        return comp;
+    }
+
 }

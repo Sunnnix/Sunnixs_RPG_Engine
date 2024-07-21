@@ -19,7 +19,10 @@ import static de.sunnix.srpge.editor.lang.Language.getString;
 
 public class StatesView extends JPanel {
 
+    private Window window;
+
     public StatesView(Window window, JPanel parent) {
+        this.window = window;
         setLayout(new BorderLayout());
 
         add(new JScrollPane(createTable()), BorderLayout.CENTER);
@@ -63,14 +66,18 @@ public class StatesView extends JPanel {
 //        sorter.toggleSortOrder(1);
 
         var popupMenu = new JPopupMenu();
-        var addItem = new JMenuItem("Add State");
-        var removeItem = new JMenuItem("Remove State");
+        var addItem = new JMenuItem(getString("view.dialog_resources.variables.states.add_state"));
+        var removeItem = new JMenuItem(getString("view.dialog_resources.variables.states.remove_state"));
 
-        addItem.addActionListener(e -> ((TableModel) table.getModel()).addNewState());
+        addItem.addActionListener(e -> {
+            ((TableModel) table.getModel()).addNewState();
+            window.setProjectChanged();
+        });
         removeItem.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row != -1) {
                 ((TableModel) table.getModel()).removeState(row);
+                window.setProjectChanged();
             }
         });
 
@@ -148,9 +155,9 @@ public class StatesView extends JPanel {
                     var id = (String) aValue;
                     if(id.equals(state.id()) || id.isBlank() || states.stream().anyMatch(x -> id.equals(x.id())))
                         yield state;
-                    yield States.changeStateId(state, id);
+                    yield States.changeStateId(window, state, id);
                 }
-                case 1 -> States.changeStatePrio(state, Integer.parseInt((String) aValue));
+                case 1 -> States.changeStatePrio(window, state, Integer.parseInt((String) aValue));
                 default -> state;
             });
             fireTableDataChanged();
@@ -167,7 +174,7 @@ public class StatesView extends JPanel {
 
         public void removeState(int row){
             var value = (String) getValueAt(row, 0);
-            states.remove(States.removeState(value));
+            states.remove(States.removeState(window, value));
             fireTableDataChanged();
         }
 

@@ -133,7 +133,7 @@ public class ObjectEditDialog extends JDialog {
         componentList = new ArrayList<>(object.getComponents().stream().map(Component::clone).toList());
         componentsView = panel;
 
-        var addbtn = new JButton("+ Add Component");
+        var addbtn = new JButton(getString("dialog_object.add_component"));
         addbtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, addbtn.getMinimumSize().height));
         addbtn.addActionListener(a -> {
             var component = ComponentCreateDialog.show(this, object);

@@ -84,7 +84,7 @@ public class SpriteView extends JPanel implements IResourceView{
                 setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
                 addMouseListener(new MouseAdapter() {
                     @Override
-                    public void mouseClicked(MouseEvent e) {
+                    public void mousePressed(MouseEvent e) {
                         var sprite = getCurrentSprite();
                         if(sprite == null)
                             return;
@@ -115,6 +115,7 @@ public class SpriteView extends JPanel implements IResourceView{
                         mY /= spriteHeight;
 
                         sprite.getPattern(direction.getSelectedIndex()).add(mX + mY * texture.getWidth());
+                        window.setProjectChanged();
                         direction.setSelectedIndex(direction.getSelectedIndex()); // reload list
                     }
                 });
@@ -185,6 +186,7 @@ public class SpriteView extends JPanel implements IResourceView{
             var split = name.split("/");
             c.setSelectedItem(split[0]);
         });
+        addAL(imageCategory, l -> window.setProjectChanged());
         pPanel.add(imageCategory, gbc);
         gbc.gridy++;
         imageResource = createPropertieComp(boxes[1], (c, s) -> {
@@ -238,7 +240,10 @@ public class SpriteView extends JPanel implements IResourceView{
                 var sprite = getCurrentSprite();
                 if (sprite == null)
                     return;
-                sprite.setDirectionType((Sprite.DirectionType) directionType.getSelectedItem());
+                if(!sprite.getDirectionType().equals(directionType.getSelectedItem())) {
+                    sprite.setDirectionType((Sprite.DirectionType) directionType.getSelectedItem());
+                    window.setProjectChanged();
+                }
                 reloadSprite();
             });
             animPanel.add(directionType, gbc2);
@@ -256,7 +261,10 @@ public class SpriteView extends JPanel implements IResourceView{
                 var sprite = getCurrentSprite();
                 if (sprite == null)
                     return;
-                sprite.setAnimationType((Sprite.AnimationType) animType.getSelectedItem());
+                if(!sprite.getAnimationType().equals(animType.getSelectedItem())) {
+                    sprite.setAnimationType((Sprite.AnimationType) animType.getSelectedItem());
+                    window.setProjectChanged();
+                }
                 reloadSprite();
             });
             animPanel.add(animType, gbc2);
@@ -296,6 +304,7 @@ public class SpriteView extends JPanel implements IResourceView{
                                 return;
                             sprite.getPattern(direction.getSelectedIndex()).remove(index);
                             spriteListModel.remove(index);
+                            window.setProjectChanged();
                             spriteList.setSelectedIndex(index - (spriteListModel.getSize() > index ? 0 : 1));
                         }
                         case KeyEvent.VK_UP -> {
@@ -309,6 +318,7 @@ public class SpriteView extends JPanel implements IResourceView{
                             pattern.add(index - 1, tex);
                             spriteListModel.remove(index);
                             spriteListModel.add(index - 1, tex);
+                            window.setProjectChanged();
                             spriteList.setSelectedIndex(index - 1);
                             e.consume();
                         }
@@ -323,6 +333,7 @@ public class SpriteView extends JPanel implements IResourceView{
                             pattern.add(index + 1, tex);
                             spriteListModel.remove(index);
                             spriteListModel.add(index + 1, tex);
+                            window.setProjectChanged();
                             spriteList.setSelectedIndex(index + 1);
                             e.consume();
                         }
@@ -354,8 +365,6 @@ public class SpriteView extends JPanel implements IResourceView{
         pPanel.add(showIndex, gbc);
         gbc.gridy++;
 
-//        pPanel.add(new JLabel(getString("view.dialog_resources.sprite.animation_delay")), gbc);
-//        gbc.gridy++;
         animSpeed = createPropertieComp(new NumberPicker(getString("view.dialog_resources.sprite.animation_speed"), 1, 0, 1, Integer.MAX_VALUE), (c, s) -> {
             if(s == null) {
                 animSpeed.setValue(1, true);
@@ -368,13 +377,14 @@ public class SpriteView extends JPanel implements IResourceView{
             if(sprite == null)
                 return;
             sprite.setAnimationSpeed(animSpeed.getValue());
+            window.setProjectChanged();
         });
         pPanel.add(animSpeed, gbc);
         gbc.gridy++;
 
-        var mPanel = new JPanel(new BorderLayout());
+        var mPanel = new JPanel(new FlowLayout());
         mPanel.setPreferredSize(new Dimension(200, 0));
-        mPanel.add(pPanel, BorderLayout.NORTH);
+        mPanel.add(pPanel);
         var scroll = new JScrollPane(mPanel);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 

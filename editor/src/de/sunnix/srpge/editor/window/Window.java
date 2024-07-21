@@ -87,6 +87,7 @@ public class Window extends JFrame {
     private boolean showGrid = true;
 
     @Getter
+    @Setter
     private GameObject player;
 
     public Window(){
