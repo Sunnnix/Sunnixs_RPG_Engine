@@ -48,6 +48,7 @@ public class ObjectModule extends MapViewModule {
             map.setSelectedObject(obj != null ? obj.ID : -1);
             showPopUp(view, map, obj, me.getX(), me.getY(), (float)mapX / TW, (float)mapY / TH);
         }
+        window.getObjectListView().reloadObjectsList();
         updateInfo(view, map, mapX, mapY, tileX, tileY);
         return true;
     }
@@ -192,12 +193,14 @@ public class ObjectModule extends MapViewModule {
                 add(createMenuItem(getString("view.map.module.object.create_object"), l -> {
                     createNewObject(map, mapX, mapY);
                     view.repaint();
+                    window.getObjectListView().reloadObjectsList();
                     window.setProjectChanged();
                 }));
             }
 
             private void removeObject(MapData map, GameObject obj) {
                 map.removeObject(obj);
+                window.getObjectListView().reloadObjectsList();
             }
 
         }.show(view, x, y);

@@ -141,7 +141,7 @@ public class GameObject {
 
     @Override
     public String toString() {
-        return String.format("GameObject(ID: %s, %s)", getID(), getName() == null ? "" : getName());
+        return String.format("%03d: %s", getID(), getName() == null ? "Unnamed" : getName());
     }
 
 }

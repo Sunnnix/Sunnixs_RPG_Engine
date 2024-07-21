@@ -75,6 +75,8 @@ name.move=Move
 name.sprite=Sprite
 name.sound_type=Sound Type
 name.animation=Animation
+name.maps=Maps
+name.objects=Objects
 
 texts.error_loading_about=Error loading AboutSite.html: %s
 
@@ -140,6 +142,10 @@ view.map_list.dialog.change_map_size.title=Set map size
 view.map_list.dialog.set_bgm.text=Set background music:
 view.map_list.dialog.delete_map.text=Do you really want to delete the map?
 view.map_list.dialog.delete_map.title=Delete map
+
+# MapObjects View
+view.map_list.dialog.delete_object.text=Do you really want to delete the object?
+view.map_list.dialog.delete_object.title=Delete object
 
 # DialogUtils
 dialog_utils.validate_input.name_cant_be_empty=The name can't be empty!

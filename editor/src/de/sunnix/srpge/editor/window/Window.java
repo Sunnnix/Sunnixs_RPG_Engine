@@ -57,6 +57,8 @@ public class Window extends JFrame {
     @Getter
     private MapListView mapListView;
     @Getter
+    private ObjectListView objectListView;
+    @Getter
     private TilesetTabView tilesetView;
     @Getter
     private PropertiesView propertiesView;
@@ -180,9 +182,16 @@ public class Window extends JFrame {
         centerPanel.setRightComponent(mapTabsView = new MapTabsView(this));
         add(centerPanel, BorderLayout.CENTER);
 
-        var dataPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        dataPane.setTopComponent(new JScrollPane(propertiesView = new PropertiesView(this)));
-        dataPane.setBottomComponent(mapListView = new MapListView(this));
+        var dataPane = new JPanel(new BorderLayout());
+        var tmpPanel = new JPanel(new BorderLayout());
+        tmpPanel.add(propertiesView = new PropertiesView(this), BorderLayout.NORTH);
+        var scroll = new JScrollPane(tmpPanel);
+        scroll.setPreferredSize(new Dimension(0, 300));
+        dataPane.add(scroll, BorderLayout.NORTH);
+        var listsPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        listsPanel.setTopComponent(mapListView = new MapListView(this));
+        listsPanel.setBottomComponent(objectListView = new ObjectListView(this));
+        dataPane.add(listsPanel, BorderLayout.CENTER);
         add(dataPane, BorderLayout.EAST);
 
         var config = getSingleton(Config.class);
@@ -191,11 +200,11 @@ public class Window extends JFrame {
         if(mainSplitLocation >= 0)
             centerPanel.setDividerLocation(mainSplitLocation);
         if(rightSplitLocation >= 0)
-            dataPane.setDividerLocation(rightSplitLocation);
+            listsPanel.setDividerLocation(rightSplitLocation);
 
         addClosingAction(conf -> {
             conf.set("main-split-location", centerPanel.getDividerLocation());
-            conf.set("right-split-location", dataPane.getDividerLocation());
+            conf.set("right-split-location", listsPanel.getDividerLocation());
         });
     }
 
@@ -250,6 +259,7 @@ public class Window extends JFrame {
             mapListView.setEnabled(true);
         } else {
             mapListView.close();
+            objectListView.close();
             mapTabsView.close();
             tilesetView.close();
         }

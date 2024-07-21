@@ -74,7 +74,7 @@ To download and try out the editor/engine, you can download it from this website
 
 | Description                                           | Planned | Progress | Priority |
 |-------------------------------------------------------|---------|----------|----------|
-| Objects with events and components                    | 0.6     | 80%      | High     |
+| Objects with events and components                    | 0.6     | 90%      | High     |
 | Event controlled textbox                              | 0.6     | 100%     | High     |
 | Object animation V1                                   | 0.6     | 100%     | High     |
 | Audio System for playing Sounds                       | 0.6     | 100%     | High     |
@@ -82,4 +82,5 @@ To download and try out the editor/engine, you can download it from this website
 | Tile animation                                        | 0.7     | 0%       | Medium   |
 | Physics System                                        | 0.7     | 0%       | High     |
 | Map Transition System / Teleporter objects and events | 0.7     | 0%       | High     |
+| Graphic Effects via Shader                            | n/a     | 10%      | Medium   |
 | Plugin system for editor and engine customization     | n/a     | 10%      | Low      |

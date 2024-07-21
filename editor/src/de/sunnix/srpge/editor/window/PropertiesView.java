@@ -28,19 +28,13 @@ public class PropertiesView extends JPanel {
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.weightx = 1;
+        gbc.insets.set(0,3,3,3);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
         setup();
 
         onLoadMap(null);
-    }
-
-    @Override
-    public Component add(Component comp) {
-        add(comp, gbc);
-        gbc.gridy++;
-        return comp;
     }
 
     private void setup(){
@@ -48,31 +42,26 @@ public class PropertiesView extends JPanel {
     }
 
     private void setupHeights() {
-        var panel = new JPanel(new GridBagLayout());
-        var gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.gridheight = 1;
-        gbc.ipadx = 12;
 
         wallDrawLayer = new NumberPicker(getString("view.properties.wall_layer"), 0, 10, 0, 0);
         wallDrawLayer.addChangeListener(this::wallDrawLayerChanged);
-        panel.add(wallDrawLayer, gbc);
+        add(wallDrawLayer, gbc);
         gbc.gridwidth = 1;
         gbc.gridy++;
 
         floorY = new NumberPicker(getString("view.properties.floor_y"), 0, 2, 0, 255);
         floorY.addChangeListener(this::floorHeightChanged);
-        panel.add(floorY, gbc);
+        add(floorY, gbc);
 
         gbc.gridx++;
 
         wallHeight = new NumberPicker(getString("view.properties.wall_height"), 0, 2, 0, 255);
         wallHeight.addChangeListener(this::wallHeightChanged);
-        panel.add(wallHeight, gbc);
-
-        add(panel);
+        add(wallHeight, gbc);
     }
 
     private void wallDrawLayerChanged(NumberPicker numberPicker, int oldValue, int value) {

@@ -11,7 +11,7 @@ import java.awt.event.MouseListener;
 
 public class MapTabsView extends JTabbedPane {
 
-    private final de.sunnix.srpge.editor.window.Window window;
+    private final Window window;
 
     public MapTabsView(Window window) {
         this.window = window;
@@ -55,6 +55,7 @@ public class MapTabsView extends JTabbedPane {
 
     private void onTabChanged(ChangeEvent changeEvent) {
         window.loadMapView(getSelectedIndex() == -1 ? null : (MapView) getSelectedComponent());
+        window.getObjectListView().openWorldData(getSelectedIndex() == -1 ? null : window.getSingleton(GameData.class).getMap(((MapView) getSelectedComponent()).getMapID()));
         window.reloadTilesetView();
     }
 

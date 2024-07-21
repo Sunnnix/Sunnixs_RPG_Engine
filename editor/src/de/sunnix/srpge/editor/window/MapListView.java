@@ -25,8 +25,9 @@ public class MapListView extends JScrollPane {
 
     public MapListView(Window window) {
         this.window = window;
+        setBorder(BorderFactory.createTitledBorder(getString("name.maps")));
         setViewportView(mapList = createMapList());
-        setPreferredSize(new Dimension(200, 400));
+        setPreferredSize(new Dimension(200, 200));
     }
 
     private JList<String> createMapList(){
