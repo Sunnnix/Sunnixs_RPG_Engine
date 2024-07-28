@@ -5,6 +5,9 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.util.FunctionUtils;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -226,7 +229,7 @@ public class Toolbar extends JToolBar {
         }
     }
 
-    private void startProcess(ProcessBuilder processBuilder){
+    private void startProcess(ProcessBuilder processBuilder) {
         try {
             processBuilder.redirectErrorStream(true);
 
@@ -238,26 +241,61 @@ public class Toolbar extends JToolBar {
             window.setEnabled(false);
 
             new Thread(() -> {
+                var consoleQueue = new StringBuilder();
+
+                var flushThread = new Thread(() -> {
+                    var latestSize = 0;
+                    var waitTime = 150;
+                    while (!Thread.currentThread().isInterrupted()){
+                        try {
+                            Thread.sleep(waitTime);
+                            synchronized (consoleQueue) {
+                                if (consoleQueue.isEmpty())
+                                    continue;
+                                if (consoleQueue.length() > latestSize) {
+                                    latestSize = consoleQueue.length();
+                                    continue;
+                                }
+                                console.write(consoleQueue.toString());
+                                consoleQueue.setLength(0);
+                            }
+                            latestSize = 0;
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                    }
+                    synchronized (consoleQueue){
+                        if(consoleQueue.isEmpty())
+                            return;
+                        console.write(consoleQueue.toString());
+                    }
+                }, "Process Console Writer");
+                flushThread.setDaemon(true);
+                flushThread.start();
+
                 try {
                     Thread.sleep(500);
                     console.showConsole();
-                    if(!console.isFocused()) {
+                    if (!console.isFocused()) {
                         console.requestFocus();
                         console.toFront();
                     }
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        console.write(line);
+                        synchronized (consoleQueue){
+                            consoleQueue.append(line).append("\n");
+                        }
                     }
                     int exitCode = gameProcess.waitFor();
                     console.write("Game exited with code " + exitCode);
-                } catch (Exception e){
+                } catch (Exception e) {
                     console.write(e);
+                } finally {
+                    window.setEnabled(true);
+                    window.getGlassPane().setVisible(false);
+                    flushThread.interrupt();
                 }
-
-                window.setEnabled(true);
-                window.getGlassPane().setVisible(false);
-            }).start();
+            }, "Process Console Reader").start();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(window, getString("toolbar.dialog.game_process_error.text", e.getMessage()), getString("toolbar.dialog.game_process_error.title"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
@@ -283,7 +321,7 @@ public class Toolbar extends JToolBar {
 
     private class GameConsole extends JDialog {
 
-        private JTextArea textArea;
+        private JTextPane textPane;
         private JScrollPane scroll;
 
         public GameConsole(){
@@ -291,9 +329,9 @@ public class Toolbar extends JToolBar {
             setSize(800, 500);
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-            textArea = new JTextArea();
-            textArea.setEditable(false);
-            scroll = new JScrollPane(textArea);
+            textPane = new JTextPane();
+            textPane.setEditable(false);
+            scroll = new JScrollPane(textPane);
             getContentPane().add(scroll, BorderLayout.CENTER);
         }
 
@@ -305,21 +343,82 @@ public class Toolbar extends JToolBar {
         }
 
         public void write(String text){
-            textArea.append(text + "\n");
+            appendWithAnsiCodes(text + "\n");
             scrollToEnd();
         }
 
         public void write(Exception e){
-            textArea.append(e.getMessage() + "\n");
+            appendWithAnsiCodes(e.getMessage() + "\n");
             var stacks = e.getStackTrace();
             for(var stack: stacks)
-                textArea.append(stack.toString() + "\n");
+                appendWithAnsiCodes(stack.toString() + "\n");
             scrollToEnd();
         }
 
         private void scrollToEnd(){
-            var scrollBar = scroll.getVerticalScrollBar();
-            scrollBar.setValue(scrollBar.getMaximum());
+            SwingUtilities.invokeLater(() -> {
+                var scrollBar = scroll.getVerticalScrollBar();
+                scrollBar.setValue(scrollBar.getMaximum());
+            });
+        }
+
+        private void appendWithAnsiCodes(String text) {
+            SimpleAttributeSet attributeSet = new SimpleAttributeSet();
+            try {
+                String[] lines = text.split("\n");
+                for (String line : lines) {
+                    StringBuilder sb = new StringBuilder();
+                    boolean escape = false;
+                    boolean inBrackets = false;
+                    StringBuilder code = new StringBuilder();
+
+                    for (char c : line.toCharArray()) {
+                        if (escape) {
+                            if (c == '[') {
+                                inBrackets = true;
+                                code.setLength(0);
+                            } else if (inBrackets) {
+                                if (c == 'm') {
+                                    handleAnsiCode(attributeSet, code.toString());
+                                    escape = false;
+                                    inBrackets = false;
+                                } else {
+                                    code.append(c);
+                                }
+                            } else {
+                                escape = false;
+                            }
+                        } else if (c == '\u001B') {
+                            escape = true;
+                            textPane.getDocument().insertString(textPane.getDocument().getLength(), sb.toString(), attributeSet);
+                            sb.setLength(0);
+                        } else {
+                            sb.append(c);
+                        }
+                    }
+
+                    textPane.getDocument().insertString(textPane.getDocument().getLength(), sb.toString(), attributeSet);
+                    textPane.getDocument().insertString(textPane.getDocument().getLength(), "\n", attributeSet);
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void handleAnsiCode(SimpleAttributeSet attributeSet, String code) {
+            String[] codes = code.split(";");
+            for (String c : codes) {
+                switch (c) {
+                    case "0", "30", "39": StyleConstants.setForeground(attributeSet, Color.BLACK); break;
+                    case "31": StyleConstants.setForeground(attributeSet, Color.RED); break;
+                    case "32": StyleConstants.setForeground(attributeSet, Color.GREEN); break;
+                    case "33": StyleConstants.setForeground(attributeSet, Color.YELLOW); break;
+                    case "34": StyleConstants.setForeground(attributeSet, Color.BLUE); break;
+                    case "35": StyleConstants.setForeground(attributeSet, Color.MAGENTA); break;
+                    case "36": StyleConstants.setForeground(attributeSet, Color.CYAN); break;
+                    case "37": StyleConstants.setForeground(attributeSet, Color.WHITE); break;
+                }
+            }
         }
 
     }
