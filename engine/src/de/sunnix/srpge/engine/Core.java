@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.joml.Vector3f;
+import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.opengl.GLUtil;
 
@@ -79,6 +80,10 @@ public class Core {
     @Setter
     private static boolean exit_on_close = true;
 
+    @Getter
+    @Setter
+    private static boolean debug;
+
     // *************************************************************** //
     //                        Window properties                        //
     // *************************************************************** //
@@ -120,6 +125,13 @@ public class Core {
 
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");
+
+        var glVersion = new int[3][1];
+        glfwGetVersion(glVersion[0], glVersion[1], glVersion[2]);
+        GameLogger.logI("Core", "OpenGL version %s.%s.%s", glVersion[0][0], glVersion[1][0], glVersion[2][0]);
+        int minMajor = Version.VERSION_MAJOR, minMinor = Version.VERSION_MINOR, minRev = Version.VERSION_REVISION;
+        if(glVersion[0][0] < minMajor || (glVersion[0][0] == minMajor && glVersion[1][0] < minMinor) || (glVersion[0][0] == minMajor && glVersion[1][0] == minMinor && glVersion[2][0] < minRev))
+            throw new RuntimeException(String.format("minimum OpenGL version %s.%s.%s required but %s.%s.%s was provided!", minMajor, minMinor, minRev, glVersion[0][0], glVersion[1][0], glVersion[2][0]));
 
         OpenALContext.setUp();
 
@@ -166,14 +178,6 @@ public class Core {
         glFrontFace(GL_CW);
 
         current_core_stage = CoreStage.WINDOW_CREATED;
-    }
-
-    public static void createWindow(String title, int width, int height){
-        createWindow(title, width, height,null);
-    }
-
-    public static void createWindow(int width, int height){
-        createWindow("Game", width,height);
     }
 
     public static void start(){

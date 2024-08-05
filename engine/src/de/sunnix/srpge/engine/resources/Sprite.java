@@ -1,6 +1,7 @@
 package de.sunnix.srpge.engine.resources;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.ecs.Direction;
 import de.sunnix.srpge.engine.graphics.TextureAtlas;
 
 import java.util.ArrayList;
@@ -46,10 +47,8 @@ public class Sprite {
         }
     }
 
-    public int getTextureIndexForAnimation(long timer, int direction){
-        if(direction == -1)
-            return -1;
-        var pattern = animPattern.get(direction % animPattern.size());
+    public int getTextureIndexForAnimation(long timer, Direction direction){
+        var pattern = animPattern.get(direction.ordinal() % animPattern.size());
         if(pattern.isEmpty())
             return -1;
         var patternIndex = timer / animationSpeed;

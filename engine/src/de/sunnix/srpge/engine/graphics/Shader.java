@@ -105,6 +105,10 @@ public class Shader extends MemoryHolder {
         glUniformMatrix4fv(getUniformLocation(name), false, mat);
     }
 
+    public void uniform4f(String name, float v1, float v2, float v3, float v4) {
+        glUniform4f(getUniformLocation(name), v1, v2, v3, v4);
+    }
+
     @Override
     public boolean isValid() {
         return id != 0;

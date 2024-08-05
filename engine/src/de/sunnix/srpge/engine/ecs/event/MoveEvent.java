@@ -5,12 +5,9 @@ import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 
-public class MoveEvent extends Event{
+import static de.sunnix.srpge.engine.ecs.Direction.*;
 
-    public static final int DIRECTION_SOUTH = 0;
-    public static final int DIRECTION_WEST = 1;
-    public static final int DIRECTION_EAST = 2;
-    public static final int DIRECTION_NORTH = 3;
+public class MoveEvent extends Event{
 
     protected int object = -1;
 
@@ -49,29 +46,28 @@ public class MoveEvent extends Event{
             var velX = rPosX < 0 ? Math.max(rPosX, -speed) : Math.min(rPosX, speed);
             var velY = rPosY < 0 ? Math.max(rPosY, -speed) : Math.min(rPosY, speed);
             var velZ = rPosZ < 0 ? Math.max(rPosZ, -speed) : Math.min(rPosZ, speed);
-            go.getPosition().add(velX, velY, velZ);
+            go.getVelocity().add(velX, velY, velZ);
             var render = go.getComponent(RenderComponent.class);
             if(render != null){
-                var direction = -1;
+                var direction = SOUTH;
                 var maxValue = 0f;
                 if(velX != 0) {
                     if(velX > 0)
-                        direction = DIRECTION_EAST;
+                        direction = EAST;
                     else
-                        direction = DIRECTION_WEST;
+                        direction = WEST;
                     maxValue = Math.abs(velX);
                 }
                 if(velZ != 0){
                     var tmp = Math.abs(velZ);
                     if(tmp > maxValue) {
                         if(velZ > 0)
-                            direction = DIRECTION_SOUTH;
+                            direction = SOUTH;
                         else
-                            direction = DIRECTION_NORTH;
+                            direction = NORTH;
                     }
                 }
-                if(direction != -1)
-                    render.setDirection(direction);
+                render.setDirection(direction);
             }
         }
         if(rPosX < 0)

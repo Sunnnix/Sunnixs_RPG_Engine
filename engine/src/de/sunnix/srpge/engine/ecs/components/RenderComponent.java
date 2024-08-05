@@ -1,10 +1,7 @@
 package de.sunnix.srpge.engine.ecs.components;
 
 import de.sunnix.sdso.DataSaveObject;
-import de.sunnix.srpge.engine.ecs.GameObject;
-import de.sunnix.srpge.engine.ecs.State;
-import de.sunnix.srpge.engine.ecs.States;
-import de.sunnix.srpge.engine.ecs.World;
+import de.sunnix.srpge.engine.ecs.*;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.graphics.TextureRenderObject;
 import de.sunnix.srpge.engine.resources.Resources;
@@ -14,6 +11,8 @@ import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Objects;
+
+import static de.sunnix.srpge.engine.ecs.Direction.SOUTH;
 
 public class RenderComponent extends Component{
 
@@ -25,7 +24,7 @@ public class RenderComponent extends Component{
     private int animPos = -1;
 
     @Setter
-    private int direction;
+    private Direction direction = SOUTH;
 
     private TextureRenderObject renderObject;
 

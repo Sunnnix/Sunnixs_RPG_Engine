@@ -1,5 +1,8 @@
 package de.sunnix.srpge.engine.ecs;
 
+import de.sunnix.srpge.engine.Core;
+import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
+import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
 import de.sunnix.srpge.engine.resources.Tileset;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
@@ -7,6 +10,12 @@ import lombok.Getter;
 import static org.lwjgl.opengl.GL15.*;
 
 public class Tile {
+
+    public static final byte SLOPE_DIRECTION_NONE = 0;
+    public static final byte SLOPE_DIRECTION_SOUTH = 1;
+    public static final byte SLOPE_DIRECTION_WEST = 2;
+    public static final byte SLOPE_DIRECTION_EAST = 3;
+    public static final byte SLOPE_DIRECTION_NORTH = 4;
 
     private static short getLayer(int layer, int data){
         if(layer == 0)
@@ -25,7 +34,8 @@ public class Tile {
         return ((data >> 12) & 0xF) - 1;
     }
 
-    private int x, y, height;
+    @Getter
+    private int x, y, height, top;
     private int[] indices;
     private float[] vertices;
     private float[] texturesLayer0;
@@ -36,6 +46,12 @@ public class Tile {
     @Getter
     private int vertexCount;
 
+    @Getter
+    private byte slopeDirection;
+
+    @Getter
+    private DebugRenderObject dro;
+
     public Tile(int x, int y, int bufferOffset){
         this.x = x;
         this.y = y;
@@ -44,8 +60,9 @@ public class Tile {
 
     public int create(Tileset tileset, DataSaveObject dso){
         var tex = dso.getInt("g-tex", 0);
-//        var texID = dso.getInt("g-tex", (short) -1) & 0xFFF;
         var heights = dso.getShort("height", (short) 0);
+        slopeDirection = dso.getByte("slope-dir", SLOPE_DIRECTION_NONE);
+
         var groundY = (byte)(heights >> 8);
         var wallHeight = (byte)(heights & 0xFF);
         height = wallHeight;
@@ -146,7 +163,19 @@ public class Tile {
 
 //        de.sunnix.game.textures = Textures.TILESET_INOA.getTexturePositions(x + y * Textures.TILESET_INOA.getTileWidth());
         this.vertexCount = indices.length;
+
+        top = groundY;
+
+        if(Core.isDebug()) {
+            var hitbox = getHitbox();
+            dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
+        }
+
         return height + 1;
+    }
+
+    public AABB getHitbox(){
+        return new AABB.TileAABB(x, y, top);
     }
 
     public void bufferVertices() {

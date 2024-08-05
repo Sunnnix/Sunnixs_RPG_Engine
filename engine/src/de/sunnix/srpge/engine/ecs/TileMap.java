@@ -1,12 +1,14 @@
 package de.sunnix.srpge.engine.ecs;
 
 import de.sunnix.srpge.engine.audio.AudioManager;
+import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.graphics.Shader;
 import de.sunnix.sdso.DataSaveObject;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -100,6 +102,12 @@ public class TileMap {
 
     public void update(){}
 
+    public Tile getTile(int x, int y){
+        if(x < 0 || x >= width || y < 0 || y >= height)
+            return null;
+        return tiles[x + y * width];
+    }
+
     public void bind(){
         glBindVertexArray(vertexArray);
     }
@@ -136,5 +144,15 @@ public class TileMap {
         glDeleteBuffers(textures0ID);
         glDeleteBuffers(textures1ID);
         glDeleteBuffers(elementBuffer);
+    }
+
+    public void drawHitbixes() {
+        DebugRenderObject.setColor(0, 1, 0, .25f);
+        for(var tile : tiles){
+            var hb = tile.getHitbox();
+            var dro = tile.getDro();
+            dro.prepareRender();
+            dro.render(new Vector3f(hb.getX(), hb.getY(), hb.getZ()), new Vector2f(hb.getWidth(), hb.getHeight()));
+        }
     }
 }

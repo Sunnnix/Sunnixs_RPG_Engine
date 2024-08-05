@@ -13,6 +13,8 @@ import de.sunnix.srpge.engine.stage.GameplayState;
 
 import java.util.Arrays;
 
+import static de.sunnix.srpge.engine.ecs.Direction.*;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -22,10 +24,11 @@ public class Main {
         Core.setPixel_scale(3f);
 
         Core.init();
-        Core.createWindow(1280, 720);
+        Core.createWindow("game", 1280, 720, null);
 
         Core.setPower_safe_mode(Arrays.stream(args).anyMatch("psm"::equalsIgnoreCase));
         Core.setVsync(Arrays.stream(args).anyMatch("vsync"::equalsIgnoreCase));
+        Core.setDebug(Arrays.stream(args).anyMatch("debug"::equalsIgnoreCase));
 
         Text.setDefaultFont(Font.ALUNDRA_FONT);
 
@@ -63,14 +66,14 @@ public class Main {
                     var comp = player.getComponent(RenderComponent.class);
                     if(Math.abs(h) > Math.abs(v))
                         if(h > 0)
-                            comp.setDirection(2);
+                            comp.setDirection(EAST);
                         else
-                            comp.setDirection(1);
+                            comp.setDirection(WEST);
                     else
                     if(v > 0)
-                        comp.setDirection(0);
+                        comp.setDirection(SOUTH);
                     else
-                        comp.setDirection(3);
+                        comp.setDirection(NORTH);
                 } else
                     player.removeState(States.MOVING.id());
 

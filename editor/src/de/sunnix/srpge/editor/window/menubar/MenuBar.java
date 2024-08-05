@@ -70,6 +70,10 @@ public class MenuBar extends JMenuBar {
             gameConfig.put("vsync", b);
             config.set("game", gameConfig);
         }));
+        mm.add(createCheckboxMenu(getString("menu.game.debug"), gameConfig.get("debug", false), b -> {
+            gameConfig.put("debug", b);
+            config.set("game", gameConfig);
+        }));
         return mm;
     }
 

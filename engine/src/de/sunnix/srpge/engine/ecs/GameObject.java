@@ -126,9 +126,9 @@ public class GameObject extends MemoryHolder {
             return;
         }
         handleEvents(world);
-        position.add(velocity);
-        velocity.set(0);
-        position.y = Math.max(position.y, 0);
+//        position.add(velocity);
+//        velocity.set(0);
+//        position.y = Math.max(position.y, 0);
         if(position.y > 0)
             addState(States.FALLING.id());
         else

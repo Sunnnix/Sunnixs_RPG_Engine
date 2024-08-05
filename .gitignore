@@ -48,3 +48,5 @@ logs/
 *.aegf
 META-INF
 *.idea/artifacts/
+/engine/src/test/
+/engine/res/test/
