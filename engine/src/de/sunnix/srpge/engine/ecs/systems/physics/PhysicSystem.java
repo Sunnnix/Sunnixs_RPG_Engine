@@ -1,9 +1,11 @@
 package de.sunnix.srpge.engine.ecs.systems.physics;
 
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.Tile;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
+import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.util.Tuple.*;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -34,14 +36,27 @@ public class PhysicSystem {
 //        reloadRegions(objects);
         for(var obj : objects) {
             var vel = obj.getVelocity();
-            if(vel.equals(0, 0, 0))
-                continue;
-            move(world, obj, vel.x, vel.y, vel.z);
-            vel.set(0);
+            if(!vel.equals(0, 0, 0)) {
+                move(world, obj, vel.x, vel.y, vel.z);
+                vel.set(0);
+            }
+            obj.getComponent(PhysicComponent.class).setGroundPos(calculateGround(world, obj));
         };
     }
 
-    public static void drawHitboxes(){
+    public static void renderShadows(){
+        for(var obj: objects){
+            if(obj.getComponent(RenderComponent.class) == null)
+                continue;
+            var comp = obj.getComponent(PhysicComponent.class);
+            var shadow = comp.getShadow();
+            var pos = obj.getPosition().mul(1, 0, 1, new Vector3f()).add(0, -comp.getGroundPos(), 0); // set y to ground pos
+            pos.y -= (obj.size.x * Core.TILE_HEIGHT / 2 - shadow.getSize().y / 2) / Core.TILE_HEIGHT; // center texture if shadow is smaller then object
+            comp.getShadow().render(pos, obj.size.x, obj.getZ_pos());
+        }
+    }
+
+    public static void renderHitboxes(){
         DebugRenderObject.setColor(0, 0, 1, .25f);
         for(var o : objects){
             var comp = o.getComponent(PhysicComponent.class);
@@ -339,4 +354,41 @@ public class PhysicSystem {
                 throw new IllegalStateException("Unexpected tile slope direction: " + tile.getSlopeDirection());
         };
     }
+
+    private static float calculateGround(World world, GameObject go) {
+        var toCheck = getPlainHitboxes(world, go);
+        var oY = go.getPosition().y;
+        var ground = 0f;
+        for(var hb: toCheck){
+            if(hb.getMaxY() > oY)
+                continue;
+            if(hb.getMaxY() > ground)
+                ground = hb.getMaxY();
+        }
+        return ground;
+    }
+
+    private static ArrayList<AABB> getPlainHitboxes(World world, GameObject go){
+        var list = new ArrayList<AABB>();
+        var hb = go.getComponent(PhysicComponent.class).getHitbox();
+        hb = hb.transform(0, -hb.getY(), 0).resize(hb.getWidth(), 1000);
+        for(var obj: objects){
+            if(obj.equals(go))
+                continue;
+            var oHB = obj.getComponent(PhysicComponent.class).getHitbox();
+            if(oHB.intersects(hb))
+                list.add(oHB);
+        }
+        for(var x = (int) Math.min(hb.getMinX(), hb.getMinX()); x <= Math.max(Math.ceil(hb.getMaxX()), Math.ceil(hb.getMaxX())); x++)
+            for(var z = (int) Math.min(hb.getMinZ(), hb.getMinZ()); z <= Math.max(Math.ceil(hb.getMaxZ()), Math.ceil(hb.getMaxZ())); z++){
+                var tile = world.getTile(x, z);
+                if(tile == null)
+                    continue;
+                var thb = tile.getHitbox();
+                if(thb.intersects(hb))
+                    list.add(thb);
+            }
+        return list;
+    }
+
 }

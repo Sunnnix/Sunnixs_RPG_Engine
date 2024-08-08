@@ -25,11 +25,12 @@ public abstract class RenderObject extends MemoryHolder {
     }
 
     public void render(Vector3f pos, float object_width, float z_Buffer){
-        if(texture == null)
-            return;
         var size = getSize();
         shader.bind();
-        texture.bind(0);
+        if(texture == null)
+            Texture.unbind();
+        else
+            texture.bind(0);
         mesh.bind();
         var model = new Matrix4f().translate(pos.x * 24, (-pos.z - pos.y - object_width) * 16, z_Buffer).scale(size.x, size.y, 1);
         var view = Camera.getView();

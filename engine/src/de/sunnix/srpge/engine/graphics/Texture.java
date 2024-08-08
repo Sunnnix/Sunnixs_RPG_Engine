@@ -125,7 +125,7 @@ public class Texture extends MemoryHolder {
         bind(0);
     }
 
-    public void unbind() {
+    public static void unbind() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 

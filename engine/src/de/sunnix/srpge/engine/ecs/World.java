@@ -96,10 +96,11 @@ public class World {
     public void render(){
         map.render();
         RenderSystem.renderObjects();
+        PhysicSystem.renderShadows();
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         if(Core.isDebug()) {
             map.drawHitbixes();
-            PhysicSystem.drawHitboxes();
+            PhysicSystem.renderHitboxes();
         }
         tcro.render();
         GL11.glEnable(GL11.GL_DEPTH_TEST);

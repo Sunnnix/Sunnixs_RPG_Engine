@@ -46,10 +46,10 @@ public class Main {
             if(ticks > 3){
                 float h = 0;
                 float v = 0;
-                var y = 0;
+                var y = 0f;
                 if(Core.hasFocus()) {
-                    y += InputManager.PAD_X.isPressed() ? -1 : 0;
-                    y += InputManager.PAD_B.isPressed() ? 1 : 0;
+                    y += InputManager.PAD_X.isPressed() ? -2.5f : 0;
+                    y += InputManager.PAD_B.isPressed() ? 2.5f : 0;
 
                     h = InputManager.PAD_JS_L_H.getRight() - InputManager.PAD_JS_L_H.getLeft();
                     v = InputManager.PAD_JS_L_V.getRight() - InputManager.PAD_JS_L_V.getLeft();
