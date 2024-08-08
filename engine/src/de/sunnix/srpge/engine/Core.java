@@ -81,7 +81,6 @@ public class Core {
     private static boolean exit_on_close = true;
 
     @Getter
-    @Setter
     private static boolean debug;
 
     // *************************************************************** //
@@ -112,9 +111,9 @@ public class Core {
     @Getter
     private static final Vector3f backgroundColor = new Vector3f(0f, 0f, 0f);
 
-    public static void validateCoreStage(CoreStage expected){
-        if(expected != current_core_stage)
-            throw new IllegalStateException(String.format("The current stage is %s but stage %s was expected", current_core_stage, expected));
+    public static void validateCoreStage(CoreStage... expected){
+        if(Arrays.stream(expected).noneMatch(s -> s == current_core_stage))
+            throw new IllegalStateException(String.format("The current stage is %s but stages %s was expected", current_core_stage, Arrays.toString(expected)));
     }
 
     public static void init(){
@@ -288,4 +287,8 @@ public class Core {
         fps = data[1];
     }
 
+    public static void setDebug(boolean debug) {
+        validateCoreStage(CoreStage.PRE_INIT, CoreStage.INITED);
+        Core.debug = debug;
+    }
 }

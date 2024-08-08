@@ -2,28 +2,36 @@ package de.sunnix.srpge.engine.ecs.components;
 
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.GameObject;
+import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
 import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
 import de.sunnix.srpge.engine.graphics.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector2f;
 
 @Getter
+@Setter
 public class PhysicComponent extends Component {
 
+    @Setter(AccessLevel.NONE)
     private static final Texture SHADOW_TEXTURE = new Texture("/data/texture/shadow.png");
 
+    @Setter(AccessLevel.NONE)
     private AABB hitbox;
+    private float weight = .8f, jumpSpeed = .26f, fallSpeed;
+    private boolean falling;
 
+    // debug
+    @Setter(AccessLevel.NONE)
     private DebugRenderObject dro;
 
-    @Setter
     private float groundPos;
 
-    @Getter
+    @Setter(AccessLevel.NONE)
     private RenderObject shadow;
 
     @Override
@@ -31,7 +39,8 @@ public class PhysicComponent extends Component {
         super.init(world, go);
         hitbox = new AABB(go);
         PhysicSystem.add(go);
-        dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
+        if(Core.isDebug())
+            dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
         if(go.getComponent(RenderComponent.class) != null){
             shadow = new TextureRenderObject(SHADOW_TEXTURE){
                 @Override
@@ -49,4 +58,20 @@ public class PhysicComponent extends Component {
     public void reloadHitbox() {
         hitbox = new AABB(parent);
     }
+
+    public void setFalling(boolean falling) {
+        if(falling)
+            parent.addState(States.FALLING.id());
+        else
+            parent.removeState(States.FALLING.id());
+        this.falling = falling;
+    }
+
+    public void jump(){
+        if(falling)
+            return;
+        fallSpeed = jumpSpeed;
+        setFalling(true);
+    }
+
 }

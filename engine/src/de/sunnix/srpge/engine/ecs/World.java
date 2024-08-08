@@ -58,7 +58,7 @@ public class World {
         // Load objects
         mapDSO.<DataSaveObject>getList("objects").forEach(o -> {
             var object = new GameObject(this, o);
-            object.size.set(.88, 1.24);
+            object.size.set(.88, 1.9);
             object.addComponent(new PhysicComponent());
             object.init(this);
         });

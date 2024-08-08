@@ -129,10 +129,10 @@ public class GameObject extends MemoryHolder {
 //        position.add(velocity);
 //        velocity.set(0);
 //        position.y = Math.max(position.y, 0);
-        if(position.y > 0)
-            addState(States.FALLING.id());
-        else
-            removeState(States.FALLING.id());
+//        if(position.y > 0)
+//            addState(States.FALLING.id());
+//        else
+//            removeState(States.FALLING.id());
     }
 
     public void postRender(){

@@ -95,6 +95,14 @@ public class AABB {
         return new AABB(x, y, other.getMaxZ() + width / 2, width, height);
     }
 
+    public AABB alignUp(AABB other){
+        return new AABB(x, other.getY() - height, z, width, height);
+    }
+
+    public AABB alignDown(AABB other){
+        return new AABB(x, other.getMaxY(), z, width, height);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(obj == null)

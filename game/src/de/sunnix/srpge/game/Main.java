@@ -5,6 +5,7 @@ import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.InputManager;
 import de.sunnix.srpge.engine.debug.profiler.Profiler;
 import de.sunnix.srpge.engine.ecs.States;
+import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.graphics.gui.text.Font;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
@@ -24,11 +25,11 @@ public class Main {
         Core.setPixel_scale(3f);
 
         Core.init();
-        Core.createWindow("game", 1280, 720, null);
-
         Core.setPower_safe_mode(Arrays.stream(args).anyMatch("psm"::equalsIgnoreCase));
         Core.setVsync(Arrays.stream(args).anyMatch("vsync"::equalsIgnoreCase));
         Core.setDebug(Arrays.stream(args).anyMatch("debug"::equalsIgnoreCase));
+
+        Core.createWindow("game", 1280, 720, null);
 
         Text.setDefaultFont(Font.ALUNDRA_FONT);
 
@@ -46,18 +47,36 @@ public class Main {
             if(ticks > 3){
                 float h = 0;
                 float v = 0;
-                var y = 0f;
+                var jump = false;
                 if(Core.hasFocus()) {
-                    y += InputManager.PAD_X.isPressed() ? -2.5f : 0;
-                    y += InputManager.PAD_B.isPressed() ? 2.5f : 0;
+                    jump = InputManager.PAD_A.startPressed();
 
-                    h = InputManager.PAD_JS_L_H.getRight() - InputManager.PAD_JS_L_H.getLeft();
-                    v = InputManager.PAD_JS_L_V.getRight() - InputManager.PAD_JS_L_V.getLeft();
+                    if(InputManager.PAD_RIGHT.isPressed())
+                        h = 1;
+                    if(InputManager.PAD_LEFT.isPressed())
+                        h = -1;
+                    if(h == 0)
+                        h = InputManager.PAD_JS_L_H.getRight() - InputManager.PAD_JS_L_H.getLeft();
+                    if(InputManager.PAD_DOWN.isPressed())
+                        v = 1;
+                    if(InputManager.PAD_UP.isPressed())
+                        v = -1;
+                    if(v == 0)
+                        v = InputManager.PAD_JS_L_V.getRight() - InputManager.PAD_JS_L_V.getLeft();
+                }
+                if((h == 1 || h == -1) && (v == 1 || v == -1)){
+                    h *= .707f;
+                    v *= .707f;
                 }
                 var world = ((GameplayState)Core.GameState.GAMEPLAY.state).getWorld();
                 var player = world.getPlayer();
+
+                if(jump)
+                    player.getComponent(PhysicComponent.class).jump();
+
                 var pVel = player.getVelocity();
-                pVel.set(h * .075f, y * .01f, v * .075f);
+                var moveSpeed = .1f;
+                pVel.set(h * moveSpeed, 0, v * moveSpeed);
                 var pPos = player.getPosition();
 
                 playerCorrds.change(tc -> tc.setText(String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos())));
