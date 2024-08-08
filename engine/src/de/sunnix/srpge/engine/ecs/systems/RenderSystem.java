@@ -9,6 +9,8 @@ import java.util.function.Function;
 
 public class RenderSystem {
 
+    public static final float EPSILON = 1e-4f;
+
     private static final ArrayList<GameObject> objects = new ArrayList<>();
 
     public static void renderObjects() {
@@ -30,7 +32,7 @@ public class RenderSystem {
         var pos2 = o2.getPosition();
         var size1 = o1.getSize();
         var size2 = o2.getSize();
-        return !(pos1.x >= pos2.x + size2.x || pos1.x + size1.x <= pos2.x || pos1.z >= pos2.z + size2.x || pos1.z + size1.x <= pos2.z);
+        return !(pos1.x >= pos2.x + size2.x || pos1.x + size1.x <= pos2.x || pos1.z + .12f > pos2.z + size2.x || pos1.z + size1.x <= pos2.z);
     }
 
     private static <T> T findFirst(Collection<T> list, Function<T, Boolean> filter){
@@ -72,9 +74,9 @@ public class RenderSystem {
                 var size1 = o1.getSize();
                 var pos2 = o2.getPosition();
                 var size2 = o2.getSize();
-                if(pos1.y >= pos2.y + size2.x)
+                if(pos1.y + size1.y > pos2.y + EPSILON || pos1.y >= pos2.y + size2.x)
                     return -1;
-                else if(pos2.y >= pos1.y + size1.x)
+                else if(pos2.y + size2.y > pos1.y + EPSILON || pos2.y >= pos1.y + size1.x)
                     return 1;
                 else return -Float.compare(o1.getZ_pos(), o2.getZ_pos());
             }).toList();
