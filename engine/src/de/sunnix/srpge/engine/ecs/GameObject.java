@@ -112,12 +112,13 @@ public class GameObject extends MemoryHolder {
         return componentType.cast(components.get(componentType));
     }
 
-    public final <T extends Component> void addComponent(T component){
+    public final <T extends Component> T addComponent(T component){
         if(inited){
             GameLogger.logW("GameObject", "Can't add component to initialized GameObject");
-            return;
+            return component;
         }
         components.put(component.getClass(), component);
+        return component;
     }
 
     public void update(World world){

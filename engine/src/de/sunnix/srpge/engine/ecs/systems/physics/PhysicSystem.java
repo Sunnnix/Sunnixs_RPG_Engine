@@ -36,7 +36,7 @@ public class PhysicSystem {
 //        reloadRegions(objects);
         for(var obj : objects){
             var comp = obj.getComponent(PhysicComponent.class);
-            if(comp.isFalling()){
+            if(!comp.isFlying() && comp.isFalling()){
                 var fallSpeed = comp.getFallSpeed();
                 obj.getVelocity().add(0, fallSpeed, 0);
                 var weight = comp.getWeight();
@@ -55,7 +55,8 @@ public class PhysicSystem {
             }
             var comp = obj.getComponent(PhysicComponent.class);
             comp.setGroundPos(calculateGround(world, obj));
-            comp.setFalling(obj.getPosition().y > comp.getGroundPos() + EPSILON);
+            if(!comp.isFlying())
+                comp.setFalling(obj.getPosition().y > comp.getGroundPos() + EPSILON);
         };
     }
 
@@ -108,6 +109,8 @@ public class PhysicSystem {
             var tuple = moveHeight(world, go, hitbox, dy);
             if(!moved)
                 moved = tuple.t1();
+            if(dy > 0 && !moved) // if the object hits its head, stop jumping
+                comp.setFallSpeed(0);
             hitbox = tuple.t2();
         }
 
@@ -130,6 +133,15 @@ public class PhysicSystem {
         moved = tuple.t1();
         hitbox = tuple.t3();
 
+        var distanceMoved = tuple.t4();
+        var comp = go.getComponent(PhysicComponent.class);
+
+        if(comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
+            var objects = getObjectsOnTop(go, hitbox);
+            for(var obj: objects)
+                move(world, obj, distanceMoved.x, distanceMoved.y, distanceMoved.z);
+        }
+
         if (correctMovement && !moved && tuple.t2()) {
             var tuple2 = moveVertical(world, go, hitbox, correctMovement(world, hitbox, speed > 0 ? EAST : WEST, speed), false);
             moved = tuple2.t1();
@@ -147,6 +159,15 @@ public class PhysicSystem {
         var tuple = checkNewPosition(toCheck, hitbox, nHB, speed > 0 ? SOUTH : NORTH);
         moved = tuple.t1();
         hitbox = tuple.t3();
+
+        var distanceMoved = tuple.t4();
+        var comp = go.getComponent(PhysicComponent.class);
+
+        if(comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
+            var objects = getObjectsOnTop(go, hitbox);
+            for(var obj: objects)
+                move(world, obj, distanceMoved.x, distanceMoved.y, distanceMoved.z);
+        }
 
         if (correctMovement && !moved && tuple.t2()){
             var tuple2 = moveHorizontal(world, go, hitbox, correctMovement(world, hitbox, speed > 0 ? SOUTH : NORTH, speed), false);
@@ -193,8 +214,9 @@ public class PhysicSystem {
      * - Boolean (moved)
      * - Boolean (fromTile)
      * - AABB (new Hitbox)
+     * - moved distance
      */
-    private static Tuple3<Boolean, Boolean, AABB> checkNewPosition(List<AABB> hitboxes, AABB sHB, AABB nHB, MoveDirection dir){
+    private static Tuple4<Boolean, Boolean, AABB, Vector3f> checkNewPosition(List<AABB> hitboxes, AABB sHB, AABB nHB, MoveDirection dir){
         var moved = false;
         var check = true;
         var fromTile = false;
@@ -204,7 +226,7 @@ public class PhysicSystem {
             for (var other : hitboxes) {
                 if (nHB.intersects(other)) {
                     fromTile = other instanceof AABB.TileAABB;
-                    AABB tmpHB = null; // TODO (remove)
+                    AABB tmpHB = null;
                     var breakLoop = false;
                     switch (dir){
                         case SOUTH -> {
@@ -258,7 +280,8 @@ public class PhysicSystem {
                 }
             }
         }
-        return new Tuple3<>(moved, fromTile, moved ? nHB : sHB);
+        var distanceMoved = sHB.getDistance(nHB);
+        return new Tuple4<>(moved, fromTile, moved ? nHB : sHB, distanceMoved);
     }
 
     private static float correctMovement(World world, AABB hitbox, MoveDirection dir, float speed){
@@ -312,53 +335,6 @@ public class PhysicSystem {
         };
     }
 
-    private static boolean isCollision(World world, GameObject go, AABB hitbox) {
-        boolean collision = false;
-        boolean onSlope = false;
-
-        int startX = (int)Math.floor(hitbox.getMinX());
-        int endX = (int)Math.ceil(hitbox.getMaxX());
-        int startZ = (int)Math.floor(hitbox.getMinZ());
-        int endZ = (int)Math.ceil(hitbox.getMaxZ());
-
-        for (int x = startX; x <= endX; x++) {
-            for (int z = startZ; z <= endZ; z++) {
-                Tile tile = world.getTile(x, z);
-                if (tile != null) {
-                    AABB tileAABB = tile.getHitbox();
-                    if (tile.getSlopeDirection() != 0) {
-                        if (hitbox.intersects(tileAABB)) {
-                            // Kollision mit Schräge
-                            float slopeY = getYOnSlope(tile, hitbox.getMinX(), hitbox.getMinZ());
-                            if (hitbox.getMinY() < slopeY + EPSILON && hitbox.getMaxY() > slopeY - EPSILON) {
-                                onSlope = true;
-                            }
-                        }
-                    } else {
-                        if (hitbox.intersects(tileAABB)) {
-                            // Kollision mit solidem Block
-                            collision = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (collision) break;
-        }
-
-        if (!collision) {
-            for (var obj : objects) {
-                var other = obj.getComponent(PhysicComponent.class).getHitbox();
-                if (!obj.equals(go) && hitbox.intersects(other)) {
-                    collision = true;
-                    break;
-                }
-            }
-        }
-
-        return collision;
-    }
-
     private static float getYOnSlope(Tile tile, float x, float z) {
         float localX = x % 1;
         float localZ = z % 1;
@@ -382,9 +358,9 @@ public class PhysicSystem {
         var oY = go.getPosition().y;
         var ground = 0f;
         for(var hb: toCheck){
-            if(hb.getMaxY() > oY)
+            if(hb.getMaxY() - EPSILON > oY)
                 continue;
-            if(hb.getMaxY() > ground)
+            if(hb.getMaxY() - EPSILON > ground)
                 ground = hb.getMaxY();
         }
         return ground;
@@ -393,7 +369,7 @@ public class PhysicSystem {
     private static ArrayList<AABB> getPlainHitboxes(World world, GameObject go){
         var list = new ArrayList<AABB>();
         var hb = go.getComponent(PhysicComponent.class).getHitbox();
-        hb = hb.transform(0, -hb.getY(), 0).resize(hb.getWidth(), 1000);
+        hb = hb.transform(0, -hb.getY(), 0).resize(hb.getWidth(), Float.POSITIVE_INFINITY);
         for(var obj: objects){
             if(obj.equals(go))
                 continue;
@@ -410,6 +386,24 @@ public class PhysicSystem {
                 if(thb.intersects(hb))
                     list.add(thb);
             }
+        return list;
+    }
+
+    private static List<GameObject> getObjectsOnTop(GameObject go, AABB hitbox){
+        var list = new ArrayList<GameObject>();
+        hitbox = hitbox.transform(0, .1f, 0);
+        for(var obj: objects){
+            if(obj.equals(go))
+                continue;
+            var comp = obj.getComponent(PhysicComponent.class);
+            if(comp.isFalling())
+                continue;
+            var oHB = comp.getHitbox();
+            if(oHB.intersects(hitbox))
+                if(oHB.getMinY() <= hitbox.getMaxY() + EPSILON)
+                    if(oHB.getMinY() >= hitbox.getMaxY() - .1f)
+                        list.add(obj);
+        }
         return list;
     }
 

@@ -4,6 +4,7 @@ import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
+import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
@@ -58,12 +59,26 @@ public class World {
         // Load objects
         mapDSO.<DataSaveObject>getList("objects").forEach(o -> {
             var object = new GameObject(this, o);
-            object.size.set(.88, 1.9);
-            object.addComponent(new PhysicComponent());
+            object.size.set(1, 1);
+            var comp = object.addComponent(new PhysicComponent());
+            comp.setFlying(true);
             object.init(this);
         });
 
         gameObjectsToAdd.forEach(go -> gameObjects.put(go.getID(), go));
+
+        for (var i = 0; i < 9; i++){
+            var obj = new GameObject(this, 1, 1);
+//            obj.getPosition().set((int)(Math.random() * map.width), (int)(Math.random() * 5), (int)(Math.random() * map.height));
+            obj.getPosition().set(2 - i / 3, i % 3, 7);
+            if(i == 8)
+                obj.getPosition().set(3, 0, 8);
+            var dso = new DataSaveObject();
+            dso.putString("sprite", "objects/box");
+            obj.addComponent(new RenderComponent(dso));
+            obj.addComponent(new PhysicComponent()).setFlying(true);
+            obj.init(this);
+        }
 
     }
 

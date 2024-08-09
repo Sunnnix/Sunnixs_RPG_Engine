@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs.systems.physics;
 
 import de.sunnix.srpge.engine.ecs.GameObject;
 import lombok.Getter;
+import org.joml.Vector3f;
 
 import static de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem.EPSILON;
 
@@ -119,6 +120,13 @@ public class AABB {
                     z - EPSILON / 2 <= other.getZ();
         } else
             return false;
+    }
+
+    public Vector3f getDistance(AABB other) {
+        var vec = new Vector3f();
+        if(!other.equals(this))
+            vec.set(other.x - x, other.y - y, other.z - z);
+        return vec;
     }
 
     public static class TileAABB extends AABB {

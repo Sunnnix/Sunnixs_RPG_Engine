@@ -24,6 +24,8 @@ public class PhysicComponent extends Component {
     private AABB hitbox;
     private float weight = .8f, jumpSpeed = .26f, fallSpeed;
     private boolean falling;
+    private boolean flying;
+    private boolean platform = true;
 
     // debug
     @Setter(AccessLevel.NONE)
@@ -34,6 +36,8 @@ public class PhysicComponent extends Component {
     @Setter(AccessLevel.NONE)
     private RenderObject shadow;
 
+    private boolean hasShadow = true;
+
     @Override
     public void init(World world, GameObject go) {
         super.init(world, go);
@@ -41,7 +45,7 @@ public class PhysicComponent extends Component {
         PhysicSystem.add(go);
         if(Core.isDebug())
             dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
-        if(go.getComponent(RenderComponent.class) != null){
+        if(hasShadow && go.getComponent(RenderComponent.class) != null){
             shadow = new TextureRenderObject(SHADOW_TEXTURE){
                 @Override
                 public Vector2f getSize() {
@@ -68,7 +72,7 @@ public class PhysicComponent extends Component {
     }
 
     public void jump(){
-        if(falling)
+        if(falling || flying)
             return;
         fallSpeed = jumpSpeed;
         setFalling(true);
