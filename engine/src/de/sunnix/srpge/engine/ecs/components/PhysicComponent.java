@@ -27,6 +27,10 @@ public class PhysicComponent extends Component {
     private boolean flying;
     private boolean platform = true;
 
+    private int fallingTime;
+    private boolean jumped;
+    private int noobHelpTime = 12;
+
     // debug
     @Setter(AccessLevel.NONE)
     private DebugRenderObject dro;
@@ -68,12 +72,19 @@ public class PhysicComponent extends Component {
             parent.addState(States.FALLING.id());
         else
             parent.removeState(States.FALLING.id());
+        if(falling && this.falling)
+            fallingTime++;
+        else if(!falling) {
+            fallingTime = 0;
+            jumped = false;
+        }
         this.falling = falling;
     }
 
     public void jump(){
-        if(falling || flying)
+        if(jumped || fallingTime > noobHelpTime && (falling || flying))
             return;
+        jumped = true;
         fallSpeed = jumpSpeed;
         setFalling(true);
     }
