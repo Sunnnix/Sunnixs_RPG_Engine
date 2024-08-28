@@ -23,6 +23,7 @@ public final class Resources {
     public final ResourceList<Tileset> tilesets = new ResourceList<>("tilesets");
     public final ResourceList<Sprite> sprites = new ResourceList<>("sprites");
     public final ResourceList<AudioResource> audio = new ResourceList<>("audio", AudioResource::cleanup);
+    public final ScriptList scriptList = new ScriptList();
 
     public Resources(){}
 
@@ -32,6 +33,7 @@ public final class Resources {
         tilesets.addCategory("default");
         sprites.reset();
         audio.reset();
+        scriptList.reset();
     }
 
     // ###################    Image Resource    ###################
@@ -79,6 +81,8 @@ public final class Resources {
         loadAudioResources(dialog, (int)(progress * .65), zip, version);
 
         loadStates(zip);
+
+        scriptList.loadScripts(zip);
     }
 
     private void loadImageResources(LoadingDialog dialog, int progress, ZipFile zip){
@@ -167,6 +171,8 @@ public final class Resources {
         saveAudioResources(dialog, progress, zip);
 
         saveStates(zip);
+
+        scriptList.saveScripts(dialog, zip);
     }
 
     private void saveImageResources(LoadingDialog dialog, int progress, ZipOutputStream zip){

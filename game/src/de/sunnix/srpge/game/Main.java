@@ -71,12 +71,7 @@ public class Main {
                 var world = ((GameplayState)Core.GameState.GAMEPLAY.state).getWorld();
                 var player = world.getPlayer();
 
-                if(jump)
-                    player.getComponent(PhysicComponent.class).jump();
-
-                var pVel = player.getVelocity();
-                var moveSpeed = .1f;
-                pVel.set(h * moveSpeed, 0, v * moveSpeed);
+                world.movePlayer(h, jump, v);
                 var pPos = player.getPosition();
 
                 playerCorrds.change(tc -> tc.setText(String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos())));

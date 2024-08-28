@@ -86,6 +86,14 @@ public class World {
         gameObjectsToAdd.add(entity);
     }
 
+    public void movePlayer(float x, boolean y, float z){
+        if(y)
+            player.getComponent(PhysicComponent.class).jump();
+        var pVel = player.getVelocity();
+        var moveSpeed = .1f;
+        pVel.add(x * moveSpeed, 0, z * moveSpeed);
+    }
+
     public void update(){
         Event event = null;
         if(!blockingEventQueue.isEmpty())

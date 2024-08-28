@@ -5,9 +5,10 @@ import de.sunnix.srpge.editor.window.Window;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
-
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.function.Function;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
@@ -49,8 +50,9 @@ public class ResourceDialog extends JDialog {
                 createNode(getString("dialog_resources.node.audio"),
                         createNode(getString("dialog_resources.node.audio.raw"), p -> new ResourceAudioView(parent, p))
                 ),
-                createNode(getString("dialog_resources.node.variables"),
-                        createNode(getString("dialog_resources.node.variables.states"), p -> new StatesView(parent, p))
+                createNode(getString("dialog_resources.node.data"),
+                        createNode(getString("dialog_resources.node.data.states"), p -> new StatesView(parent, p)),
+                        createNode(getString("dialog_resources.node.data.lua_scripts"), p -> new LuaScriptView(parent, p))
                 )
         );
 

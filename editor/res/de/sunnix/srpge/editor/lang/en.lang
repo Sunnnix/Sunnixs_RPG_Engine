@@ -189,8 +189,9 @@ dialog_resources.node.video.images=Images
 dialog_resources.node.video.tilesets=Tilesets
 dialog_resources.node.audio=Audio
 dialog_resources.node.audio.raw=Raw
-dialog_resources.node.variables=Variables
-dialog_resources.node.variables.states=States
+dialog_resources.node.data=Data
+dialog_resources.node.data.states=States
+dialog_resources.node.data.lua_scripts=Lua scripts
 
 dialog_resources.create_category=Create new category
 dialog_resources.insert_category_name=Insert category name:

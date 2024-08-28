@@ -119,6 +119,12 @@
 <!--            <scope>provided</scope>-->
 <!--        </dependency>-->
 
+        <!-- https://github.com/luaj/luaj -->
+        <dependency>
+            <groupId>org.luaj</groupId>
+            <artifactId>luaj-jse</artifactId>
+            <version>3.0.1</version>
+        </dependency>
 
         <!-- JLWGL Libs-->
         <dependency>

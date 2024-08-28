@@ -20,6 +20,8 @@ public class Resources {
     private final ResourceList<Sprite> sprites = new ResourceList<>("sprites");
     private final ResourceList<AudioResource> audioResources = new ResourceList<>("audio");
 
+    public final ScriptList scripts = new ScriptList();
+
     private static Resources instance;
 
     public static Resources get(){
@@ -37,6 +39,8 @@ public class Resources {
         loadAudioResources(zip, resFolder);
 
         loadStates(zip);
+
+        scripts.loadScripts(zip);
     }
 
     private void loadImageResources(ZipFile zip, File res){

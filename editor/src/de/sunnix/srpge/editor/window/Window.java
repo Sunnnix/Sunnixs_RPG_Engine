@@ -169,6 +169,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("wait", getString("event.wait.name"), WaitEvent::new);
         EventRegistry.registerEvent("message", getString("event.msg.name"), MessageEvent::new);
         EventRegistry.registerEvent("playsound", getString("event.play_sound.name"), PlaySoundEvent::new);
+        EventRegistry.registerEvent("script-lua", "Lua Script", LuaScriptEvent::new);
     }
 
     private void registerComponents(){

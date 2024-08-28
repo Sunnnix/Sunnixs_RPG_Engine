@@ -147,6 +147,7 @@ public class Core {
         EventRegistry.registerEvent("wait", WaitEvent::new);
         EventRegistry.registerEvent("message", MessageEvent::new);
         EventRegistry.registerEvent("playsound", PlaySoundEvent::new);
+        EventRegistry.registerEvent("script-lua", LuaScriptEvent::new);
     }
 
     public static void enableGL_debug(boolean enable){

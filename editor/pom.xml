@@ -50,7 +50,6 @@
             <systemPath>${project.basedir}/../libs/VorbisJava-vorbis-java-0.8.zip</systemPath>
         </dependency>
 
-
         <!-- LWJGL DEBUG -->
         <dependency>
             <groupId>org.lwjgl</groupId>
@@ -58,6 +57,20 @@
             <version>1.0.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../libs/lwjglx-debug-1.0.0.jar</systemPath>
+        </dependency>
+
+        <!-- Code Editor https://github.com/bobbylight/RSyntaxTextArea -->
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>rsyntaxtextarea</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+
+        <!-- Code Editor Autocompleter https://github.com/bobbylight/AutoComplete?tab=readme-ov-file -->
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>autocomplete</artifactId>
+            <version>3.3.1</version>
         </dependency>
 
     </dependencies>
