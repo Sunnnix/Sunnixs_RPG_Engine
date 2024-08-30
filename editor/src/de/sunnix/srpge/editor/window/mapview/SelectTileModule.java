@@ -3,7 +3,9 @@ package de.sunnix.srpge.editor.window.mapview;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.resource.Resources;
+import de.sunnix.srpge.engine.ecs.Tile;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -36,6 +38,37 @@ public class SelectTileModule extends MapViewModule {
         sTiles[2] = 1;
         sTiles[3] = 1;
         window.getPropertiesView().loadSelectedTileData();
+        if(me.getButton() == MouseEvent.BUTTON3){
+            new JPopupMenu(){
+                {
+                    var slopeNone = new JMenuItem("Slope - None");
+                    slopeNone.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_NONE));
+                    var slopeSouth = new JMenuItem("Slope - South");
+                    slopeSouth.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_SOUTH));
+                    var slopeEast = new JMenuItem("Slope - East");
+                    slopeEast.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_EAST));
+                    var slopeWest = new JMenuItem("Slope - West");
+                    slopeWest.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_WEST));
+                    var slopeNorth = new JMenuItem("Slope - North");
+                    slopeNorth.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_NORTH));
+                    add(slopeNone);
+                    add(slopeSouth);
+                    add(slopeEast);
+                    add(slopeWest);
+                    add(slopeNorth);
+                }
+
+                private void setToSlope(int slope){
+                    var sTiles = map.getSelectedTiles();
+                    var tiles = map.getTiles();
+                    System.out.println(slope);
+                    for(var x = sTiles[0]; x < sTiles[2]; x++)
+                        for(var z = sTiles[1]; z < sTiles[3]; z++)
+                            tiles[x + z * map.getWidth()].setSlopeDirection(slope);
+                }
+
+            }.show(view, me.getX(), me.getY());
+        }
         return true;
     }
 
@@ -139,13 +172,14 @@ public class SelectTileModule extends MapViewModule {
         var sW = selected[2];
         var sH = selected[3];
 
-        var groundY = tiles[sX + sY * map.getWidth()].getgroundY();
+        var tile = tiles[sX + sY * map.getWidth()];
+        var groundY = tile.getgroundY();
 
         g.setColor(Color.MAGENTA);
         g.drawLine(x + TW * sX, y + TH * sY, x + TW * sX + TW * sW, y + TH * sY);
         g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * (sH + groundY));
 
-        g.setColor(Color.YELLOW);
+        g.setColor(tile.getSlopeDirection() != Tile.SLOPE_DIRECTION_NONE ? Color.GREEN : Color.YELLOW);
         g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * sH);
     }
 

@@ -174,8 +174,8 @@ public class Tile {
         return height + 1;
     }
 
-    public AABB getHitbox(){
-        return new AABB.TileAABB(x, y, top);
+    public AABB.TileAABB getHitbox(){
+        return new AABB.TileAABB(x, y, top, slopeDirection);
     }
 
     public void bufferVertices() {

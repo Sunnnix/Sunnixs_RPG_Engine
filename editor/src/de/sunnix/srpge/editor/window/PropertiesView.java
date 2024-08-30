@@ -6,6 +6,7 @@ import de.sunnix.srpge.editor.window.customswing.NumberPicker;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
 
@@ -16,8 +17,11 @@ public class PropertiesView extends JPanel {
     private final GridBagConstraints gbc;
 
     // Components
+    private boolean loadingData;
     private NumberPicker wallDrawLayer;
     private NumberPicker floorY, wallHeight;
+
+    private JComboBox<String> slopeDirection;
 
     public PropertiesView(Window window) {
         this.window = window;
@@ -62,6 +66,13 @@ public class PropertiesView extends JPanel {
         wallHeight = new NumberPicker(getString("view.properties.wall_height"), 0, 2, 0, 255);
         wallHeight.addChangeListener(this::wallHeightChanged);
         add(wallHeight, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 2;
+        slopeDirection = new JComboBox<>(new String[]{ "None", "South", "East", "West", "North" });
+        slopeDirection.addActionListener(this::slopeDirectionChanged);
+        add(slopeDirection, gbc);
     }
 
     private void wallDrawLayerChanged(NumberPicker numberPicker, int oldValue, int value) {
@@ -117,6 +128,26 @@ public class PropertiesView extends JPanel {
         window.setProjectChanged();
     }
 
+    private void slopeDirectionChanged(ActionEvent actionEvent) {
+        if(loadingData)
+            return;
+        var mapView = window.getMapView();
+        if(mapView == null)
+            return;
+        var map = window.getSingleton(GameData.class).getMap(mapView.getMapID());
+        if(map == null)
+            return;
+        var sTiles = map.getSelectedTiles();
+        var tiles = map.getTiles();
+        for (int x = sTiles[0]; x < sTiles[0] + sTiles[2]; x++)
+            for (int y = sTiles[1]; y < sTiles[1] + sTiles[3]; y++){
+                var tile = tiles[x + y * map.getWidth()];
+                tile.setSlopeDirection(slopeDirection.getSelectedIndex());
+            }
+        mapView.repaint();
+        window.setProjectChanged();
+    }
+
     private void changeTfComp(JTextField textField, int i) {
         var value = Integer.parseInt(textField.getText());
         value += i;
@@ -132,10 +163,13 @@ public class PropertiesView extends JPanel {
         var map = window.getSingleton(GameData.class).getMap(mapView.getMapID());
         if(map == null)
             return;
+        loadingData = true;
         var sTiles = map.getSelectedTiles();
         var tile = map.getTiles()[sTiles[0] + sTiles[1] * map.getWidth()];
         floorY.setValue(tile.getgroundY(), true);
         wallHeight.setValue(tile.getWallHeight(), true);
+        slopeDirection.setSelectedIndex(tile.getSlopeDirection());
+        loadingData = false;
     }
 
     public void onLoadMap(MapData map) {

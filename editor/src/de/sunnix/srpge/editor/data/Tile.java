@@ -5,6 +5,8 @@ import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
 
+import static de.sunnix.srpge.engine.ecs.Tile.SLOPE_DIRECTION_NONE;
+
 public class Tile {
 
     private static short getLayer(int layer, int data){
@@ -43,6 +45,9 @@ public class Tile {
     @Getter
     @Setter
     private boolean blocking;
+
+    @Getter
+    private byte slopeDirection = SLOPE_DIRECTION_NONE;
 
     public Tile(){}
 
@@ -104,6 +109,8 @@ public class Tile {
         dso.putShort("height", (short)((groundY << 8) + wallHeight));
 
         dso.putBool("blocking", blocking);
+
+        dso.putByte("slope-dir", slopeDirection);
     }
 
     public void loadTile(DataSaveObject dso, int[] version){
@@ -118,6 +125,8 @@ public class Tile {
         wallHeight = (byte)(height & 0xFF);
 
         blocking = dso.getBool("blocking", false);
+
+        slopeDirection = dso.getByte("slope-dir", SLOPE_DIRECTION_NONE);
     }
 
     private void loadTile_v0_3(DataSaveObject dso){
@@ -126,6 +135,10 @@ public class Tile {
         wallTex = new int[shortArr.length];
         for (int i = 0; i < shortArr.length; i++)
             wallTex[i] = shortArr[i];
+    }
+
+    public void setSlopeDirection(int slope) {
+        this.slopeDirection = (byte) slope;
     }
 
 }

@@ -17,6 +17,7 @@ import static de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem.MoveDirect
 
 public class PhysicSystem {
     public static final float EPSILON = 1e-4f;
+    public static final float STEP_AMOUNT = .2f;
 
     private static List<GameObject> objects = new ArrayList<>();
 //    private static RegionGrid regonGrid = new RegionGrid();
@@ -54,9 +55,17 @@ public class PhysicSystem {
                 vel.set(0);
             }
             var comp = obj.getComponent(PhysicComponent.class);
-            comp.setGroundPos(calculateGround(world, obj));
-            if(!comp.isFlying())
-                comp.setFalling(obj.getPosition().y > comp.getGroundPos() + EPSILON);
+            var groundPos = calculateGround(world, obj);
+            comp.setGroundPos(groundPos);
+            if(!comp.isFlying()) {
+                // if object run of slope, push it to the ground
+                if(!comp.isFalling() && comp.getHitbox().getY() - STEP_AMOUNT <= groundPos) {
+                    obj.getPosition().y = groundPos;
+                    comp.reloadHitbox();
+                }
+                else
+                    comp.setFalling(obj.getPosition().y > comp.getGroundPos() + EPSILON);
+            }
         };
     }
 
@@ -220,11 +229,24 @@ public class PhysicSystem {
         var moved = false;
         var check = true;
         var fromTile = false;
+        var preNHB = nHB;
+
+        var upshiftTest = false;
+        var upshift = 0f;
+
         while (check) {
             check = false;
             moved = true;
             for (var other : hitboxes) {
+                if(other instanceof AABB.TileAABB tile)
+                    tile.prepare(nHB);
                 if (nHB.intersects(other)) {
+                    var yDiff = other.getMaxY() - nHB.getY();
+                    if(yDiff > upshift && yDiff < STEP_AMOUNT){
+                        upshiftTest = true;
+                        upshift = yDiff;
+                        continue;
+                    }
                     fromTile = other instanceof AABB.TileAABB;
                     AABB tmpHB = null;
                     var breakLoop = false;
@@ -280,12 +302,29 @@ public class PhysicSystem {
                 }
             }
         }
+        // check if object can step up the height without collision
+        if(upshiftTest){
+            preNHB = preNHB.transform(0, upshift, 0);
+            var success = true;
+            for (var other : hitboxes) {
+                if(other instanceof AABB.TileAABB tile)
+                    tile.prepare(preNHB);
+                if(preNHB.intersects(other)){
+                    success = false;
+                    break;
+                }
+            }
+            if(success){
+                nHB = preNHB;
+                moved = true;
+            }
+        }
         var distanceMoved = sHB.getDistance(nHB);
         return new Tuple4<>(moved, fromTile, moved ? nHB : sHB, distanceMoved);
     }
 
     private static float correctMovement(World world, AABB hitbox, MoveDirection dir, float speed){
-        var cTiles = new ArrayList<AABB>();
+        var cTiles = new ArrayList<AABB.TileAABB>();
         return switch (dir){
             case EAST, WEST -> {
                 var x = 0;
@@ -300,6 +339,7 @@ public class PhysicSystem {
                     cTiles.add(tile.getHitbox());
                 }
                 for(var tile: cTiles){
+                    tile.prepare(hitbox);
                     if(tile.getMaxZ() < hitbox.getMaxZ() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
                         yield -Math.abs(speed) / 2;
                     } else if(tile.getMinZ() > hitbox.getMinZ() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
@@ -321,6 +361,7 @@ public class PhysicSystem {
                     cTiles.add(tile.getHitbox());
                 }
                 for(var tile: cTiles){
+                    tile.prepare(hitbox);
                     if(tile.getMaxX() < hitbox.getMaxX() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
                         yield -Math.abs(speed) / 2;
                     } else if(tile.getMinX() > hitbox.getMinX() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
@@ -335,29 +376,14 @@ public class PhysicSystem {
         };
     }
 
-    private static float getYOnSlope(Tile tile, float x, float z) {
-        float localX = x % 1;
-        float localZ = z % 1;
-
-        return switch (tile.getSlopeDirection()) {
-            case Tile.SLOPE_DIRECTION_NORTH:
-                yield tile.getHeight() * localZ;
-            case Tile.SLOPE_DIRECTION_EAST:
-                yield tile.getHeight() * (1 - localX);
-            case Tile.SLOPE_DIRECTION_SOUTH:
-                yield tile.getHeight() * (1 - localZ);
-            case Tile.SLOPE_DIRECTION_WEST:
-                yield tile.getHeight() * localX;
-            default:
-                throw new IllegalStateException("Unexpected tile slope direction: " + tile.getSlopeDirection());
-        };
-    }
-
     private static float calculateGround(World world, GameObject go) {
         var toCheck = getPlainHitboxes(world, go);
+        var goHB = go.getComponent(PhysicComponent.class).getHitbox();
         var oY = go.getPosition().y;
         var ground = 0f;
         for(var hb: toCheck){
+            if(hb instanceof AABB.TileAABB tile)
+                tile.prepare(goHB);
             if(hb.getMaxY() - EPSILON > oY)
                 continue;
             if(hb.getMaxY() - EPSILON > ground)

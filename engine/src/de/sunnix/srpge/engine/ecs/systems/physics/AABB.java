@@ -1,6 +1,7 @@
 package de.sunnix.srpge.engine.ecs.systems.physics;
 
 import de.sunnix.srpge.engine.ecs.GameObject;
+import de.sunnix.srpge.engine.ecs.Tile;
 import lombok.Getter;
 import org.joml.Vector3f;
 
@@ -43,10 +44,14 @@ public class AABB {
     }
 
     public boolean intersects(AABB other) {
+        if(other instanceof TileAABB tile)
+            tile.prepare(this);
+        if(this instanceof TileAABB tile)
+            tile.prepare(other);
         return this.getMaxX() > other.getMinX() + EPSILON &&
                 this.getMinX() < other.getMaxX() - EPSILON &&
                 this.getMaxY() >= other.getMinY() + EPSILON &&
-                this.getMinY() < other.getMaxY() - EPSILON &&
+                this.getMinY() < other.getMaxY()  - EPSILON &&
                 this.getMaxZ() > other.getMinZ() + EPSILON &&
                 this.getMinZ() < other.getMaxZ() - EPSILON;
     }
@@ -131,8 +136,27 @@ public class AABB {
 
     public static class TileAABB extends AABB {
 
-        public TileAABB(int x, int z, int height){
+        private final byte slopeDirection;
+        private float maxY;
+
+        public TileAABB(int x, int z, int height, byte slopeDirection){
             super(x, 0, z, 1, height);
+            this.slopeDirection = slopeDirection;
+        }
+
+        public void prepare(AABB other){
+            maxY = switch (slopeDirection){
+                case Tile.SLOPE_DIRECTION_NORTH -> super.getMaxY() - 1 + Math.min(1, getMaxZ() - other.getMinZ());
+                case Tile.SLOPE_DIRECTION_EAST -> super.getMaxY() - 1 + Math.min(1, getMaxX() - other.getMinX());
+                case Tile.SLOPE_DIRECTION_WEST -> super.getMaxY() - 1 + Math.min(1, other.getMaxX() - getMinX());
+                case Tile.SLOPE_DIRECTION_SOUTH -> super.getMaxY() - 1 + Math.min(1, other.getMaxZ() - getMinZ());
+                default -> super.getMaxY();
+            };
+        }
+
+        @Override
+        public float getMaxY() {
+            return maxY;
         }
 
     }
