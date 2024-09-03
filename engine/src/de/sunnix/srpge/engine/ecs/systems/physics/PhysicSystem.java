@@ -252,28 +252,40 @@ public class PhysicSystem {
                     var breakLoop = false;
                     switch (dir){
                         case SOUTH -> {
-                            tmpHB = nHB.alignBottom(other);
+                            if(other instanceof AABB.TileAABB) // to prevent stair glitching
+                                tmpHB = sHB;
+                            else
+                                tmpHB = nHB.alignBottom(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
                             }
                         }
                         case EAST -> {
-                            tmpHB = nHB.alignRight(other);
+                            if(other instanceof AABB.TileAABB)
+                                tmpHB = sHB;
+                            else
+                                tmpHB = nHB.alignRight(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
                             }
                         }
                         case WEST -> {
-                            tmpHB = nHB.alignLeft(other);
+                            if(other instanceof AABB.TileAABB)
+                                tmpHB = sHB;
+                            else
+                                tmpHB = nHB.alignLeft(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
                             }
                         }
                         case NORTH -> {
-                            tmpHB = nHB.alignTop(other);
+                            if(other instanceof AABB.TileAABB)
+                                tmpHB = sHB;
+                            else
+                                tmpHB = nHB.alignTop(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;

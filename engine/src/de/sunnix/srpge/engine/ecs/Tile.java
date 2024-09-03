@@ -119,19 +119,19 @@ public class Tile {
             } else {
                 vertices[i * 12] = -.5f + x;
                 vertices[i * 12 + 1] = -1f - y + i - 1;
-                vertices[i * 12 + 2] = y + 1;
+                vertices[i * 12 + 2] = y + .99f;
 
                 vertices[i * 12 + 3] = -.5f + x;
                 vertices[i * 12 + 4] = 0f - y + i - 1;
-                vertices[i * 12 + 5] = y + 1;
+                vertices[i * 12 + 5] = y + .99f;
 
                 vertices[i * 12 + 6] = .5f + x;
                 vertices[i * 12 + 7] = 0f - y + i - 1;
-                vertices[i * 12 + 8] = y + 1;
+                vertices[i * 12 + 8] = y + .99f;
 
                 vertices[i * 12 + 9] = .5f + x;
                 vertices[i * 12 + 10] = -1f - y + i - 1;
-                vertices[i * 12 + 11] = y + 1;
+                vertices[i * 12 + 11] = y + .99f;
             }
             if(tileset != null) {
                 var texArr = tileset.getTexturePositions(tex0);
