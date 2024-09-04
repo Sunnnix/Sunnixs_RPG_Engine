@@ -179,18 +179,30 @@ public class Tile {
     }
 
     public void bufferVertices() {
+        if(vertices == null)
+            return;
         glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 12L * Float.BYTES, vertices);
+        vertices = null;
     }
 
     public void bufferTextures0() {
+        if(texturesLayer0 == null)
+            return;
         glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 8L * Float.BYTES, texturesLayer0);
+        texturesLayer0 = null;
     }
 
     public void bufferTextures1() {
+        if(texturesLayer1 == null)
+            return;
         glBufferSubData(GL_ARRAY_BUFFER, bufferOffset * 8L * Float.BYTES, texturesLayer1);
+        texturesLayer1 = null;
     }
 
     public void bufferIndices() {
+        if(indices == null)
+            return;
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, bufferOffset * 6L * Integer.BYTES, indices);
+        indices = null;
     }
 }

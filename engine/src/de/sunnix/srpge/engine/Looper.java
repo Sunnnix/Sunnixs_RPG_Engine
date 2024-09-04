@@ -44,6 +44,8 @@ public class Looper {
 
         double powerSafeDelay = .968; // designed for 60 fps
 
+        long latestGCTime = System.currentTimeMillis();
+
         while (!glfwWindowShouldClose(Core.getWindow())) {
             double targetFrameTime = 1.0 / Core.getWindow_targetFPS();
             double currentTime = glfwGetTime();
@@ -59,6 +61,12 @@ public class Looper {
                     }
                 continue;
             }
+
+            if(latestGCTime + 5000 < System.currentTimeMillis()){
+                latestGCTime = System.currentTimeMillis();
+                System.gc();
+            }
+
             lastTime = currentTime;
 
             var profilerStart = System.nanoTime();
