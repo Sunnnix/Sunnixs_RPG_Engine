@@ -88,7 +88,7 @@ public class MapView extends JPanel {
                 button = e.getButton();
 
                 if(window.getCurrentMapModule().onMousePresses(MapView.this, mapData, e, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
-                    repaint();
+                    repaint(0, 0, getWidth(), getHeight());
             }
 
             @Override
@@ -107,7 +107,7 @@ public class MapView extends JPanel {
                 button = e.getButton();
 
                 if(window.getCurrentMapModule().onMouseReleased(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
-                    repaint();
+                    repaint(0, 0, getWidth(), getHeight());
             }
 
             @Override
@@ -135,7 +135,7 @@ public class MapView extends JPanel {
                 if((mod & MouseEvent.CTRL_DOWN_MASK) == MouseEvent.CTRL_DOWN_MASK) {
                     offsetX += x - pX;
                     offsetY += y - pY;
-                    repaint();
+                    repaint(0, 0, getWidth(), getHeight());
                     return;
                 }
                 var mapData = window.getSingleton(GameData.class).getMap(mapID);
@@ -151,7 +151,7 @@ public class MapView extends JPanel {
                 preTileY = tilePos[1];
 
                 if(window.getCurrentMapModule().onMouseDragged(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1], sameTile))
-                    repaint();
+                    repaint(0, 0, getWidth(), getHeight());
             }
 
             @Override
@@ -174,7 +174,7 @@ public class MapView extends JPanel {
                     else if(zoom - .05 > 1 / scrollAmount && zoom + .05 < 1 * scrollAmount)
                         zoom = 1;
                     setZoom(zoom);
-                    repaint();
+                    repaint(0, 0, getWidth(), getHeight());
                     return;
                 }
 
@@ -184,7 +184,7 @@ public class MapView extends JPanel {
                 var tilePos = transMapCoordToTileCoord(mapPos[0], mapPos[1]);
 
                 if(window.getCurrentMapModule().omMouseWheelMoved(MapView.this, mapData, e.getModifiersEx(), e.getWheelRotation() > 0, screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
-                    repaint();
+                    repaint(0, 0, getWidth(), getHeight());
             }
 
             private int[] transScreenCoordToMapCoord(int x, int y){

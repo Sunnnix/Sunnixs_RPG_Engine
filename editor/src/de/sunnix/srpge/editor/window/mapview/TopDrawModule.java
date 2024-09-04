@@ -4,10 +4,12 @@ import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.resource.Tileset;
+import org.luaj.vm2.ast.Str;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Stack;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
@@ -157,10 +159,15 @@ public class TopDrawModule extends MapViewModule {
         var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
         var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
 
+        var minX = -x / TW;
+        var minY = -y / TH;
+        var maxX = minX + screenWidth / TW + 2;
+        var maxY = minY + screenHeight / TH + 2;
+
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
-        for (var tX = 0; tX < mapWidth; tX++)
-            for (var tY = 0; tY < mapHeight; tY++) {
+        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
+            for (var tY = Math.max(0, minY); tY < Math.min(mapHeight, maxY); tY++) {
                 var tile = tiles[tX + tY * mapWidth];
                 for (var layer = 0; layer < 2; layer++) {
                     // dragFillTool
@@ -203,8 +210,8 @@ public class TopDrawModule extends MapViewModule {
         if(window.isShowGrid()) {
             g.setColor(Color.BLACK);
             g.setFont(g.getFont().deriveFont(Font.BOLD, 16f));
-            for (int tX = 0; tX < mapWidth; tX++)
-                for (int tY = 0; tY < mapHeight; tY++) {
+            for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
+                for (var tY = Math.max(0, minY); tY < Math.min(mapHeight, maxY); tY++) {
                     var tile = tiles[tX + tY * mapWidth];
                     var groundY = tile.getgroundY();
                     g.drawRect(x + TW * tX, y + TH * tY, TW, TH);
@@ -241,32 +248,48 @@ public class TopDrawModule extends MapViewModule {
     }
 
     private void startFillTiles(MapData map, int x, int y, int layer, int tilesetIndex, int index){
-        if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
+        if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
             return;
         int tTS, tIndex;
         var tiles = map.getTiles();
         var sTile = tiles[x + y * map.getWidth()];
         tTS = sTile.getGroundTex()[layer * 2];
         tIndex = sTile.getGroundTex()[layer * 2 + 1];
-        if(tTS == tilesetIndex && tIndex == index)
+        if (tTS == tilesetIndex && tIndex == index)
             return;
         fillTiles(map, x, y, layer, tTS, tIndex, tilesetIndex, index);
         window.setProjectChanged();
     }
 
-    private void fillTiles(MapData map, int x, int y, int layer, int rootTS, int rootIndex, int changeTS, int changeIndex){
-        if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
-            return;
-        var tile = map.getTiles()[x + y * map.getWidth()];
-        var tex = tile.getGroundTex();
-        if(tex[layer * 2] != rootTS || tex[layer * 2 + 1] != rootIndex)
-            return;
-        setTile(map, x, y, layer, changeTS, changeIndex, false);
+    private void fillTiles(MapData map, int startX, int startY, int layer, int rootTS, int rootIndex, int changeTS, int changeIndex){
+        var width = map.getWidth();
+        var height = map.getHeight();
+        var tiles = map.getTiles();
 
-        fillTiles(map, x, y - 1, layer, rootTS, rootIndex, changeTS, changeIndex);
-        fillTiles(map, x, y + 1, layer, rootTS, rootIndex, changeTS, changeIndex);
-        fillTiles(map, x - 1, y, layer, rootTS, rootIndex, changeTS, changeIndex);
-        fillTiles(map, x + 1, y, layer, rootTS, rootIndex, changeTS, changeIndex);
+        var stack = new Stack<int[]>();
+        stack.push(new int[]{startX, startY});
+
+        while (!stack.isEmpty()) {
+            int[] pos = stack.pop();
+            int x = pos[0];
+            int y = pos[1];
+
+            if (x < 0 || x >= width || y < 0 || y >= height)
+                continue;
+
+            var tile = tiles[x + y * width];
+            var tex = tile.getGroundTex();
+
+            if (tex[layer * 2] != rootTS || tex[layer * 2 + 1] != rootIndex)
+                continue;
+
+            setTile(map, x, y, layer, changeTS, changeIndex, false);
+
+            stack.push(new int[]{x, y - 1});
+            stack.push(new int[]{x, y + 1});
+            stack.push(new int[]{x - 1, y});
+            stack.push(new int[]{x + 1, y});
+        }
     }
 
     private BufferedImage[] loadTilesets(String[] tilesets){

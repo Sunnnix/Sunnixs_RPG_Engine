@@ -114,14 +114,23 @@ public class SelectTileModule extends MapViewModule {
         var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
         var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
 
+        var minX = -x / TW;
+        var minY = -y / TH;
+        var maxX = minX + screenWidth / TW + 2;
+        var maxY = minY + screenHeight / TH + 2;
+
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
         // ground tex
-        for (var tX = 0; tX < mapWidth; tX++)
-            for (var tY = 0; tY < mapHeight; tY++){
+        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
+            for (var tY = 0; tY < mapHeight; tY++) {
                 var tile = tiles[tX + tY * mapWidth];
 
                 var floorY = tile.getgroundY();
+                var wallHeight = tile.getWallHeight();
+
+                if(tY < minY || tY - Math.max(floorY, wallHeight) > maxY)
+                    continue;
 
                 var dX = x + tX * TW;
                 var dY = y + (tY - floorY) * TH;
@@ -141,7 +150,7 @@ public class SelectTileModule extends MapViewModule {
                     g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 // wall tex
-                for(var wall = 0; wall < tile.getWallHeight(); wall++){
+                for(var wall = 0; wall < wallHeight; wall++){
                     for(var layer = 0; layer < 2; layer++){
                         tex = tile.getWallTex(wall);
                         var wallTS = tex[layer * 2];
@@ -161,8 +170,8 @@ public class SelectTileModule extends MapViewModule {
 
         if(window.isShowGrid()) {
             g.setColor(Color.BLACK);
-            for (int i = 0; i < mapWidth; i++)
-                for (int j = 0; j < mapHeight; j++)
+            for (var i = Math.max(0, minX); i < Math.min(mapWidth, maxX); i++)
+                for (var j = Math.max(0, minY); j < Math.min(mapHeight, maxY); j++)
                     g.drawRect(x + TW * i, y + TH * j, TW, TH);
         }
 

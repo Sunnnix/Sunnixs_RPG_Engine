@@ -7,6 +7,7 @@ import de.sunnix.srpge.editor.window.resource.Resources;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Stack;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
@@ -166,17 +167,26 @@ public class WallDrawModule extends MapViewModule {
         var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
         var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
 
+        var minX = -x / TW;
+        var minY = -y / TH;
+        var maxX = minX + screenWidth / TW + 2;
+        var maxY = minY + screenHeight / TH + 2;
+
         var wallDrawLayer = window.getPropertiesView().getWallDrawLayer();
 
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
         // draw complete with black layer
         g.setColor(new Color(0f, 0f, 0f, .75f));
-        for (var tX = 0; tX < mapWidth; tX++)
+        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
             for (var tY = 0; tY < mapHeight; tY++) {
                 var tile = tiles[tX + tY * mapWidth];
 
                 var floorY = tile.getgroundY();
+                var wallHeight = tile.getWallHeight();
+
+                if(tY < minY || tY - Math.max(floorY, wallHeight) > maxY)
+                    continue;
 
                 var dX = x + tX * TW;
                 var dY = y + (tY - floorY) * TH;
@@ -197,7 +207,7 @@ public class WallDrawModule extends MapViewModule {
                 }
                 g.fillRect(dX, dY, TW, TH);
                 // draw walls
-                for (var wall = 0; wall < tile.getWallHeight(); wall++) {
+                for (var wall = 0; wall < wallHeight; wall++) {
                     for (var layer = 0; layer < 2; layer++) {
                         var tex = tile.getWallTex(wall);
                         var wallTS = tex[layer * 2];
@@ -218,7 +228,7 @@ public class WallDrawModule extends MapViewModule {
 
         // draw selected layer
         g.setColor(Color.BLACK);
-        for (var tX = 0; tX < mapWidth; tX++){
+        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++) {
             var tile = tiles[tX + wallDrawLayer * mapWidth];
 
             var floorY = tile.getgroundY();
@@ -332,22 +342,40 @@ public class WallDrawModule extends MapViewModule {
         window.setProjectChanged();
     }
 
-    private void fillTiles(MapData map, int x, int y, int layer, int wall, int rootTS, int rootIndex, int changeTS, int changeIndex){
-        if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
-            return;
-        var tile = map.getTiles()[x + y * map.getWidth()];
-        var wallHeight = tile.getWallHeight();
-        if(wall >= wallHeight || wall < 0)
-            return;
-        var tex = tile.getWallTex(wall);
-        if(tex[layer * 2] != rootTS || tex[layer * 2 + 1] != rootIndex)
-            return;
-        setTileWall(map, x, y, layer, wall, changeTS, changeIndex, false);
+    private void fillTiles(MapData map, int startX, int startY, int layer, int startWall, int rootTS, int rootIndex, int changeTS, int changeIndex){
+        var width = map.getWidth();
+        var height = map.getHeight();
+        var tiles = map.getTiles();
 
-        fillTiles(map, x, y, layer, wall - 1, rootTS, rootIndex, changeTS, changeIndex);
-        fillTiles(map, x, y, layer, wall + 1, rootTS, rootIndex, changeTS, changeIndex);
-        fillTiles(map, x - 1, y, layer, wall, rootTS, rootIndex, changeTS, changeIndex);
-        fillTiles(map, x + 1, y, layer, wall, rootTS, rootIndex, changeTS, changeIndex);
+        var stack = new Stack<int[]>();
+        stack.push(new int[]{startX, startY, startWall});
+
+        while (!stack.isEmpty()) {
+            int[] pos = stack.pop();
+            int x = pos[0];
+            int y = pos[1];
+            int wall = pos[2];
+
+            if (x < 0 || x >= width || y < 0 || y >= height)
+                continue;
+
+            var tile = tiles[x + y * width];
+            var wallHeight = tile.getWallHeight();
+            if(wall >= wallHeight || wall < 0)
+                continue;
+
+            var tex = tile.getWallTex(wall);
+
+            if (tex[layer * 2] != rootTS || tex[layer * 2 + 1] != rootIndex)
+                continue;
+
+            setTileWall(map, x, y, layer, wall, changeTS, changeIndex, false);
+
+            stack.push(new int[]{x, y, wall + 1});
+            stack.push(new int[]{x, y, wall - 1});
+            stack.push(new int[]{x - 1, y, wall});
+            stack.push(new int[]{x + 1, y, wall});
+        }
     }
 
     private BufferedImage[] loadTilesets(String[] tilesets){
