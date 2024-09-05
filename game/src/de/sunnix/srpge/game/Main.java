@@ -28,6 +28,7 @@ public class Main {
         Core.setPower_safe_mode(Arrays.stream(args).anyMatch("psm"::equalsIgnoreCase));
         Core.setVsync(Arrays.stream(args).anyMatch("vsync"::equalsIgnoreCase));
         Core.setDebug(Arrays.stream(args).anyMatch("debug"::equalsIgnoreCase));
+        Core.setUse_manual_gc(Arrays.stream(args).anyMatch("use_manual_gc"::equalsIgnoreCase));
 
         Core.createWindow("game", 1280, 720, null);
 

@@ -16,6 +16,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class GameObject extends MemoryHolder {
 
@@ -62,6 +63,9 @@ public class GameObject extends MemoryHolder {
     @Getter
     private List<Event> events = new ArrayList<>();
 
+    private List<TrippleConsumer<Vector3f, Vector3f, GameObject>> positionSubscribers = new ArrayList<>();
+    private List<Consumer<GameObject>> markDirtySubscribers = new ArrayList<>();
+
     static {
         Data.registerDataToMap(GameObject.class, dataHolder);
     }
@@ -83,7 +87,7 @@ public class GameObject extends MemoryHolder {
         this(world, dso.getInt("ID", -1));
         this.name = dso.getString("name", null);
         this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
-        this.position.set(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
+        this.setPosition(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
 
         events.addAll(dso.getObject("events").<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.createEvent(eDSO.getString("ID", null), eDSO)).toList());
 
@@ -94,6 +98,7 @@ public class GameObject extends MemoryHolder {
         if(!inited) {
             this.components.values().forEach(c -> c.init(world, this));
             this.inited = true;
+            markDirty();
         }
         return this;
     }
@@ -186,6 +191,30 @@ public class GameObject extends MemoryHolder {
         this.toDelete = true;
     }
 
+    public void setPosition(float x, float y, float z){
+        var newPos = new Vector3f(x, y, z);
+        positionSubscribers.forEach(c -> c.accept(position, newPos, this));
+        position.set(newPos);
+        markDirty();
+    }
+
+    public void addPosition(float x, float y, float z){
+        setPosition(position.x + x, position.y + y, position.z + z);
+    }
+
+    public void addMarkDirtySubscriber(Consumer<GameObject> subscriber){
+        markDirtySubscribers.add(subscriber);
+    }
+
+    public void markDirty(){
+        for(var markDirtySubscriber: markDirtySubscribers)
+            markDirtySubscriber.accept(this);
+    }
+
+    public void addPositionSubscriber(TrippleConsumer<Vector3f, Vector3f, GameObject> subscriber){
+        positionSubscribers.add(subscriber);
+    }
+
     public Collection<State> getStates(){
         return states.stream().toList();
     }
@@ -208,5 +237,11 @@ public class GameObject extends MemoryHolder {
     @Override
     protected void free() {
         components.values().forEach(Component::freeMemory);
+    }
+
+    public interface TrippleConsumer<T, J, K> {
+
+        void accept(T t, J j, K k);
+
     }
 }

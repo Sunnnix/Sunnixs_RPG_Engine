@@ -44,6 +44,9 @@ public class RenderComponent extends Component{
         renderObject = new TextureRenderObject(tex);
         renderObject.getSize().set((float) tex.getWidth() / tex.getTileWidth(), (float) tex.getHeight() / tex.getTileHeight());
         RenderSystem.addGO(parent);
+        parent.addPositionSubscriber(RenderSystem::relocateGridObject);
+        parent.addMarkDirtySubscriber(RenderSystem::markDirty);
+        RenderSystem.relocateGridObject(parent.getPosition(), parent.getPosition(), parent);
     }
 
     public void render(GameObject go) {

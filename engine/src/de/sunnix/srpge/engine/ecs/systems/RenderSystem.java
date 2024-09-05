@@ -1,8 +1,13 @@
 package de.sunnix.srpge.engine.ecs.systems;
 
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
+import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
+import de.sunnix.srpge.engine.graphics.Camera;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Function;
@@ -12,15 +17,27 @@ public class RenderSystem {
     public static final float EPSILON = 1e-4f;
 
     private static final ArrayList<GameObject> objects = new ArrayList<>();
+    private static MapGrid mapGrid;
+
+    public static void initMapGrid(int width, int height){
+        mapGrid = new MapGrid(width, height);
+    }
 
     public static void renderObjects() {
-        objects.forEach(go -> {
+        final var camSize = Camera.getSize().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1.5f);
+        final var camPos = Camera.getPos().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1, -1).sub(camSize.div(2, new Vector2f()));
+
+        for(var go: objects) {
+            var goPos = go.getPosition();
+            var goSize = go.size;
+            if(goPos.x > camPos.x + camSize.x || goPos.x + goSize.x < camPos.x || goPos.z - goPos.y > camPos.y + camSize.y || goPos.z + goSize.x < camPos.y)
+                continue;
             var rc = go.getComponent(RenderComponent.class);
             if(rc == null)
                 Component.RENDER.render(go); // Old Renderer
             else
                 rc.render(go); // New Renderer
-        });
+        }
     }
 
     public static void addGO(GameObject go) {
@@ -32,7 +49,11 @@ public class RenderSystem {
         var pos2 = o2.getPosition();
         var size1 = o1.getSize();
         var size2 = o2.getSize();
-        return !(pos1.x >= pos2.x + size2.x || pos1.x + size1.x <= pos2.x || pos1.z + .12f > pos2.z + size2.x || pos1.z + size1.x <= pos2.z);
+
+        var hb1 = new AABB(pos1.x, 0, pos1.z, size1.x, 1);
+        var hb2 = new AABB(pos2.x, 0, pos2.z, size2.x, 1);
+
+        return hb1.intersects(hb2);
     }
 
     private static <T> T findFirst(Collection<T> list, Function<T, Boolean> filter){
@@ -43,8 +64,9 @@ public class RenderSystem {
     }
 
     public static void prepareRender() {
-        // TODO optimizing with chunks
-
+        var objects = mapGrid.getDirtyObjects();
+        if(objects.isEmpty())
+           return;
         objects.forEach(go -> go.setZ_pos(go.getPosition().z + go.size.x));
 
         var colliding = new ArrayList<Set<GameObject>>();
@@ -92,5 +114,13 @@ public class RenderSystem {
                         }
                 }
         }
+    }
+
+    public static void relocateGridObject(Vector3f prePos, Vector3f newPos, GameObject object) {
+        mapGrid.relocateGridObject(prePos, newPos, object);
+    }
+
+    public static void markDirty(GameObject object) {
+        mapGrid.markDirty(object);
     }
 }

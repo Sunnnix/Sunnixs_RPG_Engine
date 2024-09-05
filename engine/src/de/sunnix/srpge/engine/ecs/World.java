@@ -50,6 +50,9 @@ public class World {
         var mapDSO = new DataSaveObject().load(zip.getInputStream(new ZipEntry(String.format("maps\\%04d.map", startMapID))));
         map = new TileMap(mapDSO);
 
+        RenderSystem.initMapGrid(map.width, map.height);
+        PhysicSystem.initMapGrid(map.width, map.height);
+
         // Player
         player = new GameObject(this, new DataSaveObject().load(zip.getInputStream(new ZipEntry("player"))));
         player.size.set(.78, 1.8);
@@ -70,9 +73,19 @@ public class World {
         for (var i = 0; i < 9; i++){
             var obj = new GameObject(this, 1, 1);
 //            obj.getPosition().set((int)(Math.random() * map.width), (int)(Math.random() * 5), (int)(Math.random() * map.height));
-            obj.getPosition().set(2 - i / 3, i % 3, 7);
+            obj.setPosition(2 - i / 3, i % 3, 7);
             if(i == 8)
-                obj.getPosition().set(3, 0, 8);
+                obj.setPosition(3, 0, 8);
+            var dso = new DataSaveObject();
+            dso.putString("sprite", "objects/box");
+            obj.addComponent(new RenderComponent(dso));
+            obj.addComponent(new PhysicComponent()).setFlying(true);
+            obj.init(this);
+        }
+
+        for (var i = 0; i < 0; i++){
+            var obj = new GameObject(this, 1, 1);
+            obj.setPosition((int)(Math.random() * map.width), (int)(Math.random() * 5), (int)(Math.random() * map.height));
             var dso = new DataSaveObject();
             dso.putString("sprite", "objects/box");
             obj.addComponent(new RenderComponent(dso));

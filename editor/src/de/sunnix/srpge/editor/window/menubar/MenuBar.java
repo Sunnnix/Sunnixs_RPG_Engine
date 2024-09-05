@@ -74,6 +74,10 @@ public class MenuBar extends JMenuBar {
             gameConfig.put("debug", b);
             config.set("game", gameConfig);
         }));
+        mm.add(createCheckboxMenu(getString("menu.game.use_manual_gc"), gameConfig.get("use_manual_gc", false), b -> {
+            gameConfig.put("use_manual_gc", b);
+            config.set("game", gameConfig);
+        }));
         return mm;
     }
 

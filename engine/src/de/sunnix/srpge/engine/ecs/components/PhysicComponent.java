@@ -47,6 +47,9 @@ public class PhysicComponent extends Component {
         super.init(world, go);
         hitbox = new AABB(go);
         PhysicSystem.add(go);
+        go.addPositionSubscriber(PhysicSystem::relocateGridObject);
+        go.addMarkDirtySubscriber(PhysicSystem::markDirty);
+        PhysicSystem.relocateGridObject(go.getPosition(), go.getPosition(), go);
         if(Core.isDebug())
             dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
         if(hasShadow && go.getComponent(RenderComponent.class) != null){

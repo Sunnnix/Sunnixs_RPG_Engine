@@ -199,6 +199,8 @@ public class Toolbar extends JToolBar {
             args.add("vsync");
         if(config.get("debug", false))
             args.add("debug");
+        if(config.get("use_manual_gc", false))
+            args.add("use_manual_gc");
 
         ProcessBuilder processBuilder = new ProcessBuilder(args.toArray(String[]::new));
 
@@ -223,6 +225,8 @@ public class Toolbar extends JToolBar {
                 args.add("vsync");
             if(config.get("debug", false))
                 args.add("debug");
+            if(config.get("use_manual_gc", false))
+                args.add("use_manual_gc");
 
             ProcessBuilder processBuilder = new ProcessBuilder(args.toArray(String[]::new));
 

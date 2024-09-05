@@ -64,7 +64,8 @@ public class Looper {
 
             if(latestGCTime + 5000 < System.currentTimeMillis()){
                 latestGCTime = System.currentTimeMillis();
-                System.gc();
+                if(Core.isUse_manual_gc())
+                    System.gc();
             }
 
             lastTime = currentTime;

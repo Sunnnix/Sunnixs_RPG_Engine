@@ -83,6 +83,10 @@ public class Core {
     @Getter
     private static boolean debug;
 
+    @Getter
+    @Setter
+    private static boolean use_manual_gc;
+
     // *************************************************************** //
     //                        Window properties                        //
     // *************************************************************** //

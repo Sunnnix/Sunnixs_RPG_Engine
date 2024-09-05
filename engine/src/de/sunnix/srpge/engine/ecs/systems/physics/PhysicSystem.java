@@ -2,10 +2,11 @@ package de.sunnix.srpge.engine.ecs.systems.physics;
 
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.GameObject;
-import de.sunnix.srpge.engine.ecs.Tile;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
+import de.sunnix.srpge.engine.ecs.systems.MapGrid;
+import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.util.Tuple.*;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -20,6 +21,9 @@ public class PhysicSystem {
     public static final float STEP_AMOUNT = .2f;
 
     private static List<GameObject> objects = new ArrayList<>();
+
+    private static MapGrid mapGrid;
+
 //    private static RegionGrid regonGrid = new RegionGrid();
 
 //    public static void reloadRegions(Collection<GameObject> objects){
@@ -29,12 +33,15 @@ public class PhysicSystem {
 //        }
 //    }
 
+    public static void initMapGrid(int width, int height){
+        mapGrid = new MapGrid(width, height);
+    }
+
     public static void add(GameObject go){
         objects.add(go);
     }
 
     public static void update(World world) {
-//        reloadRegions(objects);
         for(var obj : objects){
             var comp = obj.getComponent(PhysicComponent.class);
             if(!comp.isFlying() && comp.isFalling()){
@@ -50,10 +57,13 @@ public class PhysicSystem {
         }
         for(var obj : objects) {
             var vel = obj.getVelocity();
-            if(!vel.equals(0, 0, 0)) {
+            if (!vel.equals(0, 0, 0)) {
                 move(world, obj, vel.x, vel.y, vel.z);
                 vel.set(0);
             }
+        }
+        var toCheck = mapGrid.getDirtyObjects();
+        for(var obj: toCheck){
             var comp = obj.getComponent(PhysicComponent.class);
             var groundPos = calculateGround(world, obj);
             comp.setGroundPos(groundPos);
@@ -70,12 +80,18 @@ public class PhysicSystem {
     }
 
     public static void renderShadows(){
+        final var camSize = Camera.getSize().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1.5f);
+        final var camPos = Camera.getPos().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1, -1).sub(camSize.div(2, new Vector2f()));
+
         for(var obj: objects){
             if(obj.getComponent(RenderComponent.class) == null)
                 continue;
             var comp = obj.getComponent(PhysicComponent.class);
-            var shadow = comp.getShadow();
             var pos = obj.getPosition().mul(1, 0, 1, new Vector3f()).add(0, -comp.getGroundPos(), 0); // set y to ground pos
+            var goSize = obj.size;
+            if(!comp.isHasShadow() || pos.x > camPos.x + camSize.x || pos.x + goSize.x < camPos.x || pos.z - pos.y > camPos.y + camSize.y || pos.z + goSize.x < camPos.y)
+                continue;
+            var shadow = comp.getShadow();
             pos.y -= (obj.size.x * Core.TILE_HEIGHT / 2 - shadow.getSize().y / 2) / Core.TILE_HEIGHT; // center texture if shadow is smaller then object
             comp.getShadow().render(pos, obj.size.x, obj.getZ_pos());
         }
@@ -125,7 +141,7 @@ public class PhysicSystem {
 
         if (moved) {
             var pPos = go.getPosition();
-            pPos.set(hitbox.getX(), hitbox.getY(), hitbox.getZ());
+            go.setPosition(hitbox.getX(), hitbox.getY(), hitbox.getZ());
             if (pPos.y < 0)
                 pPos.y = 0;
             comp.reloadHitbox();
@@ -200,7 +216,7 @@ public class PhysicSystem {
     }
 
     private static List<AABB> getHitboxes(World world, GameObject go, AABB sHB, AABB nHB){
-        var list = new ArrayList<>(objects.stream().filter(obj -> !obj.equals(go)).map(obj -> obj.getComponent(PhysicComponent.class).getHitbox()).toList());
+        var list = new ArrayList<>(mapGrid.getMatchingMapGridObjets(go).stream().filter(obj -> !obj.equals(go)).map(obj -> obj.getComponent(PhysicComponent.class).getHitbox()).toList());
         var tiles = new ArrayList<AABB>();
         for(var x = (int) Math.min(sHB.getMinX(), nHB.getMinX()); x <= Math.max(Math.ceil(sHB.getMaxX()), Math.ceil(nHB.getMaxX())); x++)
             for(var z = (int) Math.min(sHB.getMinZ(), nHB.getMinZ()); z <= Math.max(Math.ceil(sHB.getMaxZ()), Math.ceil(nHB.getMaxZ())); z++){
@@ -408,6 +424,7 @@ public class PhysicSystem {
         var list = new ArrayList<AABB>();
         var hb = go.getComponent(PhysicComponent.class).getHitbox();
         hb = hb.transform(0, -hb.getY(), 0).resize(hb.getWidth(), Float.POSITIVE_INFINITY);
+        var objects = mapGrid.getMatchingMapGridObjets(go);
         for(var obj: objects){
             if(obj.equals(go))
                 continue;
@@ -430,6 +447,7 @@ public class PhysicSystem {
     private static List<GameObject> getObjectsOnTop(GameObject go, AABB hitbox){
         var list = new ArrayList<GameObject>();
         hitbox = hitbox.transform(0, .1f, 0);
+        var objects = mapGrid.getMatchingMapGridObjets(go);
         for(var obj: objects){
             if(obj.equals(go))
                 continue;
@@ -443,6 +461,14 @@ public class PhysicSystem {
                         list.add(obj);
         }
         return list;
+    }
+
+    public static void relocateGridObject(Vector3f prePos, Vector3f newPos, GameObject object) {
+        mapGrid.relocateGridObject(prePos, newPos, object);
+    }
+
+    public static void markDirty(GameObject object) {
+        mapGrid.markDirty(object);
     }
 
 }
