@@ -36,7 +36,8 @@ public class ObjectListView extends JScrollPane {
         list.addListSelectionListener(l -> {
             if(reload)
                 return;
-            map.setSelectedObject(objectList.getSelectedIndex());
+            if(map != null)
+                map.setSelectedObject(objectList.getSelectedIndex());
             window.getMapTabsView().repaint();
         });
         return list;

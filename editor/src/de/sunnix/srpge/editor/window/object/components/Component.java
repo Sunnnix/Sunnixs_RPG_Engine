@@ -50,6 +50,10 @@ public abstract class Component implements Cloneable{
         }
     }
 
+    public String[] getDependencies(){
+        return new String[0];
+    }
+
     public void onDraw(Window window, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {}
 
 }

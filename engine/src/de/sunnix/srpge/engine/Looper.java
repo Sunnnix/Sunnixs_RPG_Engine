@@ -20,6 +20,8 @@ public class Looper {
     private static final List<LoopSubscriber> subscriber = new ArrayList<>();
     private static final List<String> unsubscriber = new LinkedList<>();
 
+    private static final int GC_TIME = 30_000;
+
     private static int ticks;
 
     static void subscribe(@NonNull String id, int period, Consumer<Integer> onTick) {
@@ -62,7 +64,7 @@ public class Looper {
                 continue;
             }
 
-            if(latestGCTime + 5000 < System.currentTimeMillis()){
+            if(latestGCTime + GC_TIME < System.currentTimeMillis()){
                 latestGCTime = System.currentTimeMillis();
                 if(Core.isUse_manual_gc())
                     System.gc();

@@ -24,8 +24,12 @@ public class TilesetTabView extends JTabbedPane {
         if(map == null)
             return;
         var tilesets = map.getTilesets();
-        for (var ts: tilesets)
-            addTab(ts, new JScrollPane(new TilesetView(window, this, ts)));
+        for (var ts: tilesets) {
+            var scroll = new JScrollPane(new TilesetView(window, this, ts));
+            scroll.getVerticalScrollBar().setUnitIncrement(16);
+            scroll.getHorizontalScrollBar().setUnitIncrement(16);
+            addTab(ts, scroll);
+        }
         var index = map.getSelectedTileset();
         if(index < getTabCount())
             setSelectedIndex(index);

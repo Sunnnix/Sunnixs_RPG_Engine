@@ -56,15 +56,13 @@ public class World {
         // Player
         player = new GameObject(this, new DataSaveObject().load(zip.getInputStream(new ZipEntry("player"))));
         player.size.set(.78, 1.8);
-        player.addComponent(new PhysicComponent());
+        player.addComponent(new PhysicComponent(new DataSaveObject()));
         player.init(this);
 
         // Load objects
         mapDSO.<DataSaveObject>getList("objects").forEach(o -> {
             var object = new GameObject(this, o);
             object.size.set(1, 1);
-            var comp = object.addComponent(new PhysicComponent());
-            comp.setFlying(true);
             object.init(this);
         });
 
@@ -72,14 +70,12 @@ public class World {
 
         for (var i = 0; i < 9; i++){
             var obj = new GameObject(this, 1, 1);
-//            obj.getPosition().set((int)(Math.random() * map.width), (int)(Math.random() * 5), (int)(Math.random() * map.height));
             obj.setPosition(2 - i / 3, i % 3, 7);
             if(i == 8)
                 obj.setPosition(3, 0, 8);
             var dso = new DataSaveObject();
             dso.putString("sprite", "objects/box");
             obj.addComponent(new RenderComponent(dso));
-            obj.addComponent(new PhysicComponent()).setFlying(true);
             obj.init(this);
         }
 
@@ -89,7 +85,6 @@ public class World {
             var dso = new DataSaveObject();
             dso.putString("sprite", "objects/box");
             obj.addComponent(new RenderComponent(dso));
-            obj.addComponent(new PhysicComponent()).setFlying(true);
             obj.init(this);
         }
 

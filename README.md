@@ -98,7 +98,7 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Description                                           | Planned | Progress | Priority |
 |-------------------------------------------------------|---------|----------|----------|
 | Tile animation                                        | 0.7     | 0%       | Medium   |
-| Physics System                                        | 0.7     | 95%      | High     |
+| Physics System                                        | 0.7     | 100%     | High     |
 | Map Transition System / Teleporter objects and events | 0.7     | 0%       | High     |
 | Lua implementation for Events                         | 0.7     | 75%      | Medium   |
 | Lua implementation for KI                             | n/a     | 0%       | Medium   |

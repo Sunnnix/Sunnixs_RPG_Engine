@@ -12,6 +12,7 @@ public class ComponentRegistry {
 
     static {
         add("render", RenderComponent::new);
+        add("physic", PhysicComponent::new);
     }
 
     public static void add(String id, Function<DataSaveObject, Component> componentBuilder){

@@ -23,6 +23,7 @@ public class ClosableTitledBorder extends TitledBorder {
      */
     public ClosableTitledBorder(String title) {
         super(title);
+        setTitleFont(getTitleFont().deriveFont(Font.BOLD));
     }
 
     @Override

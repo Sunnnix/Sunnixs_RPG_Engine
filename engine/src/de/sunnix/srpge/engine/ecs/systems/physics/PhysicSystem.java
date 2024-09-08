@@ -114,6 +114,11 @@ public class PhysicSystem {
 
     private static void move(World world, GameObject go, float dx, float dy, float dz) {
         var comp = go.getComponent(PhysicComponent.class);
+        if(!comp.isCollision()){
+            go.addPosition(dx, dy, dz);
+            comp.reloadHitbox();
+            return;
+        }
         var hitbox = comp.getHitbox();
         var moved = false;
 
@@ -216,7 +221,7 @@ public class PhysicSystem {
     }
 
     private static List<AABB> getHitboxes(World world, GameObject go, AABB sHB, AABB nHB){
-        var list = new ArrayList<>(mapGrid.getMatchingMapGridObjets(go).stream().filter(obj -> !obj.equals(go)).map(obj -> obj.getComponent(PhysicComponent.class).getHitbox()).toList());
+        var list = new ArrayList<>(mapGrid.getMatchingMapGridObjets(go).stream().filter(obj -> !obj.equals(go) && obj.getComponent(PhysicComponent.class).isCollision()).map(obj -> obj.getComponent(PhysicComponent.class).getHitbox()).toList());
         var tiles = new ArrayList<AABB>();
         for(var x = (int) Math.min(sHB.getMinX(), nHB.getMinX()); x <= Math.max(Math.ceil(sHB.getMaxX()), Math.ceil(nHB.getMaxX())); x++)
             for(var z = (int) Math.min(sHB.getMinZ(), nHB.getMinZ()); z <= Math.max(Math.ceil(sHB.getMaxZ()), Math.ceil(nHB.getMaxZ())); z++){
@@ -428,7 +433,10 @@ public class PhysicSystem {
         for(var obj: objects){
             if(obj.equals(go))
                 continue;
-            var oHB = obj.getComponent(PhysicComponent.class).getHitbox();
+            var comp = obj.getComponent(PhysicComponent.class);
+            if(!comp.isCollision())
+                continue;
+            var oHB = comp.getHitbox();
             if(oHB.intersects(hb))
                 list.add(oHB);
         }
@@ -452,7 +460,7 @@ public class PhysicSystem {
             if(obj.equals(go))
                 continue;
             var comp = obj.getComponent(PhysicComponent.class);
-            if(comp.isFalling())
+            if(!comp.isCollision() || comp.isFalling())
                 continue;
             var oHB = comp.getHitbox();
             if(oHB.intersects(hitbox))

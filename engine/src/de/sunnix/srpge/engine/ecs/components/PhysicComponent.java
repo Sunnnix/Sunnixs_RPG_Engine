@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs.components;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
@@ -22,10 +23,11 @@ public class PhysicComponent extends Component {
 
     @Setter(AccessLevel.NONE)
     private AABB hitbox;
-    private float weight = .8f, jumpSpeed = .26f, fallSpeed;
+    private float weight, jumpSpeed, fallSpeed;
+    private boolean collision;
     private boolean falling;
     private boolean flying;
-    private boolean platform = true;
+    private boolean platform;
 
     private int fallingTime;
     private boolean jumped;
@@ -40,7 +42,16 @@ public class PhysicComponent extends Component {
     @Setter(AccessLevel.NONE)
     private RenderObject shadow;
 
-    private boolean hasShadow = true;
+    private boolean hasShadow;
+
+    public PhysicComponent(DataSaveObject dso) {
+        weight = dso.getFloat("weight", .8f);
+        jumpSpeed = dso.getFloat("jump_speed", .26f);
+        collision = dso.getBool("collision", true);
+        flying = dso.getBool("flying", false);
+        platform = dso.getBool("platform", false);
+        hasShadow = dso.getBool("has_shadow", true);
+    }
 
     @Override
     public void init(World world, GameObject go) {

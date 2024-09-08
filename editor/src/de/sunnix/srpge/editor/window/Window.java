@@ -8,6 +8,7 @@ import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
+import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
 import de.sunnix.srpge.editor.window.object.components.RenderComponent;
 import de.sunnix.srpge.editor.window.object.events.*;
 import de.sunnix.srpge.editor.window.resource.Resources;
@@ -174,6 +175,7 @@ public class Window extends JFrame {
 
     private void registerComponents(){
         ComponentRegistry.registerComponent("render", "Renderer", RenderComponent::new);
+        ComponentRegistry.registerComponent("physic", "Physic", PhysicComponent::new);
     }
 
     private void setupViews(){

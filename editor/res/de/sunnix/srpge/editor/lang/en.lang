@@ -286,7 +286,7 @@ dialog_object.remove_component.title=Delete component
 dialog_object.add_component=+ Add Component
 
 # Components
-component.render =Renderer
+component.render=Renderer
 component.render.set_sprite=Set Sprite
 component.render.set_state_sprite=Set State Sprites
 component.render.state_dialog=State Sprite Editor
@@ -297,6 +297,8 @@ component.render.state_dialog.title=States
 component.render.state_dialog.select=Select state
 component.render.state_dialog.select_sprite.title=Select Sprite
 component.render.state_dialog.select_sprite.text=Select Sprite for State:
+
+component.physic=Physic
 
 # Events
 event_dialog.edit=Edit %s

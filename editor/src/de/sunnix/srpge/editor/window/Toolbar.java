@@ -184,6 +184,8 @@ public class Toolbar extends JToolBar {
     private void prepareProcessFromIDE() {
         var args = new ArrayList<String>();
         args.add("java"); // command
+        args.add("-Xms256M");
+        args.add("-Xmx1G");
         args.add("-cp");
         args.add(ManagementFactory.getRuntimeMXBean().getClassPath());
         args.add(Main.class.getName().replaceAll("\\.", "/"));
@@ -211,6 +213,8 @@ public class Toolbar extends JToolBar {
         try {
             var args = new ArrayList<String>();
             args.add("java"); // command
+            args.add("-Xms256M");
+            args.add("-Xmx1G");
             args.add("-jar");
             args.add(getJarPath());
             args.add("startGame");
