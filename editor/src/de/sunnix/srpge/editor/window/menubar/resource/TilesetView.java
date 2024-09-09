@@ -2,6 +2,7 @@ package de.sunnix.srpge.editor.window.menubar.resource;
 
 import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.NumberPicker;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.resource.Tileset;
 import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
+import static de.sunnix.srpge.engine.Core.TILE_HEIGHT;
+import static de.sunnix.srpge.engine.Core.TILE_WIDTH;
 
 public class TilesetView extends JPanel implements IResourceView{
 
@@ -32,11 +35,20 @@ public class TilesetView extends JPanel implements IResourceView{
 
     private final int[] selectedTiles = {0, 0, 1, 1};
 
+    private boolean animationMode;
+
+    private Thread renderThread;
+    private long animTime;
+    private boolean closing = false;
+
     // ####################### Properties #######################
     // Tileset
     private JTextField lblTitle, lblWidth, lblHeight;
+    private JCheckBox renderAnimation;
     // Tiles
     private JCheckBox blocking;
+    private JButton selectAnimation;
+    private NumberPicker animTempo;
 
     public TilesetView(Window window, JPanel parent){
         this.window = window;
@@ -167,6 +179,8 @@ public class TilesetView extends JPanel implements IResourceView{
             }
         };
         var scroll = new JScrollPane(imageView);
+        scroll.getHorizontalScrollBar().setUnitIncrement(16);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
         return scroll;
     }
 
@@ -176,21 +190,51 @@ public class TilesetView extends JPanel implements IResourceView{
             int preX, preY, dragPreX, dragPreY;
             @Override
             public void mousePressed(MouseEvent e) {
-                if(e.getButton() != MouseEvent.BUTTON1)
-                    return;
-                var x = e.getX() / 24;
-                var y = e.getY() / 16;
+                var x = e.getX() / TILE_WIDTH;
+                var y = e.getY() / TILE_HEIGHT;
                 var ts = getCurrentTileset();
                 if(ts == null)
                     return;
                 if(x >= ts.getWidth() || y >= ts.getHeight())
                     return;
-                select(x, y);
-                preX = x;
-                preY = y;
-                dragPreX = preX;
-                dragPreY = preY;
-                primaryPress = true;
+                if(e.getButton() == MouseEvent.BUTTON1) {
+                    if (animationMode) {
+                        if (selectedTiles[0] == -1)
+                            return;
+                        var selected = ts.getPropertie(selectedTiles[0], selectedTiles[1]);
+                        var clicked = ts.getPropertie(x, y);
+                        if(selected.equals(clicked) || clicked.getAnimation() != null || clicked.getAnimationParent() != -1)
+                            return;
+                        if(selected.getAnimation() == null)
+                            selected.addAnimation(selectedTiles[0] + selectedTiles[1] * ts.getWidth());
+                        selected.addAnimation(x + y * ts.getWidth());
+                        clicked.setAnimationParent(selectedTiles[0] + selectedTiles[1] * ts.getWidth());
+                        reloadProperties();
+                        imageView.repaint();
+                        window.setProjectChanged();
+                    } else {
+                        select(x, y);
+                        preX = x;
+                        preY = y;
+                        dragPreX = preX;
+                        dragPreY = preY;
+                        primaryPress = true;
+                    }
+                } else if(e.getButton() == MouseEvent.BUTTON3){
+                    if (animationMode) {
+                        if (selectedTiles[0] == -1)
+                            return;
+                        var selected = ts.getPropertie(selectedTiles[0], selectedTiles[1]);
+                        var clicked = ts.getPropertie(x, y);
+                        if(selected.equals(clicked) || clicked.getAnimationParent() != selectedTiles[0] + selectedTiles[1] * ts.getWidth())
+                            return;
+                        selected.removeAnimation(x + y * ts.getWidth());
+                        clicked.setAnimationParent(-1);
+                        reloadProperties();
+                        imageView.repaint();
+                        window.setProjectChanged();
+                    }
+                }
             }
 
             @Override
@@ -202,14 +246,14 @@ public class TilesetView extends JPanel implements IResourceView{
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if(!primaryPress)
+                if(animationMode || !primaryPress)
                     return;
                 var tileset = getCurrentTileset();
                 if(tileset == null)
                     return;
                 int x, y;
-                x = e.getX() / 24;
-                y = e.getY() / 16;
+                x = e.getX() / TILE_WIDTH;
+                y = e.getY() / TILE_HEIGHT;
                 if(x == dragPreX && y == dragPreY)
                     return;
                 dragPreX = x;
@@ -227,7 +271,8 @@ public class TilesetView extends JPanel implements IResourceView{
         };
     }
 
-    private static final Color COLOR_BLOCKING = new Color(1f, .1f, .1f, .4f);
+    private static final Color COLOR_BLOCKING = new Color(255, 80, 80, 120);
+    private static final Color COLOR_ANIMATION = new Color(80, 230, 80, 120);
 
     private void drawTileset(Graphics2D g) {
         var tileset = getCurrentTileset();
@@ -236,15 +281,50 @@ public class TilesetView extends JPanel implements IResourceView{
         var image = tileset.getImage(window);
         if(image == null)
             return;
-        g.drawImage(image, 0, 0, null);
         for(var x = 0; x < tileset.getWidth(); x++)
             for (int y = 0; y < tileset.getHeight(); y++) {
                 var prop = tileset.getPropertie(x, y);
+
+                var iX = x;
+                var iY = y;
+
+                if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                    TilesetPropertie parent;
+                    if(prop.getAnimationParent() != -1) {
+                        var parentI = prop.getAnimationParent();
+                        parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                    } else
+                        parent = prop;
+                    var animation = parent.getAnimation();
+                    var animSpeed = parent.getAnimationTempo();
+                    var offset = animation.indexOf((short)(x + y * tileset.getWidth()));
+                    var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                    var tex = animation.get(index);
+                    iX = tex % tileset.getWidth();
+                    iY = tex / tileset.getWidth();
+                }
+
+                g.drawImage(image, x * TILE_WIDTH, y * TILE_HEIGHT, x * TILE_WIDTH + TILE_WIDTH, y * TILE_HEIGHT + TILE_HEIGHT, iX * TILE_WIDTH, iY * TILE_HEIGHT, iX * TILE_WIDTH + TILE_WIDTH, iY * TILE_HEIGHT + TILE_HEIGHT, null);
                 if(prop.isBlocking()){
                     g.setColor(COLOR_BLOCKING);
                     g.fillRect(x * 24, y * 16, 24, 16);
                 }
             }
+
+        if(selectedTiles[0] >= 0 && selectedTiles[0] < tileset.getWidth() && selectedTiles[1] >= 0 && selectedTiles[1] < tileset.getWidth()){
+            var sTile = tileset.getPropertie(selectedTiles[0], selectedTiles[1]);
+            if(sTile.getAnimation() != null || sTile.getAnimationParent() != -1){
+                g.setColor(COLOR_ANIMATION);
+                List<Short> animation;
+                if(sTile.getAnimationParent() != -1)
+                    animation = tileset.getPropertie(sTile.getAnimationParent() % tileset.getWidth(), sTile.getAnimationParent() / tileset.getWidth()).getAnimation();
+                else
+                    animation = sTile.getAnimation();
+                for(var animTile: animation)
+                    g.fillRect((animTile % tileset.getWidth()) * 24, (animTile / tileset.getWidth()) * 16, 24, 16);
+            }
+        }
+
         g.setColor(Color.YELLOW);
         int x, y, w, h;
         x = selectedTiles[0];
@@ -289,6 +369,12 @@ public class TilesetView extends JPanel implements IResourceView{
         gbc.gridx = 0;
         gbc.gridy++;
 
+        gbc.gridwidth = 2;
+        renderAnimation = new JCheckBox("Render animation");
+        top.add(renderAnimation, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+
         panel.add(top, BorderLayout.NORTH);
 
         var bottom = new JPanel(new GridBagLayout());
@@ -330,6 +416,24 @@ public class TilesetView extends JPanel implements IResourceView{
         gbc.gridx = 0;
         gbc.gridy++;
 
+        gbc.gridwidth = 2;
+        animTempo = createPropertieComponent(
+                new NumberPicker("Animation speed:", 1, 0, 1, 0xff),
+                (c, tile) -> c.setValue(tile.getAnimationTempo(), true),
+                (c, tile) -> tile.setAnimationTempo((byte) c.getValue())
+        );
+        selectAnimation = new JButton("Select animation");
+        selectAnimation.addActionListener(l -> {
+            animationMode = !animationMode;
+            selectAnimation.setText(animationMode ? "Finish animation" : "Select animation");
+        });
+        bottom.add(animTempo, gbc);
+        propertiesToggleComponents.add(animTempo);
+        gbc.gridy++;
+        propertiesToggleComponents.add(selectAnimation);
+        bottom.add(selectAnimation, gbc);
+        gbc.gridy++;
+
         var tmpPanel = new JPanel(new BorderLayout());
         tmpPanel.add(bottom, BorderLayout.NORTH);
 
@@ -357,6 +461,22 @@ public class TilesetView extends JPanel implements IResourceView{
                     imageView.repaint();
                     window.setProjectChanged();
                 });
+            else if(comp instanceof NumberPicker np){
+                np.addChangeListener((src, preValue, postValue) -> {
+                    var ts = getCurrentTileset();
+                    if (ts == null)
+                        return;
+                    for (int x = selectedTiles[0]; x < selectedTiles[0] + selectedTiles[2]; x++)
+                        for (int y = selectedTiles[1]; y < selectedTiles[1] + selectedTiles[3]; y++) {
+                            var prop = ts.getPropertie(x, y);
+                            if (prop == null)
+                                continue;
+                            onChange.accept(comp, prop);
+                        }
+                    imageView.repaint();
+                    window.setProjectChanged();
+                });
+            }
         }
         propertiesComponents.add(Tuple.create(comp, (BiConsumer<JComponent, TilesetPropertie>) onLoad));
         return comp;
@@ -405,16 +525,35 @@ public class TilesetView extends JPanel implements IResourceView{
         propertiesComponents.forEach(t -> {
             t.t2().accept(t.t1(), prop);
         });
+        selectAnimation.setEnabled(prop.getAnimationParent() == -1);
+        animTempo.setEnabled(prop.getAnimation() != null);
     }
 
     @Override
     public void onViewAttached() {
         updateList();
+        renderThread = new Thread(() -> {
+            try {
+                while (!closing){
+                    Thread.sleep(16, 666666);
+                    if(!renderAnimation.isSelected()){
+                        animTime = 0;
+                        continue;
+                    }
+                    animTime++;
+                    imageView.repaint();
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }, "TilesetRenderer");
+        renderThread.setDaemon(true);
+        renderThread.start();
     }
 
     @Override
     public void onViewClosed() {
-
+        closing = true;
     }
 
 }

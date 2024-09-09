@@ -20,6 +20,7 @@ menu.file.save_project_as=Save Project as...
 menu.file.open_resource_manager=Open Resource Manager
 menu.file.close_project=Close Project
 menu.file.exit=Exit
+menu.file.animate_tiles=Animate tiles
 menu.game=Game
 menu.game.show_profiler=Show Profiler
 menu.game.power_save_mode=Power save mode

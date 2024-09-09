@@ -42,6 +42,11 @@ public class MenuBar extends JMenuBar {
 
         mm.add(new JSeparator());
 
+        var config = window.getSingleton(Config.class);
+        mm.add(createCheckboxMenu(getString("menu.file.animate_tiles"), config.get("animate_tiles", false), b -> {
+            config.set("animate_tiles", b);
+        }));
+
         mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.open_resource_manager"), e -> new ResourceDialog(window))));
 
         mm.add(new JSeparator());

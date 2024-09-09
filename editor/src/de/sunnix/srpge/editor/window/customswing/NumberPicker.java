@@ -87,7 +87,7 @@ public class NumberPicker extends JPanel {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if(!isEnabled())
+                if(!text.isEnabled())
                     return;
                 if(e.getButton() != MouseEvent.BUTTON1)
                     return;

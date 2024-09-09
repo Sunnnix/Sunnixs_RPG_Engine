@@ -6,7 +6,9 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 public class FunctionUtils {
@@ -70,6 +72,20 @@ public class FunctionUtils {
 
     public static <T> JComboBox<T> createComboBox(T defaultValue, T[] content){
         return new JComboBox<>(new DefaultValueComboboxModel<>(defaultValue, content));
+    }
+
+    public static short[] shortListToArray(List<Short> list){
+        var arr = new short[list.size()];
+        for(var i = 0; i < list.size(); i++)
+            arr[i] = list.get(i);
+        return arr;
+    }
+
+    public static ArrayList<Short> shortArrayToList(short[] arr){
+        var list = new ArrayList<Short>();
+        for(var s: arr)
+            list.add(s);
+        return list;
     }
 
 }
