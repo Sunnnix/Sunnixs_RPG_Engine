@@ -1,10 +1,13 @@
 package de.sunnix.srpge.editor.window.mapview;
 
 import de.sunnix.srpge.editor.data.GameData;
+import de.sunnix.srpge.editor.window.Config;
 import de.sunnix.srpge.editor.window.Window;
 import lombok.Getter;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,6 +24,9 @@ public class MapView extends JPanel {
     private float zoom = 1;
     private float offsetX, offsetY;
 
+    private Thread renderer;
+    private long animTime;
+
     public MapView(Window window, int mapID) {
         super(new BorderLayout());
         this.window = window;
@@ -29,6 +35,44 @@ public class MapView extends JPanel {
         addMouseListener(ml);
         addMouseMotionListener(ml);
         addMouseWheelListener(ml);
+
+        addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                var renderer = new Thread(() -> {
+                    var config = window.getSingleton(Config.class);
+                    var animate = config.get("animate_tiles", false);
+                    var animateCheck = System.currentTimeMillis();
+                    while (!Thread.currentThread().isInterrupted()){
+                        try {
+                            Thread.sleep(16,666666);
+                            if(animateCheck + 1000 < System.currentTimeMillis()){
+                                animateCheck = System.currentTimeMillis();
+                                animate = config.get("animate_tiles", false);
+                            }
+                            if(!animate)
+                                continue;
+                            animTime++;
+                            repaint();
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                    }
+                });
+                renderer.setDaemon(true);
+                renderer.start();
+                MapView.this.renderer = renderer;
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+                renderer.interrupt();
+                animTime = 0;
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {}
+        });
     }
 
     @Override
@@ -43,7 +87,7 @@ public class MapView extends JPanel {
             return;
         }
 
-        window.getCurrentMapModule().onDraw((Graphics2D) g, MapView.this, mapData, getWidth(), getHeight(), (int)offsetX, (int)offsetY);
+        window.getCurrentMapModule().onDraw((Graphics2D) g, MapView.this, mapData, getWidth(), getHeight(), (int)offsetX, (int)offsetY, animTime);
     }
 
     public void setSelectedTilesetTile(int tileset, int index, int width, int height) {

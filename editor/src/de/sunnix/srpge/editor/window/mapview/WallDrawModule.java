@@ -3,6 +3,9 @@ package de.sunnix.srpge.editor.window.mapview;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.resource.Resources;
+import de.sunnix.srpge.editor.window.resource.Tileset;
+import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
+import de.sunnix.srpge.engine.util.Tuple;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -159,7 +162,7 @@ public class WallDrawModule extends MapViewModule {
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime) {
         var mapWidth = map.getWidth();
         var mapHeight = map.getHeight();
         var TW = (int)(TILE_WIDTH * view.getZoom());
@@ -192,18 +195,47 @@ public class WallDrawModule extends MapViewModule {
                 var dY = y + (tY - floorY) * TH;
 
                 for (var layer = 0; layer < 2; layer++) {
-                    var texID = tile.getGroundTex();
-                    var tsID = texID[layer * 2];
-                    var index = texID[layer * 2 + 1];
-                    if (tsID < 0 || tsID > tilesets.length || index < 0)
+                    var tex = tile.getGroundTex();
+                    var tsID = tex[layer * 2];
+                    var texID = tex[layer * 2 + 1];
+                    if (tsID < 0 || tsID > tilesets.length || texID < 0)
                         continue;
-                    var tileset = tilesets[tsID];
-                    var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                    var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                    Tileset tileset;
+                    BufferedImage image;
+                    {
+                        var tuple = tilesets[tsID];
+                        tileset = (Tileset) tuple.t1();
+                        image = (BufferedImage) tuple.t2();
+                    }
+                    var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                    var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                    var iX = (index % tsWidth) * TILE_WIDTH;
-                    var iY = (index / tsWidth) * TILE_HEIGHT;
-                    g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    var prop = tileset.getPropertie(texID);
+                    if(prop == null)
+                        continue;
+
+                    int iX, iY;
+                    if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                        TilesetPropertie parent;
+                        if(prop.getAnimationParent() != -1) {
+                            var parentI = prop.getAnimationParent();
+                            parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                        } else
+                            parent = prop;
+                        var animation = parent.getAnimation();
+                        var animSpeed = parent.getAnimationTempo();
+                        var offset = animation.indexOf((short)(x + y * tileset.getWidth()));
+                        var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                        if(index < 0)
+                            continue;
+                        var animTex = animation.get(index);
+                        iX = animTex % tileset.getWidth() * TILE_WIDTH;
+                        iY = animTex / tileset.getWidth() * TILE_HEIGHT;
+                    } else {
+                        iX = (texID % tsWidth) * TILE_WIDTH;
+                        iY = (texID / tsWidth) * TILE_HEIGHT;
+                    }
+                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 g.fillRect(dX, dY, TW, TH);
                 // draw walls
@@ -214,13 +246,42 @@ public class WallDrawModule extends MapViewModule {
                         var wallIndex = tex[layer * 2 + 1];
                         if (wallTS == -1 || wallIndex == -1)
                             continue;
-                        var tileset = tilesets[wallTS];
-                        var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                        var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                        Tileset tileset;
+                        BufferedImage image;
+                        {
+                            var tuple = tilesets[wallTS];
+                            tileset = (Tileset) tuple.t1();
+                            image = (BufferedImage) tuple.t2();
+                        }
+                        var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                        var tsHeight = tileset == null ? 1 : tileset.getHeight();
                         dY = y + (tY - wall) * TH;
-                        var iX = (wallIndex % tsWidth) * TILE_WIDTH;
-                        var iY = (wallIndex / tsWidth) * TILE_HEIGHT;
-                        g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        var prop = tileset.getPropertie(wallIndex);
+                        if(prop == null)
+                            continue;
+
+                        int iX, iY;
+                        if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                            TilesetPropertie parent;
+                            if(prop.getAnimationParent() != -1) {
+                                var parentI = prop.getAnimationParent();
+                                parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                            } else
+                                parent = prop;
+                            var animation = parent.getAnimation();
+                            var animSpeed = parent.getAnimationTempo();
+                            var offset = animation.indexOf((short)(x + y * tsWidth));
+                            var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                            if(index < 0)
+                                continue;
+                            var animTex = animation.get(index);
+                            iX = animTex % tsWidth * TILE_WIDTH;
+                            iY = animTex / tsWidth * TILE_HEIGHT;
+                        } else {
+                            iX = (wallIndex % tsWidth) * TILE_WIDTH;
+                            iY = (wallIndex / tsWidth) * TILE_HEIGHT;
+                        }
+                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                         g.fillRect(dX, dY, TW, TH);
                     }
                 }
@@ -239,16 +300,45 @@ public class WallDrawModule extends MapViewModule {
             for(var layer = 0; layer < 2; layer++) {
                 var tex = tile.getGroundTex();
                 var tsID = tex[layer * 2];
-                var index = tex[layer * 2 + 1];
-                if (tsID < 0 || tsID > tilesets.length || index < 0)
+                var texID = tex[layer * 2 + 1];
+                if (tsID < 0 || tsID > tilesets.length || texID < 0)
                     continue;
-                var tileset = tilesets[tsID];
-                var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                Tileset tileset;
+                BufferedImage image;
+                {
+                    var tuple = tilesets[tsID];
+                    tileset = (Tileset) tuple.t1();
+                    image = (BufferedImage) tuple.t2();
+                }
+                var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                var iX = (index % tsWidth) * TILE_WIDTH;
-                var iY = (index / tsWidth) * TILE_HEIGHT;
-                g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                var prop = tileset.getPropertie(texID);
+                if(prop == null)
+                    continue;
+
+                int iX, iY;
+                if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                    TilesetPropertie parent;
+                    if(prop.getAnimationParent() != -1) {
+                        var parentI = prop.getAnimationParent();
+                        parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                    } else
+                        parent = prop;
+                    var animation = parent.getAnimation();
+                    var animSpeed = parent.getAnimationTempo();
+                    var offset = animation.indexOf((short)(x + y * tileset.getWidth()));
+                    var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                    if(index < 0)
+                        continue;
+                    var animTex = animation.get(index);
+                    iX = animTex % tileset.getWidth() * TILE_WIDTH;
+                    iY = animTex / tileset.getWidth() * TILE_HEIGHT;
+                } else {
+                    iX = (texID % tsWidth) * TILE_WIDTH;
+                    iY = (texID / tsWidth) * TILE_HEIGHT;
+                }
+                g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
             }
 
             for(var wall = 0; wall < tile.getWallHeight(); wall++) {
@@ -263,13 +353,42 @@ public class WallDrawModule extends MapViewModule {
                             continue;
                         if (tex[0] < 0 || tex[0] > tilesets.length || tex[1] < 0)
                             continue;
-                        var tileset = tilesets[tex[0]];
-                        var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                        var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                        Tileset tileset;
+                        BufferedImage image;
+                        {
+                            var tuple = tilesets[tex[0]];
+                            tileset = (Tileset) tuple.t1();
+                            image = (BufferedImage) tuple.t2();
+                        }
+                        var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                        var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                        var iX = (tex[1] % tsWidth) * TILE_WIDTH;
-                        var iY = (tex[1] / tsWidth) * TILE_HEIGHT;
-                        g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        var prop = tileset.getPropertie(tex[1]);
+                        if(prop == null)
+                            continue;
+
+                        int iX, iY;
+                        if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                            TilesetPropertie parent;
+                            if(prop.getAnimationParent() != -1) {
+                                var parentI = prop.getAnimationParent();
+                                parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                            } else
+                                parent = prop;
+                            var animation = parent.getAnimation();
+                            var animSpeed = parent.getAnimationTempo();
+                            var offset = animation.indexOf((short)(x + y * tileset.getWidth()));
+                            var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                            if(index < 0)
+                                continue;
+                            var animTex = animation.get(index);
+                            iX = animTex % tileset.getWidth() * TILE_WIDTH;
+                            iY = animTex / tileset.getWidth() * TILE_HEIGHT;
+                        } else {
+                            iX = (tex[1] % tsWidth) * TILE_WIDTH;
+                            iY = (tex[1] / tsWidth) * TILE_HEIGHT;
+                        }
+                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                         continue;
                     }
                     var tex = tile.getWallTex(wall);
@@ -279,14 +398,42 @@ public class WallDrawModule extends MapViewModule {
                     if(wallTS == -1)
                         continue;
 
-                    var tileset = tilesets[wallTS];
-                    var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                    var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                    Tileset tileset;
+                    BufferedImage image;
+                    {
+                        var tuple = tilesets[wallTS];
+                        tileset = (Tileset) tuple.t1();
+                        image = (BufferedImage) tuple.t2();
+                    }
+                    var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                    var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                    var iX = (wallIndex % tsWidth) * TILE_WIDTH;
-                    var iY = (wallIndex / tsWidth) * TILE_HEIGHT;
-                    tileset = tilesets[wallTS];
-                    g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    var prop = tileset.getPropertie(wallIndex);
+                    if(prop == null)
+                        continue;
+
+                    int iX, iY;
+                    if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                        TilesetPropertie parent;
+                        if(prop.getAnimationParent() != -1) {
+                            var parentI = prop.getAnimationParent();
+                            parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                        } else
+                            parent = prop;
+                        var animation = parent.getAnimation();
+                        var animSpeed = parent.getAnimationTempo();
+                        var offset = animation.indexOf((short)(x + y * tsWidth));
+                        var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                        if(index < 0)
+                            continue;
+                        var animTex = animation.get(index);
+                        iX = animTex % tsWidth * TILE_WIDTH;
+                        iY = animTex / tsWidth * TILE_HEIGHT;
+                    } else {
+                        iX = (wallIndex % tsWidth) * TILE_WIDTH;
+                        iY = (wallIndex / tsWidth) * TILE_HEIGHT;
+                    }
+                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 if(window.isShowGrid())
                     g.drawRect(dX, dY, TW, TH);
@@ -378,14 +525,15 @@ public class WallDrawModule extends MapViewModule {
         }
     }
 
-    private BufferedImage[] loadTilesets(String[] tilesets){
-        var images = new BufferedImage[tilesets.length];
+    private Tuple.Tuple2[] loadTilesets(String[] tilesetNames){
+        var tilesets = new Tuple.Tuple2[tilesetNames.length];
         var res = window.getSingleton(Resources.class);
         for(var i = 0; i < tilesets.length; i++) {
-            var ts = res.tileset_get(tilesets[i]);
-            images[i] = ts == null ? null : ts.getImage(window);
+            var ts = res.tileset_get(tilesetNames[i]);
+            var img = ts.getImage(window);
+            tilesets[i] = new Tuple.Tuple2<>(ts, img);
         }
-        return images;
+        return tilesets;
     }
 
 }

@@ -3,7 +3,11 @@ package de.sunnix.srpge.editor.window.mapview;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.resource.Resources;
+import de.sunnix.srpge.editor.window.resource.Tileset;
+import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
 import de.sunnix.srpge.engine.ecs.Tile;
+import de.sunnix.srpge.engine.util.Tuple;
+import org.lwjgl.BufferUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -106,7 +110,7 @@ public class SelectTileModule extends MapViewModule {
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime) {
         var mapWidth = map.getWidth();
         var mapHeight = map.getHeight();
         var TW = (int)(TILE_WIDTH * view.getZoom());
@@ -141,13 +145,43 @@ public class SelectTileModule extends MapViewModule {
                     var texID = tex[layer * 2 + 1];
                     if(tsID < 0 || tsID > tilesets.length || texID < 0)
                         continue;
-                    var tileset = tilesets[tsID];
-                    var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                    var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                    Tileset tileset;
+                    BufferedImage image;
+                    {
+                        var tuple = tilesets[tsID];
+                        tileset = (Tileset) tuple.t1();
+                        image = (BufferedImage) tuple.t2();
+                    }
+                    var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                    var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                    var iX = (texID % tsWidth) * TILE_WIDTH;
-                    var iY = (texID / tsWidth) * TILE_HEIGHT;
-                    g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    var prop = tileset.getPropertie(texID);
+                    if(prop == null)
+                        continue;
+
+                    int iX, iY;
+                    if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                        TilesetPropertie parent;
+                        if(prop.getAnimationParent() != -1) {
+                            var parentI = prop.getAnimationParent();
+                            parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                        } else
+                            parent = prop;
+                        var animation = parent.getAnimation();
+                        var animSpeed = parent.getAnimationTempo();
+                        var offset = animation.indexOf((short)(x + y * tileset.getWidth()));
+                        var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                        if(index < 0)
+                            continue;
+                        var animTex = animation.get(index);
+                        iX = animTex % tileset.getWidth() * TILE_WIDTH;
+                        iY = animTex / tileset.getWidth() * TILE_HEIGHT;
+                    } else {
+                        iX = (texID % tsWidth) * TILE_WIDTH;
+                        iY = (texID / tsWidth) * TILE_HEIGHT;
+                    }
+
+                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 // wall tex
                 for(var wall = 0; wall < wallHeight; wall++){
@@ -157,13 +191,43 @@ public class SelectTileModule extends MapViewModule {
                         var wallIndex = tex[layer * 2 + 1];
                         if(wallTS == -1 || wallIndex == -1)
                             continue;
-                        var tileset = tilesets[wallTS];
-                        var tsWidth = tileset == null ? 1 : tileset.getWidth() / TILE_WIDTH;
-                        var tsHeight = tileset == null ? 1 : tileset.getHeight() / TILE_HEIGHT;
+                        Tileset tileset;
+                        BufferedImage image;
+                        {
+                            var tuple = tilesets[wallTS];
+                            tileset = (Tileset) tuple.t1();
+                            image = (BufferedImage) tuple.t2();
+                        }
+                        var tsWidth = tileset == null ? 1 : tileset.getWidth();
+                        var tsHeight = tileset == null ? 1 : tileset.getHeight();
                         dY = y + (tY - wall) * TH;
-                        var iX = (wallIndex % tsWidth) * TILE_WIDTH;
-                        var iY = (wallIndex / tsWidth) * TILE_HEIGHT;
-                        g.drawImage(tileset, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+
+                        var prop = tileset.getPropertie(wallIndex);
+                        if(prop == null)
+                            continue;
+
+                        int iX, iY;
+                        if(prop.getAnimationParent() != -1 || prop.getAnimation() != null){
+                            TilesetPropertie parent;
+                            if(prop.getAnimationParent() != -1) {
+                                var parentI = prop.getAnimationParent();
+                                parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                            } else
+                                parent = prop;
+                            var animation = parent.getAnimation();
+                            var animSpeed = parent.getAnimationTempo();
+                            var offset = animation.indexOf((short)(x + y * tsWidth));
+                            var index = (int) (((animTime / animSpeed) + offset) % animation.size());
+                            if(index < 0)
+                                continue;
+                            var animTex = animation.get(index);
+                            iX = animTex % tsWidth * TILE_WIDTH;
+                            iY = animTex / tsWidth * TILE_HEIGHT;
+                        } else {
+                            iX = (wallIndex % tsWidth) * TILE_WIDTH;
+                            iY = (wallIndex / tsWidth) * TILE_HEIGHT;
+                        }
+                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                     }
                 }
             }
@@ -197,13 +261,14 @@ public class SelectTileModule extends MapViewModule {
         return false;
     }
 
-    private BufferedImage[] loadTilesets(String[] tilesets){
-        var images = new BufferedImage[tilesets.length];
+    private Tuple.Tuple2[] loadTilesets(String[] tilesetNames){
+        var tilesets = new Tuple.Tuple2[tilesetNames.length];
         var res = window.getSingleton(Resources.class);
         for(var i = 0; i < tilesets.length; i++) {
-            var ts = res.tileset_get(tilesets[i]);
-            images[i] = ts == null ? null : ts.getImage(window);
+            var ts = res.tileset_get(tilesetNames[i]);
+            var img = ts.getImage(window);
+            tilesets[i] = new Tuple.Tuple2<>(ts, img);
         }
-        return images;
+        return tilesets;
     }
 }
