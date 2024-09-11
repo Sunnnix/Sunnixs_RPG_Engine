@@ -136,7 +136,7 @@ public class ObjectModule extends MapViewModule {
                     var tsWidth = tileset == null ? 1 : tileset.getWidth();
                     var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                    var prop = tileset.getPropertie(texID);
+                    var prop = tileset.getProperty(texID);
                     if(prop == null)
                         continue;
 
@@ -145,7 +145,7 @@ public class ObjectModule extends MapViewModule {
                         TilesetPropertie parent;
                         if(prop.getAnimationParent() != -1) {
                             var parentI = prop.getAnimationParent();
-                            parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                            parent = tileset.getProperty(parentI % tileset.getWidth(), parentI / tileset.getWidth());
                         } else
                             parent = prop;
                         var animation = parent.getAnimation();
@@ -181,7 +181,7 @@ public class ObjectModule extends MapViewModule {
                         var tsWidth = tileset == null ? 1 : tileset.getWidth();
                         var tsHeight = tileset == null ? 1 : tileset.getHeight();
                         dY = y + (tY - wall) * TH;
-                        var prop = tileset.getPropertie(wallIndex);
+                        var prop = tileset.getProperty(wallIndex);
                         if(prop == null)
                             continue;
 
@@ -190,7 +190,7 @@ public class ObjectModule extends MapViewModule {
                             TilesetPropertie parent;
                             if(prop.getAnimationParent() != -1) {
                                 var parentI = prop.getAnimationParent();
-                                parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                                parent = tileset.getProperty(parentI % tileset.getWidth(), parentI / tileset.getWidth());
                             } else
                                 parent = prop;
                             var animation = parent.getAnimation();

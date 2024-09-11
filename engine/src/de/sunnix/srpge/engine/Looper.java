@@ -1,7 +1,7 @@
 package de.sunnix.srpge.engine;
 
 import de.sunnix.srpge.engine.debug.profiler.Profiler;
-import de.sunnix.srpge.engine.util.Utils;
+import de.sunnix.srpge.engine.util.FunctionUtils;
 import lombok.NonNull;
 
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ public class Looper {
             } else
                 glfwPollEvents();
 
-            Utils.checkForOpenGLErrors("Looper");
+            FunctionUtils.checkForOpenGLErrors("Looper");
 
             if(Core.isUseProfiler())
                 Profiler.profileTotal(System.nanoTime() - profilerStart);

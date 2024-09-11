@@ -7,6 +7,7 @@ import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
+import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
 import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.graphics.TestCubeRenderObject;
@@ -119,8 +120,9 @@ public class World {
             gameObjects.values().forEach(go -> go.update(this));
         }
         var pPos = player.getPosition();
-        RenderSystem.prepareRender();
         Camera.getPos().set(pPos.x * 24, (-pPos.z + pPos.y) * 16);
+        RenderSystem.prepareRender();
+        TileAnimationSystem.update(this);
         AudioManager.get().setLocation(pPos.x, pPos.y, pPos.z);
     }
 

@@ -6,32 +6,19 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 
-import static de.sunnix.srpge.editor.util.FunctionUtils.shortArrayToList;
-import static de.sunnix.srpge.editor.util.FunctionUtils.shortListToArray;
+import static de.sunnix.srpge.engine.util.FunctionUtils.shortArrayToList;
+import static de.sunnix.srpge.engine.util.FunctionUtils.shortListToArray;
 
 @Getter
 @Setter
-public class TilesetPropertie {
+public class TilesetPropertie extends de.sunnix.srpge.engine.resources.TilesetPropertie {
 
-    private boolean blocking;
-
-    private byte animationTempo = 1;
-    private short animationParent = -1;
-
-    private ArrayList<Short> animation;
-
-    public TilesetPropertie(){}
-
-    public TilesetPropertie(DataSaveObject data) {
-        load(data);
+    public TilesetPropertie(){
+        super(new DataSaveObject());
     }
 
-    private void load(DataSaveObject data){
-        blocking = data.getBool("blocking", true);
-        animationTempo = data.getByte("anim_tempo", (byte) 1);
-        animationParent = data.getShort("anim_parent", (short) -1);
-        var anims = data.getShortArray("animation", 0);
-        animation = anims.length > 0 ? shortArrayToList(anims) : null;
+    public TilesetPropertie(DataSaveObject data) {
+        super(data);
     }
 
     public DataSaveObject save(DataSaveObject data){

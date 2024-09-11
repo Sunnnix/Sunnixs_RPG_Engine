@@ -192,7 +192,7 @@ public class TopDrawModule extends MapViewModule {
 
                         var dX = x + tX * TW;
                         var dY = y + tY * TH;
-                        var prop = tileset.getPropertie(tex[1]);
+                        var prop = tileset.getProperty(tex[1]);
                         if(prop == null)
                             continue;
 
@@ -201,7 +201,7 @@ public class TopDrawModule extends MapViewModule {
                             TilesetPropertie parent;
                             if(prop.getAnimationParent() != -1) {
                                 var parentI = prop.getAnimationParent();
-                                parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                                parent = tileset.getProperty(parentI % tileset.getWidth(), parentI / tileset.getWidth());
                             } else
                                 parent = prop;
                             var animation = parent.getAnimation();
@@ -238,7 +238,7 @@ public class TopDrawModule extends MapViewModule {
                     var tsWidth = tileset == null ? 1 : tileset.getWidth();
                     var tsHeight = tileset == null ? 1 : tileset.getHeight();
 
-                    var prop = tileset.getPropertie(texID);
+                    var prop = tileset.getProperty(texID);
                     if(prop == null)
                         continue;
 
@@ -247,7 +247,7 @@ public class TopDrawModule extends MapViewModule {
                         TilesetPropertie parent;
                         if(prop.getAnimationParent() != -1) {
                             var parentI = prop.getAnimationParent();
-                            parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                            parent = tileset.getProperty(parentI % tileset.getWidth(), parentI / tileset.getWidth());
                         } else
                             parent = prop;
                         var animation = parent.getAnimation();
@@ -299,7 +299,7 @@ public class TopDrawModule extends MapViewModule {
             tileset = null;
         else
             tileset = window.getSingleton(Resources.class).tileset_get(mapTilesets[tilesetIndex]);
-        tile.setDataTo(layer, tilesetIndex, index, tileset == null ? null : tileset.getPropertie(index));
+        tile.setDataTo(layer, tilesetIndex, index, tileset == null ? null : tileset.getProperty(index));
         if(noticeChanged)
             window.setProjectChanged();
     }

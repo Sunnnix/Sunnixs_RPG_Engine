@@ -3,7 +3,7 @@ package de.sunnix.srpge.engine.graphics.gui;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
-import de.sunnix.srpge.engine.util.Utils;
+import de.sunnix.srpge.engine.util.FunctionUtils;
 import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.graphics.FloatArrayBuffer;
 import de.sunnix.srpge.engine.graphics.Mesh;
@@ -63,15 +63,15 @@ public class TextBox extends MemoryHolder implements IGUIComponent {
 
     private void setTextPosition(Text text, float x, float y, float width, float height, float textureWidth, float textureHeight, int textAlignment){
         float tX, tY;
-        if(Utils.bitcheck(textAlignment, WEST))
+        if(FunctionUtils.bitcheck(textAlignment, WEST))
             tX = x + textureWidth;
-        else if(Utils.bitcheck(textAlignment, EAST))
+        else if(FunctionUtils.bitcheck(textAlignment, EAST))
             tX = x + width - text.getWidth() - textureWidth;
         else
             tX = x + width / 2 - text.getWidth() / 2;
-        if(Utils.bitcheck(textAlignment, NORTH))
+        if(FunctionUtils.bitcheck(textAlignment, NORTH))
             tY = y + textureHeight;
-        else if(Utils.bitcheck(textAlignment, SOUTH))
+        else if(FunctionUtils.bitcheck(textAlignment, SOUTH))
             tY = y + height - text.getHeight() - textureHeight;
         else
             tY = y + height / 2 - text.getHeight() / 2;

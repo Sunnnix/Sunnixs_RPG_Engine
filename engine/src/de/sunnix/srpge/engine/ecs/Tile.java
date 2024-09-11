@@ -1,12 +1,15 @@
 package de.sunnix.srpge.engine.ecs;
 
 import de.sunnix.srpge.engine.Core;
+import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
 import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
 import de.sunnix.srpge.engine.resources.Tileset;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.resources.TilesetPropertie;
 import lombok.Getter;
 
+import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 import static org.lwjgl.opengl.GL15.*;
 
 public class Tile {
@@ -52,6 +55,12 @@ public class Tile {
     @Getter
     private DebugRenderObject dro;
 
+    @Getter
+    private boolean animated;
+    private int tex, wallTex[];
+
+    private Tileset tileset;
+
     public Tile(int x, int y, int bufferOffset){
         this.x = x;
         this.y = y;
@@ -59,7 +68,8 @@ public class Tile {
     }
 
     public int create(Tileset tileset, DataSaveObject dso){
-        var tex = dso.getInt("g-tex", 0);
+        this.tileset = tileset;
+        var tex = this.tex = dso.getInt("g-tex", 0);
         var heights = dso.getShort("height", (short) 0);
         slopeDirection = dso.getByte("slope-dir", SLOPE_DIRECTION_NONE);
 
@@ -72,7 +82,7 @@ public class Tile {
         texturesLayer0 = new float[8 * (wallHeight + 1)];
         texturesLayer1 = new float[8 * (wallHeight + 1)];
 
-        var wallTex = dso.getIntArray("w-tex", 0);
+        wallTex = dso.getIntArray("w-tex", 0);
 
         int tex0 = -1, tex1 = -1;
 
@@ -138,6 +148,17 @@ public class Tile {
                 System.arraycopy(texArr, 0, texturesLayer0, i * 8, 8);
                 texArr = tileset.getTexturePositions(tex1);
                 System.arraycopy(texArr, 0, texturesLayer1, i * 8, 8);
+
+                if(!animated) {
+                    var prop = tileset.getProperty(tex0);
+                    if (prop != null && (prop.getAnimationParent() != -1 || prop.getAnimation() != null))
+                        animated = true;
+                    else {
+                        prop = tileset.getProperty(tex1);
+                        if (prop != null && (prop.getAnimationParent() != -1 || prop.getAnimation() != null))
+                            animated = true;
+                    }
+                }
             }
         }
 
@@ -171,7 +192,69 @@ public class Tile {
             dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
         }
 
+        if(animated)
+            TileAnimationSystem.addTile(this);
+
         return height + 1;
+    }
+
+    public int checkAndUpdateAnimation(long animTime) {
+        var texArr = new int[2 + wallTex.length * 2];
+        for(var i = 0; i <= wallTex.length; i++){
+            var tex = i == 0 ? this.tex : wallTex[i + 1];
+            int tex0, tex1;
+            var ts = getTilesetOf(true, tex);
+            if(ts == -1)
+                tex0 = -1;
+            else
+                tex0 = getTexIndexOf(true, tex);
+            ts = getTilesetOf(false, tex);
+            if(ts == -1)
+                tex1 = -1;
+            else
+                tex1 = getTexIndexOf(false, tex);
+            texArr[i * 2] = tex0;
+            texArr[i * 2 + 1] = tex1;
+        }
+        var recalculate = 0;
+        for(var i = 0; i < texArr.length; i++){
+            var tex = texArr[i];
+            var prop = tileset.getProperty(tex);
+            if(prop == null || prop.getAnimationParent() == -1 && prop.getAnimation() == null)
+                continue;
+            TilesetPropertie parent;
+            if(prop.getAnimationParent() != -1)
+                parent = tileset.getProperty(prop.getAnimation().get(0));
+            else
+                parent = prop;
+
+            var preIndex = parent.getAnimationIndex(tex, animTime - 1);
+            var newIndex = parent.getAnimationIndex(tex, animTime);
+            if(preIndex != newIndex){
+                if(i % 2 == 0)
+                    recalculate |= 0x1;
+                else
+                    recalculate |= 0x10;
+                texArr[i] = newIndex;
+            }
+        }
+        if(bitcheck(recalculate, 0x1)){
+            var textures = new float[8 * texArr.length / 2];
+            for(var i = 0; i < texArr.length / 2; i++) {
+                var buffer = tileset.getTexturePositions(texArr[i * 2]);
+                System.arraycopy(buffer, 0, textures, i * 8, 8);
+                texturesLayer0 = textures;
+            }
+        }
+        if(bitcheck(recalculate, 0x10)){
+            var textures = new float[8 * texArr.length / 2];
+            for(var i = 0; i < texArr.length / 2; i++) {
+                var buffer = tileset.getTexturePositions(texArr[i * 2 + 1]);
+                System.arraycopy(buffer, 0, textures, i * 8, 8);
+                texturesLayer1 = textures;
+            }
+        }
+        return recalculate;
     }
 
     public AABB.TileAABB getHitbox(){
@@ -205,4 +288,5 @@ public class Tile {
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, bufferOffset * 6L * Integer.BYTES, indices);
         indices = null;
     }
+
 }

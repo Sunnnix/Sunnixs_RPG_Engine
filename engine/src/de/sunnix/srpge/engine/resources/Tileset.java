@@ -14,6 +14,8 @@ public class Tileset {
 
     private int width = 1, height = 1;
 
+    private TilesetPropertie[] properties;
+
     private float[] texturePositions;
 
     public Tileset(DataSaveObject data) {
@@ -25,6 +27,7 @@ public class Tileset {
         this.res = Resources.get().getTexture(data.getString("res", null));
         this.width = data.getInt("width", 1);
         this.height = data.getInt("height", 1);
+        this.properties = data.<DataSaveObject>getList("properties").stream().map(TilesetPropertie::new).toArray(TilesetPropertie[]::new);
         texturePositions = generateTexturePositions();
     }
 
@@ -69,6 +72,12 @@ public class Tileset {
             id = 0;
         id = id % (this.width * this.height); // prevent crash, repeat de.sunnix.game.textures
         return Arrays.copyOfRange(texturePositions, id * 8, id * 8 + 8);
+    }
+
+    public TilesetPropertie getProperty(int id){
+        if(id < 0 || id >= properties.length)
+            return null;
+        return properties[id];
     }
 
 }

@@ -201,8 +201,8 @@ public class TilesetView extends JPanel implements IResourceView{
                     if (animationMode) {
                         if (selectedTiles[0] == -1)
                             return;
-                        var selected = ts.getPropertie(selectedTiles[0], selectedTiles[1]);
-                        var clicked = ts.getPropertie(x, y);
+                        var selected = ts.getProperty(selectedTiles[0], selectedTiles[1]);
+                        var clicked = ts.getProperty(x, y);
                         if(selected.equals(clicked) || clicked.getAnimation() != null || clicked.getAnimationParent() != -1)
                             return;
                         if(selected.getAnimation() == null)
@@ -224,8 +224,8 @@ public class TilesetView extends JPanel implements IResourceView{
                     if (animationMode) {
                         if (selectedTiles[0] == -1)
                             return;
-                        var selected = ts.getPropertie(selectedTiles[0], selectedTiles[1]);
-                        var clicked = ts.getPropertie(x, y);
+                        var selected = ts.getProperty(selectedTiles[0], selectedTiles[1]);
+                        var clicked = ts.getProperty(x, y);
                         if(selected.equals(clicked) || clicked.getAnimationParent() != selectedTiles[0] + selectedTiles[1] * ts.getWidth())
                             return;
                         selected.removeAnimation(x + y * ts.getWidth());
@@ -283,7 +283,7 @@ public class TilesetView extends JPanel implements IResourceView{
             return;
         for(var x = 0; x < tileset.getWidth(); x++)
             for (int y = 0; y < tileset.getHeight(); y++) {
-                var prop = tileset.getPropertie(x, y);
+                var prop = tileset.getProperty(x, y);
 
                 var iX = x;
                 var iY = y;
@@ -292,7 +292,7 @@ public class TilesetView extends JPanel implements IResourceView{
                     TilesetPropertie parent;
                     if(prop.getAnimationParent() != -1) {
                         var parentI = prop.getAnimationParent();
-                        parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                        parent = tileset.getProperty(parentI % tileset.getWidth(), parentI / tileset.getWidth());
                     } else
                         parent = prop;
                     var animation = parent.getAnimation();
@@ -312,12 +312,12 @@ public class TilesetView extends JPanel implements IResourceView{
             }
 
         if(selectedTiles[0] >= 0 && selectedTiles[0] < tileset.getWidth() && selectedTiles[1] >= 0 && selectedTiles[1] < tileset.getWidth()){
-            var sTile = tileset.getPropertie(selectedTiles[0], selectedTiles[1]);
+            var sTile = tileset.getProperty(selectedTiles[0], selectedTiles[1]);
             if(sTile.getAnimation() != null || sTile.getAnimationParent() != -1){
                 g.setColor(COLOR_ANIMATION);
                 List<Short> animation;
                 if(sTile.getAnimationParent() != -1)
-                    animation = tileset.getPropertie(sTile.getAnimationParent() % tileset.getWidth(), sTile.getAnimationParent() / tileset.getWidth()).getAnimation();
+                    animation = tileset.getProperty(sTile.getAnimationParent() % tileset.getWidth(), sTile.getAnimationParent() / tileset.getWidth()).getAnimation();
                 else
                     animation = sTile.getAnimation();
                 for(var animTile: animation)
@@ -453,7 +453,7 @@ public class TilesetView extends JPanel implements IResourceView{
                         return;
                     for (int x = selectedTiles[0]; x < selectedTiles[0] + selectedTiles[2]; x++)
                         for (int y = selectedTiles[1]; y < selectedTiles[1] + selectedTiles[3]; y++) {
-                            var prop = ts.getPropertie(x, y);
+                            var prop = ts.getProperty(x, y);
                             if (prop == null)
                                 continue;
                             onChange.accept(comp, prop);
@@ -468,7 +468,7 @@ public class TilesetView extends JPanel implements IResourceView{
                         return;
                     for (int x = selectedTiles[0]; x < selectedTiles[0] + selectedTiles[2]; x++)
                         for (int y = selectedTiles[1]; y < selectedTiles[1] + selectedTiles[3]; y++) {
-                            var prop = ts.getPropertie(x, y);
+                            var prop = ts.getProperty(x, y);
                             if (prop == null)
                                 continue;
                             onChange.accept(comp, prop);
@@ -519,7 +519,7 @@ public class TilesetView extends JPanel implements IResourceView{
         var ts = getCurrentTileset();
         if(ts == null)
             return;
-        var prop = ts.getPropertie(selectedTiles[0], selectedTiles[1]);
+        var prop = ts.getProperty(selectedTiles[0], selectedTiles[1]);
         if(prop == null)
             return;
         propertiesComponents.forEach(t -> {

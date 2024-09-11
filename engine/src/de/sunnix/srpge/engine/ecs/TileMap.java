@@ -112,6 +112,10 @@ public class TileMap {
         glBindVertexArray(vertexArray);
     }
 
+    public void bindTextures(int layer){
+        glBindBuffer(GL_ARRAY_BUFFER, layer == 0 ? textures0ID : textures1ID);
+    }
+
     public void unbind(){
         glBindVertexArray(0);
     }

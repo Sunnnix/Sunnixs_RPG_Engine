@@ -16,7 +16,7 @@ import de.sunnix.srpge.engine.stage.GameplayState;
 import de.sunnix.srpge.engine.stage.IState;
 import de.sunnix.srpge.engine.stage.IntroState;
 import de.sunnix.srpge.engine.stage.MainMenuState;
-import de.sunnix.srpge.engine.util.Utils;
+import de.sunnix.srpge.engine.util.FunctionUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -124,7 +124,7 @@ public class Core {
         validateCoreStage(CoreStage.PRE_INIT);
         current_core_stage = CoreStage.INITED;
 
-        errorCallback = glfwSetErrorCallback((err, msg) -> GameLogger.logE("Core", String.format("%s: %s", Utils.getGLErrorString(err), msg)));
+        errorCallback = glfwSetErrorCallback((err, msg) -> GameLogger.logE("Core", String.format("%s: %s", FunctionUtils.getGLErrorString(err), msg)));
 
         if (!glfwInit())
             throw new IllegalStateException("GLFW could not be initialized");

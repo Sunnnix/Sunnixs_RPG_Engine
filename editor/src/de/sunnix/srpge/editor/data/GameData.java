@@ -1,8 +1,8 @@
 package de.sunnix.srpge.editor.data;
 
-import de.sunnix.srpge.editor.util.FunctionUtils;
 import de.sunnix.srpge.editor.util.LoadingDialog;
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.util.FunctionUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -45,7 +45,7 @@ public class GameData {
     }
 
     public String getMapNameOf(int id) {
-        var map = FunctionUtils.firstOrNull(maps, x -> x.getID() == id);
+        var map = de.sunnix.srpge.engine.util.FunctionUtils.firstOrNull(maps, x -> x.getID() == id);
         return map == null ? null : map.toString();
     }
 

@@ -117,7 +117,7 @@ public class TilesetView extends JPanel {
 
         for(var x = 0; x < tileset.getWidth(); x++)
             for (int y = 0; y < tileset.getHeight(); y++) {
-                var prop = tileset.getPropertie(x, y);
+                var prop = tileset.getProperty(x, y);
 
                 var iX = x;
                 var iY = y;
@@ -126,7 +126,7 @@ public class TilesetView extends JPanel {
                     TilesetPropertie parent;
                     if(prop.getAnimationParent() != -1) {
                         var parentI = prop.getAnimationParent();
-                        parent = tileset.getPropertie(parentI % tileset.getWidth(), parentI / tileset.getWidth());
+                        parent = tileset.getProperty(parentI % tileset.getWidth(), parentI / tileset.getWidth());
                     } else
                         parent = prop;
                     var animation = parent.getAnimation();

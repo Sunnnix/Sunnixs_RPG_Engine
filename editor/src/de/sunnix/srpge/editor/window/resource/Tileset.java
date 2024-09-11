@@ -64,14 +64,14 @@ public class Tileset {
         return window.getSingleton(Resources.class).image_getRaw(res);
     }
 
-    public TilesetPropertie getPropertie(int id){
+    public TilesetPropertie getProperty(int id){
         if(id < 0 || id >= properties.length)
             return null;
         return properties[id];
     }
 
-    public TilesetPropertie getPropertie(int x, int y){
-        return getPropertie(x + y * width);
+    public TilesetPropertie getProperty(int x, int y){
+        return getProperty(x + y * width);
     }
 
 }
