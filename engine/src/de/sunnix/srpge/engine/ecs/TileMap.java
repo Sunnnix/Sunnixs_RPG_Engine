@@ -43,36 +43,38 @@ public class TileMap {
         vertexArray = glGenVertexArrays();
         glBindVertexArray(vertexArray);
 
-        verticesID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, verticesID);
-        glBufferData(GL_ARRAY_BUFFER, (bufferSize * 12L) * Float.BYTES, GL_STATIC_DRAW);
-        for(var tile : tiles)
-            tile.bufferVertices();
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
-        glEnableVertexAttribArray(0);
+        if(tileset != null) {
+            verticesID = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, verticesID);
+            glBufferData(GL_ARRAY_BUFFER, (bufferSize * 12L) * Float.BYTES, GL_STATIC_DRAW);
+            for (var tile : tiles)
+                tile.bufferVertices();
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+            glEnableVertexAttribArray(0);
 
-        textures0ID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, textures0ID);
-        glBufferData(GL_ARRAY_BUFFER, (bufferSize * 8L) * Float.BYTES, GL_DYNAMIC_DRAW);
-        for(var tile : tiles)
-            tile.bufferTextures0();
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
-        glEnableVertexAttribArray(1);
+            textures0ID = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, textures0ID);
+            glBufferData(GL_ARRAY_BUFFER, (bufferSize * 8L) * Float.BYTES, GL_DYNAMIC_DRAW);
+            for (var tile : tiles)
+                tile.bufferTextures0();
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
+            glEnableVertexAttribArray(1);
 
-        textures1ID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, textures1ID);
-        glBufferData(GL_ARRAY_BUFFER, (bufferSize * 8L) * Float.BYTES, GL_DYNAMIC_DRAW);
-        for(var tile : tiles)
-            tile.bufferTextures1();
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
-        glEnableVertexAttribArray(2);
+            textures1ID = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, textures1ID);
+            glBufferData(GL_ARRAY_BUFFER, (bufferSize * 8L) * Float.BYTES, GL_DYNAMIC_DRAW);
+            for (var tile : tiles)
+                tile.bufferTextures1();
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
+            glEnableVertexAttribArray(2);
 
-        elementBuffer = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-        vertexCount = bufferSize * 6;
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) vertexCount * Integer.BYTES, GL_STATIC_DRAW);
-        for(var tile : tiles)
-            tile.bufferIndices();
+            elementBuffer = glGenBuffers();
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+            vertexCount = bufferSize * 6;
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) vertexCount * Integer.BYTES, GL_STATIC_DRAW);
+            for (var tile : tiles)
+                tile.bufferIndices();
+        }
 
         unbind();
         inited = true;
@@ -83,18 +85,22 @@ public class TileMap {
     private void loadMapFromFile(DataSaveObject dso) {
         width = dso.getInt("width", 0);
         height = dso.getInt("height", 0);
-        tileset = dso.getArray("tilesets", String[]::new)[0];
+        var tilesets = dso.getArray("tilesets", String[]::new);
+        if(tilesets.length > 0)
+            tileset = tilesets[0];
         tiles = new Tile[width * height];
-        var tilesetData = Resources.get().getTileset(tileset);
-        var offset = 0;
-        var tileList = dso.<DataSaveObject>getList("tiles");
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++) {
-                var t = new Tile(x, y, offset);
-                offset += t.create(tilesetData, tileList.get(x + y * width));
-                tiles[x + y * width] = t;
-            }
-        bufferSize = offset;
+        if(tileset != null) {
+            var tilesetData = Resources.get().getTileset(tileset);
+            var offset = 0;
+            var tileList = dso.<DataSaveObject>getList("tiles");
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++) {
+                    var t = new Tile(x, y, offset);
+                    offset += t.create(tilesetData, tileList.get(x + y * width));
+                    tiles[x + y * width] = t;
+                }
+            bufferSize = offset;
+        }
         var am = AudioManager.get();
         am.setBGM(Resources.get().getAudio(dso.getString("bgm", null)));
         am.playBGM();

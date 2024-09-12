@@ -201,7 +201,7 @@ public class Tile {
     public int checkAndUpdateAnimation(long animTime) {
         var texArr = new int[2 + wallTex.length * 2];
         for(var i = 0; i <= wallTex.length; i++){
-            var tex = i == 0 ? this.tex : wallTex[i + 1];
+            var tex = i == 0 ? this.tex : wallTex[i - 1];
             int tex0, tex1;
             var ts = getTilesetOf(true, tex);
             if(ts == -1)

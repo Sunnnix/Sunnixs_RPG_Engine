@@ -34,32 +34,32 @@ public class MapGrid {
         var pos = obj.getPosition();
         var mX = (int) pos.x;
         var mZ = (int) pos.z;
-        mX = Math.min(mapWidth / MAP_GRID_SIZE, Math.max(0, mX / MAP_GRID_SIZE));
-        mZ = Math.min(mapHeight / MAP_GRID_SIZE ,Math.max(0, mZ / MAP_GRID_SIZE));
+        mX = Math.min(mapWidth / MAP_GRID_SIZE - 1, Math.max(0, mX / MAP_GRID_SIZE));
+        mZ = Math.min(mapHeight / MAP_GRID_SIZE - 1, Math.max(0, mZ / MAP_GRID_SIZE));
 
-        for(var x = Math.max(0, mX - 1); x < Math.min(mapWidth / MAP_GRID_SIZE, mX + 3); x++)
-            for(var z = Math.max(0, mZ - 1); z <= Math.min(mapHeight / MAP_GRID_SIZE ,mZ + 3); z++)
+        for(var x = Math.max(0, mX - 1); x < Math.min((mapWidth - 1) / MAP_GRID_SIZE, mX + 3); x++)
+            for(var z = Math.max(0, mZ - 1); z <= Math.min((mapHeight - 1) / MAP_GRID_SIZE ,mZ + 3); z++)
                 list.addAll(mapGrid[x + z * mapWidth / MAP_GRID_SIZE]);
 
         return list;
     }
 
     public void relocateGridObject(Vector3f prePos, Vector3f newPos, GameObject object) {
-        var preX = Math.min(mapWidth / MAP_GRID_SIZE, Math.max(0, (int) prePos.x / MAP_GRID_SIZE));
-        var preZ = Math.min(mapHeight / MAP_GRID_SIZE ,Math.max(0, (int) prePos.z / MAP_GRID_SIZE));
+        var preX = Math.min(mapWidth / MAP_GRID_SIZE - 1, Math.max(0, (int) prePos.x / MAP_GRID_SIZE));
+        var preZ = Math.min(mapHeight / MAP_GRID_SIZE - 1,Math.max(0, (int) prePos.z / MAP_GRID_SIZE));
         mapGrid[preX + preZ * mapWidth / MAP_GRID_SIZE].remove(object);
         markDirty(preX, preZ);
 
-        var newX = Math.min(mapWidth / MAP_GRID_SIZE, Math.max(0, (int) newPos.x / MAP_GRID_SIZE));
-        var newZ = Math.min(mapHeight / MAP_GRID_SIZE ,Math.max(0, (int) newPos.z / MAP_GRID_SIZE));
+        var newX = Math.min(mapWidth / MAP_GRID_SIZE - 1, Math.max(0, (int) newPos.x / MAP_GRID_SIZE));
+        var newZ = Math.min(mapHeight / MAP_GRID_SIZE - 1,Math.max(0, (int) newPos.z / MAP_GRID_SIZE));
         mapGrid[newX + newZ * mapWidth / MAP_GRID_SIZE].add(object);
         markDirty(newX, newZ);
     }
 
     public void markDirty(GameObject go){
         var pos = go.getPosition();
-        var x = Math.min(mapWidth / MAP_GRID_SIZE, Math.max(0, (int) pos.x / MAP_GRID_SIZE));
-        var z = Math.min(mapHeight / MAP_GRID_SIZE ,Math.max(0, (int) pos.z / MAP_GRID_SIZE));
+        var x = Math.min(mapWidth / MAP_GRID_SIZE - 1, Math.max(0, (int) pos.x / MAP_GRID_SIZE));
+        var z = Math.min(mapHeight / MAP_GRID_SIZE - 1, Math.max(0, (int) pos.z / MAP_GRID_SIZE));
         markDirty(x, z);
     }
 

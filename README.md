@@ -106,3 +106,4 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Plugin system for editor and engine customization     | n/a     | 10%      | Low      |
 | Interacting System                                    | n/a     | 0%       | High     |
 | Battle System                                         | n/a     | 0%       | High     |
+| Audio System V3 (more 3D options)                     | n/a     | 0%       | Medium   |

@@ -69,23 +69,13 @@ public class World {
 
         gameObjectsToAdd.forEach(go -> gameObjects.put(go.getID(), go));
 
-        for (var i = 0; i < 9; i++){
-            var obj = new GameObject(this, 1, 1);
-            obj.setPosition(2 - i / 3, i % 3, 7);
-            if(i == 8)
-                obj.setPosition(3, 0, 8);
-            var dso = new DataSaveObject();
-            dso.putString("sprite", "objects/box");
-            obj.addComponent(new RenderComponent(dso));
-            obj.init(this);
-        }
-
         for (var i = 0; i < 0; i++){
             var obj = new GameObject(this, 1, 1);
             obj.setPosition((int)(Math.random() * map.width), (int)(Math.random() * 5), (int)(Math.random() * map.height));
             var dso = new DataSaveObject();
             dso.putString("sprite", "objects/box");
             obj.addComponent(new RenderComponent(dso));
+            obj.addComponent(new PhysicComponent(new DataSaveObject()));
             obj.init(this);
         }
 
