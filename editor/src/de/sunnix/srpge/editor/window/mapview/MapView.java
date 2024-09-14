@@ -3,6 +3,7 @@ package de.sunnix.srpge.editor.window.mapview;
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.window.Config;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -32,6 +33,7 @@ public class MapView extends JPanel {
         this.window = window;
         this.mapID = mapID;
         var ml = genMouseListener();
+        setFocusable(true);
         addMouseListener(ml);
         addMouseMotionListener(ml);
         addMouseWheelListener(ml);
@@ -113,6 +115,7 @@ public class MapView extends JPanel {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocus();
                 preX = e.getX();
                 preY = e.getY();
                 var mod = e.getModifiersEx();
@@ -244,5 +247,12 @@ public class MapView extends JPanel {
                 return new int[]{ (int)Math.floor(x / (float) Window.TILE_WIDTH / zoom), (int)Math.floor(y / (float) Window.TILE_HEIGHT / zoom)};
             }
         };
+    }
+
+    public ICopyObject onCopy() {
+        var mapData = window.getSingleton(GameData.class).getMap(mapID);
+        if(mapData == null)
+            return null;
+        return window.getCurrentMapModule().onCopy(this, mapData);
     }
 }

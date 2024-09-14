@@ -64,7 +64,7 @@ public class MapListView extends JScrollPane {
             label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
             popup.add(label, 0);
             popup.add(new JSeparator(), 1);
-            var setStart = createMenuItem(getString("view.map_list.popup.set_as_start"), this::setMapAsStartMap);
+            var setStart = createMenuItem(getString("view.map_list.popup.set_as_start"), l -> window.setStart(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)), 0, 0, 0));
             setStart.setEnabled(window.getStartMap() != Integer.parseInt(item.substring(0, 4)));
             popup.add(setStart);
             popup.add(createMenuItem(getString("view.map_list.popup.set_tileset"), this::setMapTileset));
@@ -82,12 +82,6 @@ public class MapListView extends JScrollPane {
         var id = data.genNewMap();
         loadMapList();
         mapList.setSelectedValue(data.getMapNameOf(id), true);
-        window.setProjectChanged();
-    }
-
-    private void setMapAsStartMap(ActionEvent e) {
-        window.setStartMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
-        repaint();
         window.setProjectChanged();
     }
 

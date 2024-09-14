@@ -16,6 +16,7 @@ import lombok.Getter;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +43,11 @@ public class World {
 
     private int animTimer = -1;
 
-    public void init(ZipFile zip, BetterJSONObject config) throws IOException {
+    public void init(ZipFile zip, BetterJSONObject config) throws IOException, InvocationTargetException, IllegalAccessException {
         if(inited)
             return;
         var startMapID = config.get("start_map", -1);
+        var startPos = config.getFloatArr("start_map_pos", 3);
         if(startMapID == -1)
             throw new RuntimeException("Invalid start map id: " + startMapID);
         var mapDSO = new DataSaveObject().load(zip.getInputStream(new ZipEntry(String.format("maps\\%04d.map", startMapID))));
@@ -57,6 +59,7 @@ public class World {
         // Player
         player = new GameObject(this, new DataSaveObject().load(zip.getInputStream(new ZipEntry("player"))));
         player.size.set(.78, 1.8);
+        player.setPosition(startPos[0], startPos[1], startPos[2]);
         player.addComponent(new PhysicComponent(new DataSaveObject()));
         player.init(this);
 
@@ -71,11 +74,13 @@ public class World {
 
         for (var i = 0; i < 0; i++){
             var obj = new GameObject(this, 1, 1);
-            obj.setPosition((int)(Math.random() * map.width), (int)(Math.random() * 5), (int)(Math.random() * map.height));
+            obj.setPosition((int)(Math.random() * map.width), (int)(Math.random() * 9), (int)(Math.random() * map.height));
             var dso = new DataSaveObject();
             dso.putString("sprite", "objects/box");
             obj.addComponent(new RenderComponent(dso));
-            obj.addComponent(new PhysicComponent(new DataSaveObject()));
+            var comp = new PhysicComponent(new DataSaveObject());
+            comp.setFlying(true);
+            obj.addComponent(comp);
             obj.init(this);
         }
 

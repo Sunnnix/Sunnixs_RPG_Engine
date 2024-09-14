@@ -54,6 +54,6 @@ public abstract class Component implements Cloneable{
         return new String[0];
     }
 
-    public void onDraw(Window window, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {}
+    public void onDraw(Window window, GameObject parent, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {}
 
 }

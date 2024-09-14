@@ -89,7 +89,7 @@ public class PhysicSystem {
             var comp = obj.getComponent(PhysicComponent.class);
             var pos = obj.getPosition().mul(1, 0, 1, new Vector3f()).add(0, -comp.getGroundPos(), 0); // set y to ground pos
             var goSize = obj.size;
-            if(!comp.isHasShadow() || pos.x > camPos.x + camSize.x || pos.x + goSize.x < camPos.x || pos.z - pos.y > camPos.y + camSize.y || pos.z + goSize.x < camPos.y)
+            if(!comp.isHasShadow() || pos.x > camPos.x + camSize.x || pos.x + goSize.x < camPos.x || pos.z + pos.y > camPos.y + camSize.y || pos.z + goSize.x < camPos.y)
                 continue;
             var shadow = comp.getShadow();
             pos.y -= (obj.size.x * Core.TILE_HEIGHT / 2 - shadow.getSize().y / 2) / Core.TILE_HEIGHT; // center texture if shadow is smaller then object

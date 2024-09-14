@@ -2,10 +2,12 @@ package de.sunnix.srpge.editor.window.mapview;
 
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
+import de.sunnix.srpge.editor.window.copyobjects.TileCopyObject;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.resource.Tileset;
 import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
-import de.sunnix.srpge.engine.ecs.Tile;
+import de.sunnix.srpge.editor.data.Tile;
 import de.sunnix.srpge.engine.util.Tuple;
 
 import javax.swing.*;
@@ -16,6 +18,7 @@ import java.awt.image.BufferedImage;
 import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.window.Window.TILE_HEIGHT;
 import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
+import static de.sunnix.srpge.engine.ecs.Tile.*;
 
 public class SelectTileModule extends MapViewModule {
 
@@ -45,15 +48,15 @@ public class SelectTileModule extends MapViewModule {
             new JPopupMenu(){
                 {
                     var slopeNone = new JMenuItem("Slope - None");
-                    slopeNone.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_NONE));
+                    slopeNone.addActionListener(l -> setToSlope(SLOPE_DIRECTION_NONE));
                     var slopeSouth = new JMenuItem("Slope - South");
-                    slopeSouth.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_SOUTH));
+                    slopeSouth.addActionListener(l -> setToSlope(SLOPE_DIRECTION_SOUTH));
                     var slopeEast = new JMenuItem("Slope - East");
-                    slopeEast.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_EAST));
+                    slopeEast.addActionListener(l -> setToSlope(SLOPE_DIRECTION_EAST));
                     var slopeWest = new JMenuItem("Slope - West");
-                    slopeWest.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_WEST));
+                    slopeWest.addActionListener(l -> setToSlope(SLOPE_DIRECTION_WEST));
                     var slopeNorth = new JMenuItem("Slope - North");
-                    slopeNorth.addActionListener(l -> setToSlope(Tile.SLOPE_DIRECTION_NORTH));
+                    slopeNorth.addActionListener(l -> setToSlope(SLOPE_DIRECTION_NORTH));
                     add(slopeNone);
                     add(slopeSouth);
                     add(slopeEast);
@@ -246,12 +249,14 @@ public class SelectTileModule extends MapViewModule {
 
         var tile = tiles[sX + sY * map.getWidth()];
         var groundY = tile.getgroundY();
+        var wallHeight = tile.getWallHeight();
 
         g.setColor(Color.MAGENTA);
         g.drawLine(x + TW * sX, y + TH * sY, x + TW * sX + TW * sW, y + TH * sY);
-        g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * (sH + groundY));
+        g.drawRect(x + TW * sX, y + TH * (sY - wallHeight), TW * sW, TH * (sH + wallHeight));
+        g.drawRect(x + TW * sX, y + TH * (sY - wallHeight), TW * sW, TH * sH);
 
-        g.setColor(tile.getSlopeDirection() != Tile.SLOPE_DIRECTION_NONE ? Color.GREEN : Color.YELLOW);
+        g.setColor(tile.getSlopeDirection() != SLOPE_DIRECTION_NONE ? Color.GREEN : Color.YELLOW);
         g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * sH);
     }
 
@@ -270,4 +275,50 @@ public class SelectTileModule extends MapViewModule {
         }
         return tilesets;
     }
+
+    @Override
+    public ICopyObject onCopy(MapView view, MapData map) {
+        var sTiles = map.getSelectedTiles();
+        var sX = sTiles[0];
+        var sY = sTiles[1];
+        var sW = sTiles[2];
+        var sH = sTiles[3];
+        if(sX < 0 || sX >= map.getWidth() ||
+                sY < 0 || sY >= map.getHeight() ||
+                sW < 0 || (sX + sW - 1) >= map.getWidth() ||
+                sH < 0 || (sY + sH - 1) >= map.getHeight())
+            return null;
+        var tiles = map.getTiles();
+        var tilesToCopy = new Tile[sW * sH];
+        for(var x = 0; x < sW; x++)
+            for(var y = 0; y < sH; y++)
+                tilesToCopy[x + y * sW] = tiles[sX + x + (sY + y) * map.getWidth()];
+        return new TileCopyObject(tilesToCopy) {
+            @Override
+            public void paste() {
+                if(!view.hasFocus())
+                    return;
+                var sTiles = map.getSelectedTiles();
+                var cSX = sTiles[0];
+                var cSY = sTiles[1];
+                var cSW = sTiles[2];
+                var cSH = sTiles[3];
+                if(cSX < 0 || cSX >= map.getWidth() || cSY < 0 || cSY >= map.getHeight())
+                    return;
+                var mTiles = map.getTiles();
+                for(var x = 0; x < sW; x++)
+                    for(var y = 0; y < sH; y++){
+                        var tile = tiles[x + y * sW];
+                        var tX = cSX + x;
+                        var tY = cSY + y;
+                        if(tX >= map.getWidth() || tY >= map.getHeight())
+                            continue;
+                        mTiles[tX + tY * map.getWidth()] = tile.clone();
+                    }
+                view.repaint();
+                window.setProjectChanged();
+            }
+        };
+    }
+
 }

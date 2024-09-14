@@ -5,11 +5,17 @@ import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.resource.Tileset;
 import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
-import de.sunnix.srpge.engine.util.Tuple;
+import de.sunnix.srpge.editor.window.undoredo.UndoableDrawEdit;
+import de.sunnix.srpge.engine.util.Tuple.*;
 
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
@@ -26,6 +32,8 @@ public class WallDrawModule extends MapViewModule {
     private int dragFillHeight = 1;
     private int dragFillLayer = 0;
     private boolean dragFillPrimaryMouse = true;
+
+    private final List<UndoableDrawEdit.TileRecord> records = new ArrayList<>();
 
     public WallDrawModule(Window window) {
         super(window);
@@ -56,8 +64,12 @@ public class WallDrawModule extends MapViewModule {
                     dragFillWidth = 1;
                     dragFillHeight = 1;
                 }
-                case Window.DRAW_TOOL_FILL -> startFillTiles(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
-                default -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
+                case Window.DRAW_TOOL_FILL -> {
+                    startFillTiles(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
+                    if(!records.isEmpty())
+                        createUndoEdit(view, "Fill Walls");
+                }
+                default -> setTileWalls(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1], texID[2], texID[3]);
             }
         } else if(button == MouseEvent.BUTTON3)
             switch (window.getDrawTool()) {
@@ -71,7 +83,11 @@ public class WallDrawModule extends MapViewModule {
                     dragFillWidth = 1;
                     dragFillHeight = 1;
                 }
-                case Window.DRAW_TOOL_FILL -> startFillTiles(map, tileX, wallDrawLayer, layer, yDiff, -1, 0);
+                case Window.DRAW_TOOL_FILL -> {
+                    startFillTiles(map, tileX, wallDrawLayer, layer, yDiff, -1, 0);
+                    if(!records.isEmpty())
+                        createUndoEdit(view, "Fill Walls");
+                }
                 default -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, -1, 0);
             }
         else if(button == MouseEvent.BUTTON2){
@@ -92,6 +108,8 @@ public class WallDrawModule extends MapViewModule {
                 var tex = map.getSelectedTilesetTile();
                 for(var x = Math.max(0, dragFillStartX); x < Math.min(map.getWidth(), dragFillStartX + dragFillWidth); x++)
                     setTileWalls(map, x, window.getPropertiesView().getWallDrawLayer(), dragFillStartY, dragFillHeight, dragFillLayer, tex[0], tex[1]);
+                if(!records.isEmpty())
+                    createUndoEdit(view, "Drag fill Walls");
                 window.setProjectChanged();
                 dragFillRootX = -1;
                 dragFillRootY = -1;
@@ -103,6 +121,8 @@ public class WallDrawModule extends MapViewModule {
             } else if(button == MouseEvent.BUTTON3 && !dragFillPrimaryMouse) {
                 for(var x = Math.max(0, dragFillStartX); x < Math.min(map.getWidth(), dragFillStartX + dragFillWidth); x++)
                     setTileWalls(map, x, window.getPropertiesView().getWallDrawLayer(), dragFillStartY, dragFillHeight, dragFillLayer, -1, 0);
+                if(!records.isEmpty())
+                    createUndoEdit(view, "Drag fill Walls");
                 window.setProjectChanged();
                 dragFillRootX = -1;
                 dragFillRootY = -1;
@@ -112,7 +132,12 @@ public class WallDrawModule extends MapViewModule {
                 dragFillHeight = 1;
                 return true;
             }
-        }
+        } else if(window.getDrawTool() == Window.DRAW_TOOL_SINGLE)
+            if(!records.isEmpty())
+                if(records.size() == 1)
+                    createUndoEdit(view, "Draw Wall");
+                else
+                    createUndoEdit(view, "Draw Walls");
         return false;
     }
 
@@ -145,7 +170,7 @@ public class WallDrawModule extends MapViewModule {
                     dragFillStartY = Math.min(yDiff, dragFillRootY);
                     dragFillLayer = layer;
                 }
-                case Window.DRAW_TOOL_SINGLE -> setTileWall(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1]);
+                case Window.DRAW_TOOL_SINGLE -> setTileWalls(map, tileX, wallDrawLayer, layer, yDiff, texID[0], texID[1], texID[2], texID[3]);
             }
         } else if(button == MouseEvent.BUTTON3)
             switch (window.getDrawTool()) {
@@ -451,11 +476,27 @@ public class WallDrawModule extends MapViewModule {
             return;
         var tile = map.getTiles()[x + y * map.getWidth()];
         var wallHeight = tile.getWallHeight();
-        if(wall >= wallHeight)
+        if(wall < 0 || wall >= wallHeight)
             return;
+
+        records.add(new UndoableDrawEdit.TileRecord(x, y, tile, layer, Arrays.copyOfRange(tile.getWallTex(wall), layer == 0 ? 0 : 2, layer == 0 ? 2 : 4), new int[] { tileset, index }, wall));
+
         tile.setWallTex(wall, layer, tileset, index);
         if(noticeChanged)
             window.setProjectChanged();
+    }
+
+    private void setTileWalls(MapData map, int tX, int tY, int layer, int wall, int tilesetIndex, int index, int width, int height){
+        var tileset = window.getSingleton(Resources.class).tileset_get(map.getTilesets()[map.getSelectedTileset()]);
+        var mW = map.getWidth();
+        for(var x = 0; x < width; x++)
+            for(var y = 0; y < height; y++){
+                var nTX = tX + x;
+                if(nTX >= mW)
+                    continue;
+                var nextIndex = index + x + y * tileset.getWidth();
+                setTileWall(map, nTX, tY, layer, wall - y, tilesetIndex, nextIndex);
+            }
     }
 
     private void setTileWall(MapData map, int x, int y, int layer, int wall, int tileset, int index) {
@@ -525,15 +566,43 @@ public class WallDrawModule extends MapViewModule {
         }
     }
 
-    private Tuple.Tuple2[] loadTilesets(String[] tilesetNames){
-        var tilesets = new Tuple.Tuple2[tilesetNames.length];
+    private Tuple2[] loadTilesets(String[] tilesetNames){
+        var tilesets = new Tuple2[tilesetNames.length];
         var res = window.getSingleton(Resources.class);
         for(var i = 0; i < tilesets.length; i++) {
             var ts = res.tileset_get(tilesetNames[i]);
             var img = ts.getImage(window);
-            tilesets[i] = new Tuple.Tuple2<>(ts, img);
+            tilesets[i] = new Tuple2<>(ts, img);
         }
         return tilesets;
+    }
+
+    private void createUndoEdit(MapView view, String presentationName){
+        window.getUndoManager().addEdit(new UndoableDrawWallEdit(records, presentationName, window, view));
+    }
+
+    private static class UndoableDrawWallEdit extends UndoableDrawEdit{
+
+        public UndoableDrawWallEdit(List<TileRecord> records, String presentationName, Window window, MapView view) {
+            super(records, presentationName, window, view);
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            for(var record: records)
+                record.tile().setWallTex(record.meta(), record.layer(), record.preTexture()[0], record.preTexture()[1]);
+            view.repaint();
+            window.setProjectChanged();
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            for(var record: records)
+                record.tile().setWallTex(record.meta(), record.layer(), record.postTexture()[0], record.postTexture()[1]);
+            view.repaint();
+            window.setProjectChanged();
+        }
+
     }
 
 }

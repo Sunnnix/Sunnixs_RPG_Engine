@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
+import static de.sunnix.srpge.engine.Core.TILE_HEIGHT;
 
 public class RenderComponent extends Component{
 
@@ -130,11 +131,17 @@ public class RenderComponent extends Component{
     }
 
     @Override
-    public void onDraw(Window window, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {
+    public void onDraw(Window window, GameObject parent, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {
         var sprite = window.getSingleton(Resources.class).sprites.getData(this.defaultSprite);
         if(sprite == null)
             return;
-        sprite.drawSprite(window, g, 0, 0, zoom, x, y);
+        var imageRes = sprite.getImage(window);
+        if(imageRes == null)
+            return;
+        var image = imageRes.getImage();
+        if(image == null)
+            return;
+        sprite.drawSprite(window, g, 0, 0, zoom, x + (int)(image.getWidth() / imageRes.getWidth() / 2 * zoom), (int)(y + parent.getWidth() * TILE_HEIGHT));
     }
 
     private static class StateSpriteEditDialog extends JDialog {

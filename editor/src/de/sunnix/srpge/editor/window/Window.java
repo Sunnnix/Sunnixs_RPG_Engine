@@ -5,6 +5,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.srpge.editor.util.DialogUtils;
+import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
@@ -23,6 +24,7 @@ import org.json.JSONObject;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -85,11 +87,20 @@ public class Window extends JFrame {
     @Setter
     private int startMap = -1;
     @Getter
+    private float[] startMapPosition = new float[3];
+    @Getter
     private boolean showGrid = true;
 
     @Getter
     @Setter
     private GameObject player;
+
+    @Getter
+    private final UndoManager undoManager;
+
+    @Getter
+    @Setter
+    private ICopyObject copyObject;
 
     public Window(){
         super();
@@ -115,6 +126,7 @@ public class Window extends JFrame {
         setLayout(new BorderLayout());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setJMenuBar(menuBar = new MenuBar(this));
+        undoManager = menuBar.getUndoManager();
         var wl = setupWindowListener();
         addWindowListener(wl);
         addWindowStateListener(wl);
@@ -249,10 +261,13 @@ public class Window extends JFrame {
         projectPath = null;
         projectChanged = false;
         startMap = -1;
+        startMapPosition = new float[3];
         getSingleton(Resources.class).reset();
         getSingleton(GameData.class).reset();
         setProjectOpen(false);
         updateTitle();
+        undoManager.discardAllEdits();
+        copyObject = null;
     }
 
     public void setProjectOpen(boolean projectOpen) {
@@ -362,6 +377,7 @@ public class Window extends JFrame {
                 }
                 projectName = config.get("project_name", getString("name.unnamed_project"));
                 startMap = config.get("start_map", -1);
+                startMapPosition = config.getFloatArr("start_map_pos", 3);
                 dialog.addProgress(500);
                 getSingleton(Resources.class).loadResources(dialog, 5000, zip, version);
                 getSingleton(GameData.class).loadData(dialog, 3500, zip, version);
@@ -454,6 +470,7 @@ public class Window extends JFrame {
                 dialog.addProgress(1000);
                 config.put("project_name", projectName);
                 config.put("start_map", startMap);
+                config.put("start_map_pos", startMapPosition);
                 config.put("editor_version", Core.VERSION);
                 dialog.addProgress(500);
                 getSingleton(Resources.class).saveResources(dialog, 5000, zip);
@@ -600,4 +617,31 @@ public class Window extends JFrame {
             player.getComponents().add(new RenderComponent());
     }
 
+    /**
+     * Used to make a copy function in mapview from shortcut Ctrl+C or menu Copy
+     * @return if copying was successfully
+     */
+    public ICopyObject onCopy() {
+        if(mapView != null) {
+            var copy = mapView.onCopy();
+            if(copy != null)
+                copyObject = copy;
+            return copy;
+        }
+        return null;
+    }
+
+    public void onPaste() {
+        if(copyObject != null)
+            copyObject.paste();
+    }
+
+    public void setStart(int mapID, float x, int y, float z) {
+        setStartMap(mapID);
+        startMapPosition[0] = x;
+        startMapPosition[1] = y;
+        startMapPosition[2] = z;
+        mapListView.repaint();
+        setProjectChanged();
+    }
 }

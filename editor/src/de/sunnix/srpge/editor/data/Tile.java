@@ -5,9 +5,11 @@ import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Arrays;
+
 import static de.sunnix.srpge.engine.ecs.Tile.SLOPE_DIRECTION_NONE;
 
-public class Tile {
+public class Tile implements Cloneable{
 
     private static short getLayer(int layer, int data){
         if(layer == 0)
@@ -93,16 +95,6 @@ public class Tile {
         return Byte.toUnsignedInt(wallHeight);
     }
 
-    public void setDataTo(int layer, int tileset, int index, TilesetPropertie propertie) {
-        if(tileset == -1 || propertie == null) {
-            setGroundTex(layer, -1, 0);
-            blocking = false;
-        } else {
-            setGroundTex(layer, tileset, index);
-            blocking = propertie.isBlocking();
-        }
-    }
-
     public void saveTile(DataSaveObject dso) {
         dso.putInt("g-tex", groundTex);
         dso.putArray("w-tex", wallTex);
@@ -141,4 +133,14 @@ public class Tile {
         this.slopeDirection = (byte) slope;
     }
 
+    @Override
+    public Tile clone() {
+        try {
+            var clone = (Tile) super.clone();
+            clone.wallTex = Arrays.copyOf(clone.wallTex, clone.wallTex.length);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

@@ -13,7 +13,6 @@ import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import static de.sunnix.srpge.editor.window.Window.TILE_HEIGHT;
 import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
@@ -35,7 +34,9 @@ public class TilesetView extends JPanel {
         this.parent = parent;
         this.tileset = tileset;
 
-        addMouseListener(genMouseListener());
+        var ml = genMouseListener();
+        addMouseListener(ml);
+        addMouseMotionListener(ml);
         addAncestorListener(new AncestorListener() {
             @Override
             public void ancestorAdded(AncestorEvent event) {
@@ -75,30 +76,51 @@ public class TilesetView extends JPanel {
         });
     }
 
-    private MouseListener genMouseListener() {
+    private MouseAdapter genMouseListener() {
         return new MouseAdapter() {
 
+            private int preX, preY;
+
+            private boolean primPress;
 
             @Override
             public void mousePressed(MouseEvent e) {
                 if(e.getButton() == MouseEvent.BUTTON1) {
-                    var image = window.getSingleton(Resources.class).tileset_getRaw(tileset);
-                    if (image == null)
+                    var tileset = window.getSingleton(Resources.class).tileset_get(TilesetView.this.tileset);
+                    if(tileset == null)
                         return;
-                    var width = image.getWidth() / TILE_WIDTH;
-                    var height = image.getHeight() / TILE_HEIGHT;
-                    var x = e.getX();
-                    var y = e.getY();
-                    if (x < 0 || x > image.getWidth() || y < 0 || y > image.getHeight())
-                        return;
-                    var index = x / TILE_WIDTH + (y / TILE_HEIGHT) * width;
+                    var width = tileset.getWidth();
+                    var height = tileset.getHeight();
+                    var x = preX = Math.max(Math.min(e.getX() / TILE_WIDTH, width - 1), 0);
+                    var y = preY = Math.max(Math.min(e.getY() / TILE_HEIGHT, height - 1), 0);
+                    var index = x + y * width;
                     window.setSelectedTile(parent.getSelectedIndex(), index, 1, 1);
+                    primPress = true;
                 }
             }
 
             @Override
-            public void mouseDragged(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON1)
+                    primPress = false;
+            }
 
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if(!primPress)
+                    return;
+                var tileset = window.getSingleton(Resources.class).tileset_get(TilesetView.this.tileset);
+                if(tileset == null)
+                    return;
+                var width = tileset.getWidth();
+                var height = tileset.getHeight();
+                var x = Math.max(Math.min(e.getX() / TILE_WIDTH, width - 1), 0);
+                var y = Math.max(Math.min(e.getY() / TILE_HEIGHT, height - 1), 0);
+
+                var index = Math.min(preX, x) + Math.min(preY, y) * width;
+                var sW = Math.max(Math.abs(preX - x) + 1, 1);
+                var sH = Math.max(Math.abs(preY - y) + 1, 1);
+                window.setSelectedTile(parent.getSelectedIndex(), index, sW, sH);
             }
         };
     }

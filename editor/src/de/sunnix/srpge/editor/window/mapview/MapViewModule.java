@@ -2,6 +2,7 @@ package de.sunnix.srpge.editor.window.mapview;
 
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
 
 import java.awt.*;
 
@@ -97,5 +98,14 @@ public abstract class MapViewModule {
      * @return should repaint component?
      */
     public abstract boolean omMouseWheelMoved(MapView view, MapData map, int mask, boolean scrollIn, int screenX, int screenY, int mapX, int mapY, int tileX, int tileY);
+
+    /**
+     * Used to make a copy function from shortcut Ctrl+C or menu Copy
+     *
+     * @return if copying was successfully
+     */
+    public ICopyObject onCopy(MapView view, MapData map) {
+        return null;
+    }
 
 }

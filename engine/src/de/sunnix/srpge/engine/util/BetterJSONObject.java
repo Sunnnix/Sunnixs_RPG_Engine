@@ -63,6 +63,23 @@ public class BetterJSONObject extends JSONObject {
             return defaultValue;
     }
 
+    public float[] getFloatArr(String key, int size) throws InvocationTargetException, IllegalAccessException {
+        if(!has(key))
+            return new float[size];
+        var list = getJSONArray(key).toList();
+        if(list.isEmpty())
+            return new float[size];
+        var arr = new float[list.size()];
+        for (var i = 0; i < list.size(); i++) {
+            var obj = list.get(i);
+            if(obj instanceof Number num)
+                arr[i] = num.floatValue();
+            else
+                throw (JSONException) wrongValueFormatException.invoke(this, key, "byte", obj, new ClassCastException("Value " + obj + " is no number!"));
+        }
+        return arr;
+    }
+
     @Override
     public BetterJSONObject getJSONObject(String key){
         if(has(key))

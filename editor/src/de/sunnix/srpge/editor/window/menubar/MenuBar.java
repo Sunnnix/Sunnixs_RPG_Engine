@@ -4,8 +4,13 @@ import de.sunnix.srpge.editor.docu.UserGuide;
 import de.sunnix.srpge.editor.window.Config;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.menubar.resource.ResourceDialog;
+import lombok.Getter;
 
 import javax.swing.*;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
 import java.awt.event.*;
 import java.io.File;
 import java.util.*;
@@ -20,9 +25,13 @@ public class MenuBar extends JMenuBar {
     private final List<JComponent> projectDependentMenus = new LinkedList<>();
     private JMenu recentProjects;
 
+    @Getter
+    private UndoManager undoManager;
+
     public MenuBar(Window parent){
         this.window = parent;
         add(setUpMMFile());
+        add(addProjectDependentComponent(setUpMMEdit()));
         add(setUpMMGame());
         add(addProjectDependentComponent(setUpMMPlayer()));
         add(setUpMMHelp());
@@ -42,11 +51,6 @@ public class MenuBar extends JMenuBar {
 
         mm.add(new JSeparator());
 
-        var config = window.getSingleton(Config.class);
-        mm.add(createCheckboxMenu(getString("menu.file.animate_tiles"), config.get("animate_tiles", false), b -> {
-            config.set("animate_tiles", b);
-        }));
-
         mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.open_resource_manager"), e -> new ResourceDialog(window))));
 
         mm.add(new JSeparator());
@@ -56,6 +60,77 @@ public class MenuBar extends JMenuBar {
         mm.add(new JSeparator());
 
         mm.add(createDefaultMenuItem(getString("menu.file.exit"), e -> window.exit()));
+        return mm;
+    }
+
+    private JMenu setUpMMEdit(){
+        var mm = new JMenu(getString("menu.edit"));
+        var undoName = getString("menu.edit.undo");
+        var redoName = getString("menu.edit.redo");
+        var undo = createDefaultMenuItem(undoName, KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK, l -> undoManager.undo());
+        undo.setEnabled(false);
+        mm.add(undo);
+        var redo = createDefaultMenuItem(redoName, KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK, l -> undoManager.redo());
+        redo.setEnabled(false);
+        mm.add(redo);
+        undoManager = new UndoManager(){
+            @Override
+            public synchronized boolean addEdit(UndoableEdit anEdit) {
+                var e = super.addEdit(anEdit);
+                resetMenus();
+                return e;
+            }
+
+            @Override
+            public void undo() throws CannotUndoException {
+                super.undo();
+                resetMenus();
+            }
+
+            @Override
+            public void redo() throws CannotRedoException {
+                super.redo();
+                resetMenus();
+            }
+
+            @Override
+            public synchronized void discardAllEdits() {
+                super.discardAllEdits();
+                resetMenus();
+            }
+
+            private void resetMenus(){
+                if(canUndo()) {
+                    undo.setEnabled(true);
+                    undo.setText(undoName + " - " + getUndoPresentationName());
+                } else {
+                    undo.setEnabled(false);
+                    undo.setText(undoName);
+                }
+                if(canRedo()) {
+                    redo.setEnabled(true);
+                    redo.setText(redoName + " - " + getRedoPresentationName());
+                } else {
+                    redo.setEnabled(false);
+                    redo.setText(redoName);
+                }
+            }
+        };
+
+        mm.add(new JSeparator());
+        var config = window.getSingleton(Config.class);
+        mm.add(createCheckboxMenu(getString("menu.file.animate_tiles"), config.get("animate_tiles", false), b -> config.set("animate_tiles", b)));
+
+        mm.add(new JSeparator(JSeparator.HORIZONTAL));
+
+        var paste = createDefaultMenuItem(getString("manu.edit.paste"), KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, l -> window.onPaste());
+        paste.setEnabled(false);
+        mm.add(createDefaultMenuItem(getString("manu.edit.copy"), KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK, l -> {
+            if(window.onCopy() != null)
+                paste.setEnabled(true);
+        }));
+        mm.add(paste);
+
         return mm;
     }
 
@@ -176,4 +251,5 @@ public class MenuBar extends JMenuBar {
     public void enableProjectOptions(boolean enable) {
         projectDependentMenus.forEach(menu -> menu.setEnabled(enable));
     }
+
 }

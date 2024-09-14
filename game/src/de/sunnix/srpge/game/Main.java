@@ -38,6 +38,8 @@ public class Main {
 
         var playerCorrds = new Text(" ").setPos(0, fpsText.getPos().y + fpsText.getHeight());
 
+        var groundPos = new Text(" ").setPos(0, playerCorrds.getPos().y + playerCorrds.getHeight());
+
         if(Arrays.stream(args).anyMatch("profiling"::equalsIgnoreCase)) {
             FlatDarkLaf.setup();
             Core.setUseProfiler(true);
@@ -76,6 +78,7 @@ public class Main {
                 var pPos = player.getPosition();
 
                 playerCorrds.change(tc -> tc.setText(String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos())));
+                groundPos.change(tc -> tc.setText(String.format("Ground Pos: %.2f", player.getComponent(PhysicComponent.class).getGroundPos())));
                 if(h != 0 || v != 0) {
                     player.addState(States.MOVING.id());
                     var comp = player.getComponent(RenderComponent.class);

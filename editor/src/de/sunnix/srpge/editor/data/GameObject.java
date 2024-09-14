@@ -2,7 +2,6 @@ package de.sunnix.srpge.editor.data;
 
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
-import de.sunnix.srpge.editor.window.object.components.RenderComponent;
 import de.sunnix.srpge.editor.window.object.events.EventList;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
@@ -50,16 +49,18 @@ public class GameObject {
     private static final Color OBJECT_TOP_COLOR_S = new Color(.8f, .8f, 0f, .65f);
     private static final Color OBJECT_SIDE_COLOR = new Color(.0f, .5f, 1f, .65f);
     private static final Color OBJECT_SIDE_COLOR_S = new Color(.6f, .6f, 0f, .65f);
+    private static final Color PLAYER_OBJECT_TOP_COLOR = new Color(.6f, 1f, 1f, .65f);
+    private static final Color PLAYER_OBJECT_SIDE_COLOR = new Color(.4f, .75f, .75f, .65f);
 
     public void draw(Window window, Graphics2D g, float zoom, int offsetX, int offsetY, boolean selected){
         var TW = (int)(TILE_WIDTH * zoom);
         var TH = (int)(TILE_HEIGHT * zoom);
         var x = (int)(this.x * TW) + offsetX;
-        var y = (int)(this.z * TH) + offsetY;
+        var y = (int)((this.z - this.y) * TH) + offsetY;
         var w = (int)(this.width * TW);
         var h = (int)(this.height * TH);
         var d = (int)(this.width * TH);
-        components.forEach(comp -> comp.onDraw(window, g, zoom, x, y, w, h, d, selected));
+        components.forEach(comp -> comp.onDraw(window, this, g, zoom, x, y, w, h, d, selected));
         drawHitbox(g, zoom, offsetX, offsetY, selected);
     }
 
@@ -67,19 +68,19 @@ public class GameObject {
         var TW = (int)(TILE_WIDTH * zoom);
         var TH = (int)(TILE_HEIGHT * zoom);
         var x = (int)(this.x * TW) + offsetX;
-        var y = (int)(this.z * TH) + offsetY;
+        var y = (int)((this.z - this.y) * TH) + offsetY;
         var w = (int)(this.width * TW);
         var h = (int)(this.height * TH);
         var d = (int)(this.width * TH);
-        g.setColor(selected ? OBJECT_SIDE_COLOR_S : OBJECT_SIDE_COLOR);
+        g.setColor(selected ? OBJECT_SIDE_COLOR_S : getID() == 999 ? PLAYER_OBJECT_SIDE_COLOR : OBJECT_SIDE_COLOR);
         g.fillRect(x, y, w, h);
         y -= d;
-        g.setColor(selected ? OBJECT_TOP_COLOR_S : OBJECT_TOP_COLOR);
+        g.setColor(selected ? OBJECT_TOP_COLOR_S : getID() == 999 ? PLAYER_OBJECT_TOP_COLOR :OBJECT_TOP_COLOR);
         g.fillRect(x, y, w, d);
     }
 
     public boolean intersects(float x, float y) {
-        return !(x < this.x) && !(x >= this.x + this.width) && !(y < this.z - height) && !(y >= this.z + width);
+        return !(x < this.x) && !(x >= this.x + this.width) && !(y < this.z - this.y - height) && !(y >= this.z - this.y + width);
     }
 
     public boolean hasComponent(String id) {

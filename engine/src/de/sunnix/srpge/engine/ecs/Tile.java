@@ -224,7 +224,7 @@ public class Tile {
                 continue;
             TilesetPropertie parent;
             if(prop.getAnimationParent() != -1)
-                parent = tileset.getProperty(prop.getAnimation().get(0));
+                parent = tileset.getProperty(prop.getAnimationParent());
             else
                 parent = prop;
 

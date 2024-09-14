@@ -5,11 +5,18 @@ import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.resource.Tileset;
 import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
-import de.sunnix.srpge.engine.util.Tuple;
+import de.sunnix.srpge.editor.window.undoredo.UndoableDrawEdit;
+import de.sunnix.srpge.engine.util.Tuple.*;
+import de.sunnix.srpge.editor.window.undoredo.UndoableDrawEdit.TileRecord;
 
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Stack;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
@@ -27,12 +34,16 @@ public class TopDrawModule extends MapViewModule {
     private int dragFillLayer = 0;
     private boolean dragFillPrimaryMouse = true;
 
+    private final List<TileRecord> records = new ArrayList<>();
+
     public TopDrawModule(Window window) {
         super(window);
     }
 
     @Override
     public boolean onMousePresses(MapView view, MapData map, MouseEvent me, int mapX, int mapY, int tileX, int tileY) {
+        if(map.getSelectedTileset() == -1)
+            return false;
         var button = me.getButton();
         var mask = me.getModifiersEx();
         var layer = (mask & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK ? 1 : 0;
@@ -49,8 +60,12 @@ public class TopDrawModule extends MapViewModule {
                     dragFillWidth = 1;
                     dragFillHeight = 1;
                 }
-                case Window.DRAW_TOOL_FILL -> startFillTiles(map, tileX, tileY, layer, texID[0], texID[1]);
-                default -> setTile(map, tileX, tileY, layer, texID[0], texID[1]);
+                case Window.DRAW_TOOL_FILL -> {
+                    startFillTiles(map, tileX, tileY, layer, texID[0], texID[1]);
+                    if(!records.isEmpty())
+                        createUndoEdit(view, "Fill Tiles");
+                }
+                default -> setTiles(map, tileX, tileY, layer, texID[0], texID[1], texID[2], texID[3]);
             }
         } else if(button == MouseEvent.BUTTON3){
             switch (window.getDrawTool()) {
@@ -64,7 +79,11 @@ public class TopDrawModule extends MapViewModule {
                     dragFillWidth = 1;
                     dragFillHeight = 1;
                 }
-                case Window.DRAW_TOOL_FILL -> startFillTiles(map, tileX, tileY, layer, -1, 0);
+                case Window.DRAW_TOOL_FILL -> {
+                    startFillTiles(map, tileX, tileY, layer, -1, 0);
+                    if(!records.isEmpty())
+                        createUndoEdit(view, "Fill Tiles");
+                }
                 default -> setTile(map, tileX, tileY, layer, -1, 0);
             }
         } else if (button == MouseEvent.BUTTON2) {
@@ -88,6 +107,8 @@ public class TopDrawModule extends MapViewModule {
                 for(var x = dragFillStartX; x < dragFillStartX + dragFillWidth; x++)
                     for(var y = dragFillStartY; y < dragFillStartY + dragFillHeight; y++)
                         setTile(map, x, y, dragFillLayer, tex[0], tex[1], false);
+                if(!records.isEmpty())
+                    createUndoEdit(view, "Drag fill Tiles");
                 window.setProjectChanged();
                 dragFillRootX = -1;
                 dragFillRootY = -1;
@@ -100,6 +121,8 @@ public class TopDrawModule extends MapViewModule {
                 for(var x = dragFillStartX; x < dragFillStartX + dragFillWidth; x++)
                     for(var y = dragFillStartY; y < dragFillStartY + dragFillHeight; y++)
                         setTile(map, x, y, dragFillLayer, -1, -1, false);
+                if(!records.isEmpty())
+                    createUndoEdit(view, "Drag fill Tiles");
                 window.setProjectChanged();
                 dragFillRootX = -1;
                 dragFillRootY = -1;
@@ -109,7 +132,12 @@ public class TopDrawModule extends MapViewModule {
                 dragFillHeight = 1;
                 return true;
             }
-        }
+        } else if(window.getDrawTool() == Window.DRAW_TOOL_SINGLE)
+            if(!records.isEmpty())
+                if(records.size() == 1)
+                    createUndoEdit(view, "Draw Tile");
+                else
+                    createUndoEdit(view, "Draw Tiles");
         return false;
     }
 
@@ -135,7 +163,7 @@ public class TopDrawModule extends MapViewModule {
                     dragFillStartY = Math.min(tileY, dragFillRootY);
                     dragFillLayer = layer;
                 }
-                case Window.DRAW_TOOL_SINGLE -> setTile(map, tileX, tileY, layer, texID[0], texID[1]);
+                case Window.DRAW_TOOL_SINGLE -> setTiles(map, tileX, tileY, layer, texID[0], texID[1], texID[2], texID[3]);
             }
         } else if(button == MouseEvent.BUTTON3)
             switch (window.getDrawTool()) {
@@ -293,15 +321,27 @@ public class TopDrawModule extends MapViewModule {
         if(x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight())
             return;
         var tile = map.getTiles()[x + y * map.getWidth()];
-        Tileset tileset;
-        var mapTilesets = map.getTilesets();
-        if(tilesetIndex >= mapTilesets.length || tilesetIndex < 0)
-            tileset = null;
-        else
-            tileset = window.getSingleton(Resources.class).tileset_get(mapTilesets[tilesetIndex]);
-        tile.setDataTo(layer, tilesetIndex, index, tileset == null ? null : tileset.getProperty(index));
+
+        records.add(new TileRecord(x, y, tile, layer, Arrays.copyOfRange(tile.getGroundTex(), layer == 0 ? 0 : 2, layer == 0 ? 2 : 4), new int[] { tilesetIndex, index }, 0));
+
+        tile.setGroundTex(layer, tilesetIndex, index);
         if(noticeChanged)
             window.setProjectChanged();
+    }
+
+    private void setTiles(MapData map, int tX, int tY, int layer, int tilesetIndex, int index, int width, int height){
+        var tileset = window.getSingleton(Resources.class).tileset_get(map.getTilesets()[map.getSelectedTileset()]);
+        var mW = map.getWidth();
+        var mH = map.getHeight();
+        for(var x = 0; x < width; x++)
+            for(var y = 0; y < height; y++){
+                var nTX = tX + x;
+                var nTY = tY + y;
+                if(nTX >= mW || nTY >= mH)
+                    continue;
+                var nextIndex = index + x + y * tileset.getWidth();
+                setTile(map, nTX, nTY, layer, tilesetIndex, nextIndex);
+            }
     }
 
     private void setTile(MapData map, int x, int y, int layer, int tilesetIndex, int index){
@@ -353,15 +393,43 @@ public class TopDrawModule extends MapViewModule {
         }
     }
 
-    private Tuple.Tuple2[] loadTilesets(String[] tilesetNames){
-        var tilesets = new Tuple.Tuple2[tilesetNames.length];
+    private Tuple2[] loadTilesets(String[] tilesetNames){
+        var tilesets = new Tuple2[tilesetNames.length];
         var res = window.getSingleton(Resources.class);
         for(var i = 0; i < tilesets.length; i++) {
             var ts = res.tileset_get(tilesetNames[i]);
             var img = ts.getImage(window);
-            tilesets[i] = new Tuple.Tuple2<>(ts, img);
+            tilesets[i] = new Tuple2<>(ts, img);
         }
         return tilesets;
+    }
+
+    private void createUndoEdit(MapView view, String presentationName){
+        window.getUndoManager().addEdit(new UndoableDrawTileEdit(records, presentationName, window, view));
+    }
+
+    private static class UndoableDrawTileEdit extends UndoableDrawEdit {
+
+        public UndoableDrawTileEdit(List<TileRecord> records, String presentationName, Window window, MapView view) {
+            super(records, presentationName, window, view);
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            for(var record: records)
+                record.tile().setGroundTex(record.layer(), record.preTexture()[0], record.preTexture()[1]);
+            view.repaint();
+            window.setProjectChanged();
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            for(var record: records)
+                record.tile().setGroundTex(record.layer(), record.postTexture()[0], record.postTexture()[1]);
+            view.repaint();
+            window.setProjectChanged();
+        }
+
     }
 
 }

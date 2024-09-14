@@ -219,6 +219,10 @@ public class ObjectModule extends MapViewModule {
         }
 
         map.drawObjects(window, g, view.getZoom(), x, y);
+        if(window.getStartMap() == map.getID()){
+            var playerPos = window.getStartMapPosition();
+            window.getPlayer().draw(window, g, view.getZoom(), (int)(x + playerPos[0] * TILE_WIDTH * view.getZoom()), (int)(y + (playerPos[2] - playerPos[1]) * TILE_HEIGHT * view.getZoom()), false);
+        }
     }
 
     @Override
@@ -266,6 +270,15 @@ public class ObjectModule extends MapViewModule {
                     view.repaint();
                     window.getObjectListView().reloadObjectsList();
                     window.setProjectChanged();
+                }));
+                add(new JSeparator(JSeparator.HORIZONTAL));
+                add(createMenuItem("Set Player", l -> {
+                    var y = 0;
+                    if(mapX >= 0 && mapX < map.getWidth() && mapY >= 0 && mapY < map.getHeight()){
+                        var tile = map.getTiles()[(int)mapX + (int)mapY * map.getWidth()];
+                        y = tile.getgroundY();
+                    }
+                    window.setStart(map.getID(), mapX, y, mapY);
                 }));
             }
 
