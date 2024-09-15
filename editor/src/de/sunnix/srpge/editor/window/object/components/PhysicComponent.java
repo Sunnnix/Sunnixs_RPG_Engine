@@ -16,6 +16,7 @@ public class PhysicComponent extends Component{
     private boolean collision = true;
     private boolean flying = false;
     private boolean platform = false;
+    private boolean canClimb;
     private boolean hasShadow = true;
 
     public PhysicComponent() {
@@ -34,6 +35,7 @@ public class PhysicComponent extends Component{
         flying = dso.getBool("collision", true);
         flying = dso.getBool("flying", false);
         platform = dso.getBool("platform", false);
+        canClimb = dso.getBool("can_climb", false);
         hasShadow = dso.getBool("has_shadow", true);
         return dso;
     }
@@ -45,6 +47,7 @@ public class PhysicComponent extends Component{
         dso.putBool("collision", collision);
         dso.putBool("flying", flying);
         dso.putBool("platform", platform);
+        dso.putBool("can_climb", canClimb);
         dso.putBool("has_shadow", hasShadow);
         return dso;
     }

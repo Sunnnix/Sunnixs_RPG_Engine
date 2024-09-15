@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs.systems.physics;
 
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.GameObject;
+import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem.MoveDirection.*;
+import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 
 public class PhysicSystem {
     public static final float EPSILON = 1e-4f;
@@ -23,6 +25,14 @@ public class PhysicSystem {
     private static List<GameObject> objects = new ArrayList<>();
 
     private static MapGrid mapGrid;
+
+    private static final int MOVE_EVENT_FLAG_HIT_SOUTH = 0b1;
+    private static final int MOVE_EVENT_FLAG_HIT_EAST = 0b10;
+    private static final int MOVE_EVENT_FLAG_HIT_WEST = 0b100;
+    private static final int MOVE_EVENT_FLAG_HIT_NORTH = 0b1000;
+    private static final int MOVE_EVENT_FLAG_HIT_TOP = 0b10000;
+    private static final int MOVE_EVENT_FLAG_HIT_BOTTOM = 0b100000;
+    private static final int MOVE_EVENT_FLAG_HIT_TILE = 0b1000000;
 
 //    private static RegionGrid regonGrid = new RegionGrid();
 
@@ -43,8 +53,32 @@ public class PhysicSystem {
 
     public static void update(World world) {
         for(var obj : objects){
+            var climb = obj.hasState(States.CLIMB);
+            if(climb) {
+                var vel = obj.getVelocity();
+                var comp = obj.getComponent(PhysicComponent.class);
+                if(vel.x != 0 || comp.isJumped()) {
+                    obj.removeState(States.CLIMB.id());
+                    obj.removeState(States.CLIMBING_UP.id());
+                    obj.removeState(States.CLIMBING_DOWN.id());
+                    comp.setFallSpeed(0);
+                } else {
+                    vel.y -= vel.z * .5f;
+                    vel.z = 0;
+                    if (obj.hasState(States.MOVING)) {
+                        obj.removeState(States.MOVING.id());
+                        if(vel.y > 0)
+                            obj.addState(States.CLIMBING_UP.id());
+                        else
+                            obj.addState(States.CLIMBING_DOWN.id());
+                    } else {
+                        obj.removeState(States.CLIMBING_UP.id());
+                        obj.removeState(States.CLIMBING_DOWN.id());
+                    }
+                }
+            }
             var comp = obj.getComponent(PhysicComponent.class);
-            if(!comp.isFlying() && comp.isFalling()){
+            if(!comp.isFlying() && !climb && comp.isFalling()){
                 var fallSpeed = comp.getFallSpeed();
                 obj.getVelocity().add(0, fallSpeed, 0);
                 var weight = comp.getWeight();
@@ -67,7 +101,7 @@ public class PhysicSystem {
             var comp = obj.getComponent(PhysicComponent.class);
             var groundPos = calculateGround(world, obj);
             comp.setGroundPos(groundPos);
-            if(!comp.isFlying()) {
+            if(!comp.isFlying() && !obj.hasState(States.CLIMB)) {
                 // if object run of slope, push it to the ground
                 if(!comp.isFalling() && comp.getHitbox().getY() - STEP_AMOUNT <= groundPos) {
                     obj.getPosition().y = groundPos;
@@ -189,9 +223,37 @@ public class PhysicSystem {
         var tuple = checkNewPosition(toCheck, hitbox, nHB, speed > 0 ? SOUTH : NORTH);
         moved = tuple.t1();
         hitbox = tuple.t3();
+        var flag = tuple.t5();
+
+        var comp = go.getComponent(PhysicComponent.class);
+
+        if(comp.isCanClimb() && bitcheck(flag, MOVE_EVENT_FLAG_HIT_TILE) && bitcheck(flag, MOVE_EVENT_FLAG_HIT_NORTH)){
+            var tZ = (int) Math.floor(hitbox.getMinZ() - .1f);
+            var ladder = false;
+            for(var tX = (int) hitbox.getMinX(); tX < Math.ceil(hitbox.getMaxX()); tX++){
+                var tile = world.getTile(tX, tZ);
+                if(tile == null)
+                    continue;
+                var wallProps = tile.getWallProperties((int)hitbox.getMinY(), (int) Math.ceil(hitbox.getMaxY()));
+                for(var prop: wallProps)
+                    if(prop != null && prop.isLadder()){
+                        ladder = true;
+                        break;
+                    }
+                if(ladder) {
+                    go.addState(States.CLIMB.id());
+                    comp.setFalling(false);
+                    break;
+                }
+            }
+            if(!ladder){
+                go.removeState(States.CLIMB.id());
+                go.removeState(States.CLIMBING_UP.id());
+                go.removeState(States.CLIMBING_DOWN.id());
+            }
+        }
 
         var distanceMoved = tuple.t4();
-        var comp = go.getComponent(PhysicComponent.class);
 
         if(comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
             var objects = getObjectsOnTop(go, hitbox);
@@ -216,6 +278,41 @@ public class PhysicSystem {
         var tuple = checkNewPosition(toCheck, hitbox, nHB, speed > 0 ? UP : DOWN);
         moved = tuple.t1();
         hitbox = tuple.t3();
+        var flag = tuple.t5();
+
+        var comp = go.getComponent(PhysicComponent.class);
+
+        if(go.hasState(States.CLIMB)){
+            if(bitcheck(flag, MOVE_EVENT_FLAG_HIT_TILE) && bitcheck(flag, MOVE_EVENT_FLAG_HIT_BOTTOM)){
+                go.removeState(States.CLIMB.id());
+                go.removeState(States.CLIMBING_DOWN.id());
+            } else {
+                var tZ = (int) Math.floor(hitbox.getMinZ() - .1f);
+                var ladder = false;
+
+                var sMinY = (int) hitbox.getMinY() - 1;
+                var sMaxY = (int) Math.ceil(hitbox.getMaxY()) - 1;
+
+                for (var tX = (int) hitbox.getMinX(); tX < Math.ceil(hitbox.getMaxX()); tX++) {
+                    var tile = world.getTile(tX, tZ);
+                    if (tile == null)
+                        continue;
+                    var wallProps = tile.getWallProperties(sMinY, sMaxY);
+                    for (var prop : wallProps)
+                        if (prop != null && prop.isLadder()) {
+                            ladder = true;
+                            break;
+                        }
+                    if(ladder)
+                        break;
+                }
+                if (!ladder) {
+                    go.removeState(States.CLIMB.id());
+                    go.removeState(States.CLIMBING_UP.id());
+                    go.removeState(States.CLIMBING_DOWN.id());
+                }
+            }
+        }
 
         return new Tuple2<>(moved, hitbox);
     }
@@ -246,7 +343,7 @@ public class PhysicSystem {
      * - AABB (new Hitbox)
      * - moved distance
      */
-    private static Tuple4<Boolean, Boolean, AABB, Vector3f> checkNewPosition(List<AABB> hitboxes, AABB sHB, AABB nHB, MoveDirection dir){
+    private static Tuple5<Boolean, Boolean, AABB, Vector3f, Integer> checkNewPosition(List<AABB> hitboxes, AABB sHB, AABB nHB, MoveDirection dir){
         var moved = false;
         var check = true;
         var fromTile = false;
@@ -254,6 +351,8 @@ public class PhysicSystem {
 
         var upshiftTest = false;
         var upshift = 0f;
+
+        var flag = 0;
 
         while (check) {
             check = false;
@@ -263,7 +362,7 @@ public class PhysicSystem {
                     tile.prepare(nHB);
                 if (nHB.intersects(other)) {
                     var yDiff = other.getMaxY() - nHB.getY();
-                    if(yDiff > upshift && yDiff < STEP_AMOUNT){
+                    if(dir != DOWN && yDiff > upshift && yDiff < STEP_AMOUNT){
                         upshiftTest = true;
                         upshift = yDiff;
                         continue;
@@ -273,57 +372,72 @@ public class PhysicSystem {
                     var breakLoop = false;
                     switch (dir){
                         case SOUTH -> {
-                            if(other instanceof AABB.TileAABB) // to prevent stair glitching
+                            if(other instanceof AABB.TileAABB) { // to prevent stair glitching
                                 tmpHB = sHB;
-                            else
+                                flag |= MOVE_EVENT_FLAG_HIT_TILE;
+                            } else {
                                 tmpHB = nHB.alignBottom(other);
+                            }
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
+                                flag |= MOVE_EVENT_FLAG_HIT_SOUTH;
                             }
                         }
                         case EAST -> {
-                            if(other instanceof AABB.TileAABB)
+                            if(other instanceof AABB.TileAABB) {
                                 tmpHB = sHB;
-                            else
+                                flag |= MOVE_EVENT_FLAG_HIT_TILE;
+                            } else
                                 tmpHB = nHB.alignRight(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
+                                flag |= MOVE_EVENT_FLAG_HIT_EAST;
                             }
                         }
                         case WEST -> {
-                            if(other instanceof AABB.TileAABB)
+                            if(other instanceof AABB.TileAABB) {
                                 tmpHB = sHB;
-                            else
+                                flag |= MOVE_EVENT_FLAG_HIT_TILE;
+                            } else
                                 tmpHB = nHB.alignLeft(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
+                                flag |= MOVE_EVENT_FLAG_HIT_WEST;
                             }
                         }
                         case NORTH -> {
-                            if(other instanceof AABB.TileAABB)
+                            if(other instanceof AABB.TileAABB) {
                                 tmpHB = sHB;
-                            else
+                                flag |= MOVE_EVENT_FLAG_HIT_TILE;
+                            } else
                                 tmpHB = nHB.alignTop(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
+                                flag |= MOVE_EVENT_FLAG_HIT_NORTH;
                             }
                         }
                         case UP -> {
+                            if(other instanceof AABB.TileAABB)
+                                flag |= MOVE_EVENT_FLAG_HIT_TILE;
                             tmpHB = nHB.alignUp(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
+                                flag |= MOVE_EVENT_FLAG_HIT_TOP;
                             }
                         }
                         case DOWN -> {
+                            if(other instanceof AABB.TileAABB)
+                                flag |= MOVE_EVENT_FLAG_HIT_TILE;
                             tmpHB = nHB.alignDown(other);
                             if (tmpHB.equals(sHB)) {
                                 moved = false;
                                 breakLoop = true;
+                                flag |= MOVE_EVENT_FLAG_HIT_BOTTOM;
                             }
                         }
                     }
@@ -353,7 +467,7 @@ public class PhysicSystem {
             }
         }
         var distanceMoved = sHB.getDistance(nHB);
-        return new Tuple4<>(moved, fromTile, moved ? nHB : sHB, distanceMoved);
+        return new Tuple5<>(moved, fromTile, moved ? nHB : sHB, distanceMoved, flag);
     }
 
     private static float correctMovement(World world, AABB hitbox, MoveDirection dir, float speed){

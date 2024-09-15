@@ -60,7 +60,11 @@ public class World {
         player = new GameObject(this, new DataSaveObject().load(zip.getInputStream(new ZipEntry("player"))));
         player.size.set(.78, 1.8);
         player.setPosition(startPos[0], startPos[1], startPos[2]);
-        player.addComponent(new PhysicComponent(new DataSaveObject()));
+        {
+            var comp = new PhysicComponent(new DataSaveObject());
+            comp.setCanClimb(true);
+            player.addComponent(comp);
+        }
         player.init(this);
 
         // Load objects

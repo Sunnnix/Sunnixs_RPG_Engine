@@ -13,6 +13,7 @@ import static de.sunnix.srpge.engine.util.FunctionUtils.shortArrayToList;
 public class TilesetPropertie {
 
     protected boolean blocking;
+    protected boolean ladder;
 
     protected byte animationTempo = 1;
     protected short animationParent = -1;
@@ -25,6 +26,7 @@ public class TilesetPropertie {
 
     private void load(DataSaveObject data){
         blocking = data.getBool("blocking", true);
+        ladder = data.getBool("ladder", false);
         animationTempo = data.getByte("anim_tempo", (byte) 1);
         animationParent = data.getShort("anim_parent", (short) -1);
         var anims = data.getShortArray("animation", 0);

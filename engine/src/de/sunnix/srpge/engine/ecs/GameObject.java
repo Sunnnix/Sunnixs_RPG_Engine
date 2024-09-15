@@ -219,6 +219,14 @@ public class GameObject extends MemoryHolder {
         return states.stream().toList();
     }
 
+    public boolean hasState(State state) {
+        return states.contains(state);
+    }
+
+    public boolean hasState(String id){
+        return hasState(States.getState(id));
+    }
+
     @Override
     public boolean isValid() {
         return components.values().stream().allMatch(Component::isValid);

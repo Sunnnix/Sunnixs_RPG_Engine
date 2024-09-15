@@ -16,6 +16,9 @@ public class States extends de.sunnix.srpge.engine.ecs.States {
         addState(MOVING.id(), MOVING.priority(), false);
         addState(FALLING.id(), FALLING.priority(), false);
         addState(HURT.id(), HURT.priority(), false);
+        addState(CLIMB.id(), CLIMB.priority(), false);
+        addState(CLIMBING_UP.id(), CLIMBING_UP.priority(), false);
+        addState(CLIMBING_DOWN.id(), CLIMBING_DOWN.priority(), false);
     }
 
     private static State addState(String id, int priority, boolean removable){

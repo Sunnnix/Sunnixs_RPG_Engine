@@ -46,7 +46,6 @@ public class TilesetView extends JPanel implements IResourceView{
     private JTextField lblTitle, lblWidth, lblHeight;
     private JCheckBox renderAnimation;
     // Tiles
-    private JCheckBox blocking;
     private JButton selectAnimation;
     private NumberPicker animTempo;
 
@@ -390,14 +389,21 @@ public class TilesetView extends JPanel implements IResourceView{
 
         gbc.weightx = 1;
         gbc.gridwidth = 2;
-        bottom.add(blocking =
-                createPropertieComponent(
+        var blocking = createPropertieComponent(
                         new JCheckBox("Blocking"),
                         (cb, prop) -> cb.setSelected(prop.isBlocking()),
                         (cb, prop) -> prop.setBlocking(cb.isSelected())
-                ), gbc
-        );
+                );
+        bottom.add(blocking, gbc);
         propertiesToggleComponents.add(blocking);
+        gbc.gridy++;
+        var ladder = createPropertieComponent(
+                new JCheckBox("Ladder"),
+                (cb, prop) -> cb.setSelected(prop.isLadder()),
+                (cb, prop) -> prop.setLadder(cb.isSelected())
+        );
+        bottom.add(ladder, gbc);
+        propertiesToggleComponents.add(ladder);
         gbc.gridy++;
 
         var dealDamage = new JCheckBox("Deal damage");

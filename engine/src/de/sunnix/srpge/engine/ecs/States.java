@@ -10,7 +10,10 @@ public class States {
 
     public static final State MOVING = new State("moving", 1);
     public static final State FALLING = new State("falling", 2);
-    public static final State HURT = new State("hurt", 2);
+    public static final State HURT = new State("hurt", 3);
+    public static final State CLIMB = new State("climb", 1);
+    public static final State CLIMBING_UP = new State("climbing_up", 2);
+    public static final State CLIMBING_DOWN = new State("climbing_down", 2);
 
     protected static final Map<String, State> states = new HashMap<>();
 

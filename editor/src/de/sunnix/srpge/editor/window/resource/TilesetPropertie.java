@@ -23,6 +23,8 @@ public class TilesetPropertie extends de.sunnix.srpge.engine.resources.TilesetPr
 
     public DataSaveObject save(DataSaveObject data){
         data.putBool("blocking", blocking);
+        if(ladder)
+            data.putBool("ladder", true);
         if(animationParent != -1)
             data.putShort("anim_parent", animationParent);
         if(animation != null) {

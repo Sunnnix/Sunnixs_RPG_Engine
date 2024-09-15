@@ -289,4 +289,20 @@ public class Tile {
         indices = null;
     }
 
+    public TilesetPropertie[] getWallProperties(int minY, int maxY){
+        if(maxY < minY)
+            throw new RuntimeException(String.format("maxY smaller then minY (%s, %s)", maxY, minY));
+        if(minY >= wallTex.length)
+            return new TilesetPropertie[0];
+        if(maxY >= wallTex.length)
+            maxY = wallTex.length - 1;
+        var properties = new TilesetPropertie[(maxY - minY) * 2];
+        for(var i = 0; i < (maxY - minY); i++){
+            var y = minY + i;
+            properties[i * 2] = tileset.getProperty(getTexIndexOf(true, wallTex[y]));
+            properties[i * 2 + 1] = tileset.getProperty(getTexIndexOf(false, wallTex[y]));
+        }
+        return properties;
+    }
+
 }
