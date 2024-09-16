@@ -34,15 +34,6 @@ public class PhysicSystem {
     private static final int MOVE_EVENT_FLAG_HIT_BOTTOM = 0b100000;
     private static final int MOVE_EVENT_FLAG_HIT_TILE = 0b1000000;
 
-//    private static RegionGrid regonGrid = new RegionGrid();
-
-//    public static void reloadRegions(Collection<GameObject> objects){
-//        regonGrid.clear();
-//        for (var obj : objects) {
-//            regonGrid.addObject(obj);
-//        }
-//    }
-
     public static void initMapGrid(int width, int height){
         mapGrid = new MapGrid(width, height);
     }
@@ -61,7 +52,6 @@ public class PhysicSystem {
                     obj.removeState(States.CLIMB.id());
                     obj.removeState(States.CLIMBING_UP.id());
                     obj.removeState(States.CLIMBING_DOWN.id());
-                    comp.setFallSpeed(0);
                 } else {
                     vel.y -= vel.z * .5f;
                     vel.z = 0;
@@ -227,7 +217,8 @@ public class PhysicSystem {
 
         var comp = go.getComponent(PhysicComponent.class);
 
-        if(comp.isCanClimb() && bitcheck(flag, MOVE_EVENT_FLAG_HIT_TILE) && bitcheck(flag, MOVE_EVENT_FLAG_HIT_NORTH)){
+        // if the object moves horizontal (correctMovement == false) then don't climb
+        if(correctMovement && comp.isCanClimb() && bitcheck(flag, MOVE_EVENT_FLAG_HIT_TILE) && bitcheck(flag, MOVE_EVENT_FLAG_HIT_NORTH)){
             var tZ = (int) Math.floor(hitbox.getMinZ() - .1f);
             var ladder = false;
             for(var tX = (int) hitbox.getMinX(); tX < Math.ceil(hitbox.getMaxX()); tX++){
@@ -241,6 +232,7 @@ public class PhysicSystem {
                         break;
                     }
                 if(ladder) {
+                    correctMovement = false;
                     go.addState(States.CLIMB.id());
                     comp.setFalling(false);
                     break;
@@ -255,7 +247,7 @@ public class PhysicSystem {
 
         var distanceMoved = tuple.t4();
 
-        if(comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
+        if(!go.hasState(States.CLIMB) && comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
             var objects = getObjectsOnTop(go, hitbox);
             for(var obj: objects)
                 move(world, obj, distanceMoved.x, distanceMoved.y, distanceMoved.z);

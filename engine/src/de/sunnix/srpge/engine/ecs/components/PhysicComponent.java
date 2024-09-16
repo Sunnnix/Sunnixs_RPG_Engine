@@ -92,6 +92,7 @@ public class PhysicComponent extends Component {
             fallingTime++;
         else if(!falling) {
             fallingTime = 0;
+            fallSpeed = 0;
             jumped = false;
         }
         this.falling = falling;

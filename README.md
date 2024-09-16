@@ -101,9 +101,9 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Physics System                                        | 0.7     | 100%     | High     |
 | Map Transition System / Teleporter objects and events | 0.7     | 0%       | High     |
 | Lua implementation for Events                         | 0.7     | 75%      | Medium   |
+| Interacting System                                    | 0.7     | 0%       | High     |
 | Lua implementation for KI                             | n/a     | 0%       | Medium   |
 | Graphic Effects via Shader                            | n/a     | 10%      | Medium   |
 | Plugin system for editor and engine customization     | n/a     | 10%      | Low      |
-| Interacting System                                    | n/a     | 0%       | High     |
 | Battle System                                         | n/a     | 0%       | High     |
 | Audio System V3 (more 3D options)                     | n/a     | 0%       | Medium   |

@@ -4,19 +4,27 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.InputManager;
 import de.sunnix.srpge.engine.debug.profiler.Profiler;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
+import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.graphics.gui.text.Font;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
 import de.sunnix.srpge.engine.registry.Registry;
 import de.sunnix.srpge.engine.stage.GameplayState;
+import de.sunnix.srpge.engine.util.Tuple.Tuple2;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 
 import static de.sunnix.srpge.engine.ecs.Direction.*;
 
 public class Main {
+
+    private static final ArrayList<Tuple2<Text, BiFunction<World, GameObject, String>>> debugTexts = new ArrayList<>();
+
 
     public static void main(String[] args) {
 
@@ -34,11 +42,13 @@ public class Main {
 
         Text.setDefaultFont(Font.ALUNDRA_FONT);
 
-        var fpsText = new Text(" ");
-
-        var playerCorrds = new Text(" ").setPos(0, fpsText.getPos().y + fpsText.getHeight());
-
-        var groundPos = new Text(" ").setPos(0, playerCorrds.getPos().y + playerCorrds.getHeight());
+        createDebugText((world, player) -> String.format("FPS: %.1f", Core.getFps()));
+        createDebugText(((world, player) -> {
+            var pPos = player.getPosition();
+            return String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos());
+        }));
+        createDebugText((world, player) -> String.format("Ground Pos: %.2f", player.getComponent(PhysicComponent.class).getGroundPos()));
+        createDebugText((world, player) -> String.format("Climbing: %s", player.hasState(States.CLIMB)));
 
         if(Arrays.stream(args).anyMatch("profiling"::equalsIgnoreCase)) {
             FlatDarkLaf.setup();
@@ -75,10 +85,7 @@ public class Main {
                 var player = world.getPlayer();
 
                 world.movePlayer(h, jump, v);
-                var pPos = player.getPosition();
 
-                playerCorrds.change(tc -> tc.setText(String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos())));
-                groundPos.change(tc -> tc.setText(String.format("Ground Pos: %.2f", player.getComponent(PhysicComponent.class).getGroundPos())));
                 if(h != 0 || v != 0) {
                     player.addState(States.MOVING.id());
                     var comp = player.getComponent(RenderComponent.class);
@@ -95,7 +102,10 @@ public class Main {
                 } else
                     player.removeState(States.MOVING.id());
 
-                fpsText.change(tc -> tc.setText(String.format("FPS: %.1f", Core.getFps())));
+                // update debug texts
+                for(var debugText: debugTexts){
+                    debugText.t1().change(tc -> tc.setText(debugText.t2().apply(world, player)));
+                }
 
             }
 
@@ -105,4 +115,14 @@ public class Main {
         Core.start();
 
     }
+
+    private static void createDebugText(BiFunction<World, GameObject, String> onUpdate){
+        var text = new Text(" ");
+        if(!debugTexts.isEmpty()){
+            var latestDebugText = debugTexts.get(debugTexts.size() - 1).t1();
+            text.setPos(0, latestDebugText.getPos().y + latestDebugText.getHeight());
+        }
+        debugTexts.add(new Tuple2<>(text, onUpdate));
+    }
+
 }

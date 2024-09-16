@@ -173,8 +173,10 @@ public class GameObject extends MemoryHolder {
     public void addState(String id, boolean trackChange){
         var state = States.getState(id);
         states.add(state);
-        if(trackChange)
+        if(trackChange) {
             statesChanged = true;
+            markDirty();
+        }
     }
 
     public void removeState(String id){
@@ -183,8 +185,10 @@ public class GameObject extends MemoryHolder {
 
     public void removeState(String id, boolean trackChange){
         var state = states.remove(States.getState(id));
-        if(trackChange)
+        if(trackChange) {
             statesChanged = true;
+            markDirty();
+        }
     }
 
     public void setToDelete() {
