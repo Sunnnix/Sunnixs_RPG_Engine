@@ -21,7 +21,8 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 public class Texture extends MemoryHolder {
 
     public static final Texture MISSING_IMAGE = new Texture();
-    private static int latestActiveTexture = -1;
+    private static int latestActiveTextureIndex = -1;
+    private static int[] bindedTextures = new int[16];
 
     protected int textureID;
     @Getter
@@ -113,12 +114,12 @@ public class Texture extends MemoryHolder {
     }
 
     public void bind(int texPos) {
-        texPos = GL_TEXTURE0 + texPos;
-        if (texPos != latestActiveTexture) {
-            latestActiveTexture = texPos;
-            glActiveTexture(texPos);
+        if (texPos != latestActiveTextureIndex) {
+            latestActiveTextureIndex = texPos;
+            glActiveTexture(GL_TEXTURE0 + texPos);
         }
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        if(texPos < bindedTextures.length && bindedTextures[texPos] != textureID)
+            glBindTexture(GL_TEXTURE_2D, textureID);
     }
 
     public void bind() {

@@ -4,6 +4,8 @@ import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +17,8 @@ public class Shader extends MemoryHolder {
 
     public static final Shader DEFAULT_SHADER = genDefaultShader();
     public static final Shader TEST_CUBE_SHADER = new Shader("/data/shader/test_cube_shader");
+
+    private static int activeShader = 0;
 
     private int id;
     private Map<String, Integer> uniformLocations = new HashMap<>();
@@ -85,12 +89,24 @@ public class Shader extends MemoryHolder {
         return shaderID;
     }
 
-    public void bind(){
-        glUseProgram(id);
+    /**
+     * Binds this Shader to the current context
+     * @return if the shader has been bound
+     */
+    public boolean bind(){
+        if(activeShader != id) {
+            glUseProgram(id);
+            activeShader = id;
+            return true;
+        }
+        return false;
     }
 
     public void unbind(){
-        glUseProgram(0);
+        if(activeShader != 0) {
+            glUseProgram(0);
+            activeShader = 0;
+        }
     }
 
     private static int getUniformLocation(Shader shader, String name){
@@ -107,6 +123,18 @@ public class Shader extends MemoryHolder {
 
     public void uniform4f(String name, float v1, float v2, float v3, float v4) {
         glUniform4f(getUniformLocation(name), v1, v2, v3, v4);
+    }
+
+    public void uniform4f(String name, Vector4f vec4){
+        uniform4f(name, vec4.x, vec4.y, vec4.z, vec4.w);
+    }
+
+    public void uniform3f(String name, float v1, float v2, float v3) {
+        glUniform3f(getUniformLocation(name), v1, v2, v3);
+    }
+
+    public void uniform3f(String name, Vector3f vec3){
+        uniform3f(name, vec3.x, vec3.y, vec3.z);
     }
 
     @Override

@@ -138,15 +138,10 @@ public class InputManager {
 
     public static void process(long window) {
 		keys.forEach(k -> k.process(window));
-		// Überprüfe, ob ein Joystick angeschlossen ist
 		if (GLFW.glfwJoystickPresent(GLFW.GLFW_JOYSTICK_1)) {
-			// Überprüfe, ob der Joystick ein Gamepad ist
 			if (GLFW.glfwJoystickIsGamepad(GLFW.GLFW_JOYSTICK_1)) {
-				// Erstelle einen GLFWGamepadState
 				GLFWGamepadState gpState = GLFWGamepadState.create();
-				// Lese den aktuellen Gamepad-Status
 				if (GLFW.glfwGetGamepadState(GLFW.GLFW_JOYSTICK_1, gpState)) {
-					// Durchlaufe die Buttons und rufe die process-Methode auf
 					for (Button button : buttons)
 						button.process(gpState);
 					for (Axis axis : axes)
@@ -167,7 +162,7 @@ public class InputManager {
 		if(subscriber.size() > 0){
 			listeners.addAll(subscriber);
 			subscriber.clear();
-			listeners.sort(Comparator.comparing(InputSubscriber::period));
+			listeners.sort(Comparator.comparing(InputSubscriber::priority));
 		}
 		if(unsubscriber.size() > 0) {
 			unsubscriber.forEach(id -> listeners.removeIf(s -> s.ID.equals(id)));
@@ -175,10 +170,10 @@ public class InputManager {
 		}
 	}
 
-	static void subscribe(@NonNull String id, int period, InputListener listener){
+	static void subscribe(@NonNull String id, int priority, InputListener listener){
 		if(listener == null)
 			return;
-		subscriber.add(new InputSubscriber(id, period, listener));
+		subscriber.add(new InputSubscriber(id, priority, listener));
 	}
 
 	static void unsubscribe(String id){
@@ -316,7 +311,7 @@ public class InputManager {
 
 	}
 
-	private record InputSubscriber(@NonNull String ID, int period, InputListener listener){
+	private record InputSubscriber(@NonNull String ID, int priority, InputListener listener){
 
 		public boolean onInput(int keycode, boolean changed, boolean pressed, int time){
 			return listener.onInput(keycode, changed, pressed, time);

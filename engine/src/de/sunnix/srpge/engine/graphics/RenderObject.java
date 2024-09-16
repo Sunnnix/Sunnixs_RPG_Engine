@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.graphics;
 
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
 import lombok.AccessLevel;
@@ -26,7 +27,8 @@ public abstract class RenderObject extends MemoryHolder {
 
     public void render(Vector3f pos, float object_width, float z_Buffer){
         var size = getSize();
-        shader.bind();
+        if(shader.bind())
+            shader.uniform4f("globalColoring", Core.getGlobalColoring());
         if(texture == null)
             Texture.unbind();
         else

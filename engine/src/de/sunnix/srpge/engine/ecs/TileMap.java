@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs;
 
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
 import de.sunnix.srpge.engine.resources.Resources;
@@ -133,6 +134,7 @@ public class TileMap {
             return;
         var size = new Vector2f(24, 16);
         shader.bind();
+        shader.uniform4f("globalColoring", Core.getGlobalColoring());
 //        texture.bind(0);
         var tsTex = Resources.get().getTilesetTex(tileset);
         if(tsTex == null)

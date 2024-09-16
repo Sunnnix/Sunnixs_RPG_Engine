@@ -39,7 +39,7 @@ public class Looper {
      * In this a while loop is executed until the function glfwWindowShouldClose returns true.<br>
      * In this function the fps are limited to the set fps of the core and offers an additional possibility
      * to relieve the CPU by the powersafemode in exchange of a small inaccuracy of the fps.<br>
-     * For each frame, all listeners are executed by period.
+     * For each frame, all listeners are executed by priority.
      */
     static void loop() {
         double lastTime = glfwGetTime();
@@ -111,7 +111,7 @@ public class Looper {
             listeners.removeIf(list -> subscriber.stream().anyMatch(sub -> sub.ID.equals(list.ID)));
             listeners.addAll(subscriber);
             subscriber.clear();
-            listeners.sort(Comparator.comparing(LoopSubscriber::period));
+            listeners.sort(Comparator.comparing(LoopSubscriber::priority));
         }
         if(unsubscriber.size() > 0) {
             unsubscriber.forEach(id -> listeners.removeIf(s -> s.ID.equals(id)));
@@ -119,7 +119,7 @@ public class Looper {
         }
     }
 
-    private record LoopSubscriber(@NonNull String ID, int period, Consumer<Integer> runnable){
+    private record LoopSubscriber(@NonNull String ID, int priority, Consumer<Integer> runnable){
 
         public void run(){
             runnable.accept(ticks);

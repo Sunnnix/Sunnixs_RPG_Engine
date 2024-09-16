@@ -6,6 +6,7 @@ in vec2 texPos1;
 out vec4 fragColor;
 
 uniform sampler2D texSampler;
+uniform vec4 globalColoring;
 
 void main() {
     vec4 c = vec4(0);
@@ -15,5 +16,6 @@ void main() {
         c = texture(texSampler, texPos0);
     if(c.w == 0)
         discard;
-    fragColor = c;
+    vec3 finalColor = mix(c.rgb, globalColoring.rgb, globalColoring.w);
+    fragColor = vec4(finalColor, c.w);
 }
