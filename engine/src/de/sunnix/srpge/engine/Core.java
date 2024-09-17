@@ -346,6 +346,7 @@ public class Core {
         EventRegistry.registerEvent("message", MessageEvent::new);
         EventRegistry.registerEvent("playsound", PlaySoundEvent::new);
         EventRegistry.registerEvent("script-lua", LuaScriptEvent::new);
+        EventRegistry.registerEvent("global_color_tint", GlobalColorTintEvent::new);
     }
 
     /**

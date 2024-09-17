@@ -183,6 +183,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("message", getString("event.msg.name"), MessageEvent::new);
         EventRegistry.registerEvent("playsound", getString("event.play_sound.name"), PlaySoundEvent::new);
         EventRegistry.registerEvent("script-lua", "Lua Script", LuaScriptEvent::new);
+        EventRegistry.registerEvent("global_color_tint", "Global Color Tint", GlobalColorTintEvent::new);
     }
 
     private void registerComponents(){

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import static org.joml.Math.lerp;
 import static org.lwjgl.opengl.GL30.*;
 
 public class FunctionUtils {
@@ -140,21 +141,10 @@ public class FunctionUtils {
      */
     public static Vector3f mix(Vector3f c1, Vector3f c2, float factor){
         return new Vector3f(
-                mix(c1.x, c2.x, factor),
-                mix(c1.y, c2.y, factor),
-                mix(c1.z, c2.z, factor)
+                lerp(c1.x, c2.x, factor),
+                lerp(c1.y, c2.y, factor),
+                lerp(c1.z, c2.z, factor)
         );
-    }
-
-    /**
-     * Sub-function of {@link FunctionUtils#mix(Vector3f, Vector3f, float) mix}
-     * @param a first value
-     * @param b second value
-     * @param factor factor of second value
-     * @return mixed value
-     */
-    private static float mix(float a, float b, float factor) {
-        return a * (1.0f - factor) + b * factor;
     }
 
 }
