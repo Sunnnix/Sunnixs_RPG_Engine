@@ -22,7 +22,7 @@ public class PhysicSystem {
     public static final float EPSILON = 1e-4f;
     public static final float STEP_AMOUNT = .2f;
 
-    private static List<GameObject> objects = new ArrayList<>();
+    private static List<GameObject> objects;
 
     private static MapGrid mapGrid;
 
@@ -34,7 +34,8 @@ public class PhysicSystem {
     private static final int MOVE_EVENT_FLAG_HIT_BOTTOM = 0b100000;
     private static final int MOVE_EVENT_FLAG_HIT_TILE = 0b1000000;
 
-    public static void initMapGrid(int width, int height){
+    public static void init(int width, int height){
+        objects = new ArrayList<>();
         mapGrid = new MapGrid(width, height);
     }
 

@@ -192,10 +192,12 @@ public class Tile {
             dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
         }
 
+        return height + 1;
+    }
+
+    public void init(){
         if(animated)
             TileAnimationSystem.addTile(this);
-
-        return height + 1;
     }
 
     public int checkAndUpdateAnimation(long animTime) {

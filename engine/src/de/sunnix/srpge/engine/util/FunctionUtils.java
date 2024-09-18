@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.util;
 
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.debug.GameLogger;
 import org.joml.Vector3f;
 
@@ -20,7 +21,10 @@ public class FunctionUtils {
     public static void checkForOpenGLErrors(String caller) {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR) {
-            GameLogger.logE(caller, "OpenGL Error: " + getGLErrorString(error));
+            if(Core.isGl_error_stacktrace())
+                GameLogger.logException(caller, new Exception("OpenGL Error: " + getGLErrorString(error)));
+            else
+                GameLogger.logE(caller, "OpenGL Error: " + getGLErrorString(error));
         }
     }
 

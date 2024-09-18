@@ -16,10 +16,11 @@ public class RenderSystem {
 
     public static final float EPSILON = 1e-4f;
 
-    private static final ArrayList<GameObject> objects = new ArrayList<>();
+    private static ArrayList<GameObject> objects;
     private static MapGrid mapGrid;
 
-    public static void initMapGrid(int width, int height){
+    public static void init(int width, int height){
+        objects = new ArrayList<>();
         mapGrid = new MapGrid(width, height);
     }
 
@@ -32,11 +33,7 @@ public class RenderSystem {
             var goSize = go.size;
             if(goPos.x > camPos.x + camSize.x || goPos.x + goSize.x < camPos.x || goPos.z - goPos.y > camPos.y + camSize.y || goPos.z + goSize.x < camPos.y)
                 continue;
-            var rc = go.getComponent(RenderComponent.class);
-            if(rc == null)
-                Component.RENDER.render(go); // Old Renderer
-            else
-                rc.render(go); // New Renderer
+            go.getComponent(RenderComponent.class).render(go);
         }
     }
 
@@ -61,6 +58,18 @@ public class RenderSystem {
             if(filter.apply(o))
                 return o;
         return null;
+    }
+
+    public static void update(){
+        final var camSize = Camera.getSize().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1.5f);
+        final var camPos = Camera.getPos().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1, -1).sub(camSize.div(2, new Vector2f()));
+        for(var go: objects){
+            var goPos = go.getPosition();
+            var goSize = go.size;
+            if(goPos.x > camPos.x + camSize.x || goPos.x + goSize.x < camPos.x || goPos.z - goPos.y > camPos.y + camSize.y || goPos.z + goSize.x < camPos.y)
+                continue;
+            go.getComponent(RenderComponent.class).update(go);
+        }
     }
 
     public static void prepareRender() {

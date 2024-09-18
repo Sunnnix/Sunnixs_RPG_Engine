@@ -2,11 +2,14 @@ package de.sunnix.srpge.engine.audio;
 
 import org.lwjgl.openal.AL10;
 
+import java.util.Objects;
+
 public class AudioManager {
 
     private static AudioManager instance;
 
     private final AudioSpeaker bgm;
+    private AudioResource bgm_resource;
 
     private final AudioSpeaker[] sounds;
     private final int soundBuffer = 64;
@@ -31,6 +34,9 @@ public class AudioManager {
     }
 
     public void setBGM(AudioResource audio){
+        if(Objects.equals(audio, bgm_resource))
+            return;
+        bgm_resource = audio;
         bgm.setAudio(audio);
     }
 

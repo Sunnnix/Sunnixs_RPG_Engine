@@ -61,7 +61,10 @@ public class PhysicComponent extends Component {
         hitbox = new AABB(go);
         PhysicSystem.add(go);
         go.addPositionSubscriber(PhysicSystem::relocateGridObject);
-        go.addMarkDirtySubscriber(PhysicSystem::markDirty);
+        go.addMarkDirtySubscriber(obj -> {
+            reloadHitbox();
+            PhysicSystem.markDirty(obj);
+        });
         PhysicSystem.relocateGridObject(go.getPosition(), go.getPosition(), go);
         if(Core.isDebug())
             dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
@@ -106,4 +109,12 @@ public class PhysicComponent extends Component {
         setFalling(true);
     }
 
+    @Override
+    protected void free() {
+        super.free();
+        if(dro != null)
+            dro.freeMemory();
+        if(shadow != null)
+            shadow.freeMemory();
+    }
 }

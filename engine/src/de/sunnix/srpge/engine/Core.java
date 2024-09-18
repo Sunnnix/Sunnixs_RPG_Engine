@@ -145,6 +145,10 @@ public class Core {
     @Setter
     private static boolean use_manual_gc;
 
+    @Getter
+    @Setter
+    private static boolean gl_error_stacktrace;
+
     // *************************************************************** //
     //                        Window properties                        //
     // *************************************************************** //
@@ -347,6 +351,7 @@ public class Core {
         EventRegistry.registerEvent("playsound", PlaySoundEvent::new);
         EventRegistry.registerEvent("script-lua", LuaScriptEvent::new);
         EventRegistry.registerEvent("global_color_tint", GlobalColorTintEvent::new);
+        EventRegistry.registerEvent("teleport", TeleportEvent::new);
     }
 
     /**

@@ -8,9 +8,9 @@ import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
-import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.graphics.gui.text.Font;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
+import de.sunnix.srpge.engine.memory.MemoryHandler;
 import de.sunnix.srpge.engine.registry.Registry;
 import de.sunnix.srpge.engine.stage.GameplayState;
 import de.sunnix.srpge.engine.util.Tuple.Tuple2;
@@ -18,8 +18,6 @@ import de.sunnix.srpge.engine.util.Tuple.Tuple2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.BiFunction;
-
-import static de.sunnix.srpge.engine.ecs.Direction.*;
 
 public class Main {
 
@@ -43,12 +41,27 @@ public class Main {
         Text.setDefaultFont(Font.ALUNDRA_FONT);
 
         createDebugText((world, player) -> String.format("FPS: %.1f", Core.getFps()));
+        createDebugText((world, player) -> String.format("Map: %04d", world.ID));
         createDebugText(((world, player) -> {
             var pPos = player.getPosition();
             return String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos());
         }));
+        createDebugText(((world, player) -> {
+            var vel = player.getVelocity();
+            return String.format("Velocity: (%.2f, %.2f, %.2f)", vel.x, vel.y, vel.z);
+        }));
         createDebugText((world, player) -> String.format("Ground Pos: %.2f", player.getComponent(PhysicComponent.class).getGroundPos()));
         createDebugText((world, player) -> String.format("Climbing: %s", player.hasState(States.CLIMB)));
+        createDebugText((world, player) -> String.format("Global Event running: %s", world.getGameState().isGlobalEventRunnung()));
+        createDebugText((world, player) -> String.format("Fall speed: %.2f", world.getPlayer().getComponent(PhysicComponent.class).getFallSpeed()));
+        createDebugText((world, player) -> {
+            var memoryList = MemoryHandler.getSizesWithCategories();
+            var sb = new StringBuilder("Memory usage:\n");
+            for(var memory: memoryList)
+                sb.append(memory.t1().toString()).append(": ").append(memory.t2()).append("\n");
+            sb.deleteCharAt(sb.length() - 1);
+            return sb.toString();
+        });
 
         if(Arrays.stream(args).anyMatch("profiling"::equalsIgnoreCase)) {
             FlatDarkLaf.setup();
@@ -86,30 +99,11 @@ public class Main {
 
                 world.movePlayer(h, jump, v);
 
-                if(h != 0 || v != 0) {
-                    player.addState(States.MOVING.id());
-                    var comp = player.getComponent(RenderComponent.class);
-                    if(Math.abs(h) > Math.abs(v))
-                        if(h > 0)
-                            comp.setDirection(EAST);
-                        else
-                            comp.setDirection(WEST);
-                    else
-                    if(v > 0)
-                        comp.setDirection(SOUTH);
-                    else
-                        comp.setDirection(NORTH);
-                } else
-                    player.removeState(States.MOVING.id());
-
                 // update debug texts
                 for(var debugText: debugTexts){
                     debugText.t1().change(tc -> tc.setText(debugText.t2().apply(world, player)));
                 }
-
             }
-
-
         });
 
         Core.start();

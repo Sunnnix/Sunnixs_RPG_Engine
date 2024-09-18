@@ -25,6 +25,8 @@ public class AudioSpeaker {
     }
 
     public void setAudio(AudioResource audio){
+        if(isPlaying())
+            stop();
         this.audio = audio;
         if(audio == null)
             alSourcei(ID, AL_BUFFER, 0);

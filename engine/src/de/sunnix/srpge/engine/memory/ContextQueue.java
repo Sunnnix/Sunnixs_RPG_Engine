@@ -1,5 +1,8 @@
 package de.sunnix.srpge.engine.memory;
 
+import de.sunnix.srpge.engine.util.FunctionUtils;
+import de.sunnix.srpge.engine.util.Tuple;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,14 +11,15 @@ import java.util.List;
  */
 public class ContextQueue {
 
-    private final static List<Runnable> queue = new ArrayList<>();
+    private final static List<Tuple.Tuple2<String, Runnable>> queue = new ArrayList<>();
 
     /**
      * put all openGL calls in here
      */
     public static void addQueue(Runnable function) {
         synchronized (queue) {
-            queue.add(function);
+            var stack = Thread.currentThread().getStackTrace()[2];
+            queue.add(new Tuple.Tuple2<>(stack.getClassName() + "." +stack.getMethodName(), function));
         }
     }
 
@@ -24,10 +28,15 @@ public class ContextQueue {
      */
     public static void runQueueOnMain() {
         synchronized (queue) {
+            FunctionUtils.checkForOpenGLErrors("ContextQueue - Pre run");
             if(queue.size() > 0) {
-                queue.forEach(Runnable::run);
+                queue.forEach(t -> {
+                    t.t2().run();
+                    FunctionUtils.checkForOpenGLErrors("ContextQueue - " + t.t1());
+                });
                 queue.clear();
             }
+            FunctionUtils.checkForOpenGLErrors("ContextQueue - Post run");
         }
     }
 

@@ -49,14 +49,17 @@ public class RenderComponent extends Component{
         RenderSystem.relocateGridObject(parent.getPosition(), parent.getPosition(), parent);
     }
 
-    public void render(GameObject go) {
+    public void update(GameObject go){
         if(!isValid() || currentSprite == null)
             return;
         if(go.isStatesChanged())
             getNextPrioSprite(go);
-        if(currentSprite == null)
-            return;
         animTimer++;
+    }
+
+    public void render(GameObject go) {
+        if(!isValid() || currentSprite == null)
+            return;
         var index = currentSprite.getTextureIndexForAnimation(animTimer, direction);
         if(index == -1)
             return;
@@ -104,5 +107,11 @@ public class RenderComponent extends Component{
     @Override
     public boolean isValid() {
         return renderObject != null && renderObject.isValid();
+    }
+
+    @Override
+    protected void free() {
+        super.free();
+        renderObject.freeMemory();
     }
 }

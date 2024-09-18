@@ -59,4 +59,9 @@ public class DebugRenderObject {
         DEBUG.uniformMat4("projection", mat.get(new float[16]));
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
     }
+
+    public void freeMemory(){
+        mesh.freeMemory();
+    }
+
 }

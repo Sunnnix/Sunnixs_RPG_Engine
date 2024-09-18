@@ -3,8 +3,6 @@ package de.sunnix.srpge.engine.ecs;
 import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.components.ComponentRegistry;
-import de.sunnix.srpge.engine.ecs.data.Data;
-import de.sunnix.srpge.engine.ecs.data.IntData;
 import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.event.EventRegistry;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
@@ -20,8 +18,6 @@ import java.util.function.Consumer;
 
 public class GameObject extends MemoryHolder {
 
-    private static final Map<String, Data<Object>> dataHolder = new HashMap<>();
-
     private final Map<Class<? extends Component>, Component> components = new HashMap<>();
 
     private final HashSet<State> states = new HashSet<>();
@@ -30,8 +26,6 @@ public class GameObject extends MemoryHolder {
 
     @Getter
     private final long ID; // TODO prevent duplicates by World impl.
-
-    private Map<String, Object> data = new HashMap<>();
 
     @Getter
     private Vector3f position = new Vector3f();
@@ -49,9 +43,6 @@ public class GameObject extends MemoryHolder {
     @Setter
     private float z_pos_offset;
 
-    @GameData(key = "test")
-    public static final IntData TEST = new IntData("test", 0);
-
     @Getter
     private boolean inited;
     /**
@@ -63,12 +54,8 @@ public class GameObject extends MemoryHolder {
     @Getter
     private List<Event> events = new ArrayList<>();
 
-    private List<TrippleConsumer<Vector3f, Vector3f, GameObject>> positionSubscribers = new ArrayList<>();
-    private List<Consumer<GameObject>> markDirtySubscribers = new ArrayList<>();
-
-    static {
-        Data.registerDataToMap(GameObject.class, dataHolder);
-    }
+    private final List<TrippleConsumer<Vector3f, Vector3f, GameObject>> positionSubscribers = new ArrayList<>();
+    private final List<Consumer<GameObject>> markDirtySubscribers = new ArrayList<>();
 
     private GameObject(World world, long id){
         this.ID = id;
@@ -79,8 +66,6 @@ public class GameObject extends MemoryHolder {
         this(world, (long)((Math.random() * Long.MAX_VALUE * 2) - Long.MAX_VALUE));
         this.name = "Entity " + Long.toHexString(ID);
         this.size.set(width, height);
-        data.put("test", 20);
-        dataHolder.forEach((k, v) -> v.init(this));
     }
 
     public GameObject(World world, DataSaveObject dso){
@@ -101,16 +86,6 @@ public class GameObject extends MemoryHolder {
             markDirty();
         }
         return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getData(String key) {
-        return (T) data.get(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T setData(String key, T data){
-        return (T) this.data.put(key, data);
     }
 
     public final <T extends Component> T getComponent(Class<T> componentType){

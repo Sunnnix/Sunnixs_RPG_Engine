@@ -2,7 +2,9 @@ package de.sunnix.srpge.engine.ecs;
 
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.audio.AudioManager;
+import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
+import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.graphics.Shader;
@@ -41,6 +43,7 @@ public class TileMap {
     public TileMap(DataSaveObject data){
         loadMapFromFile(data);
 
+        ContextQueue.addQueue(() -> {
         vertexArray = glGenVertexArrays();
         glBindVertexArray(vertexArray);
 
@@ -78,6 +81,7 @@ public class TileMap {
         }
 
         unbind();
+        });
         inited = true;
     }
 
@@ -102,9 +106,6 @@ public class TileMap {
                 }
             bufferSize = offset;
         }
-        var am = AudioManager.get();
-        am.setBGM(Resources.get().getAudio(dso.getString("bgm", null)));
-        am.playBGM();
     }
 
     public void update(){}
@@ -166,5 +167,11 @@ public class TileMap {
             dro.prepareRender();
             dro.render(new Vector3f(hb.getX(), hb.getY(), hb.getZ()), new Vector2f(hb.getWidth(), hb.getHeight()));
         }
+    }
+
+    public void init() {
+        TileAnimationSystem.clear();
+        for(var tile:  tiles)
+            tile.init();
     }
 }

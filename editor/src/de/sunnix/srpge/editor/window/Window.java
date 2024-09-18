@@ -184,6 +184,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("playsound", getString("event.play_sound.name"), PlaySoundEvent::new);
         EventRegistry.registerEvent("script-lua", "Lua Script", LuaScriptEvent::new);
         EventRegistry.registerEvent("global_color_tint", "Global Color Tint", GlobalColorTintEvent::new);
+        EventRegistry.registerEvent("teleport", "Teleport", TeleportEvent::new);
     }
 
     private void registerComponents(){
@@ -601,6 +602,7 @@ public class Window extends JFrame {
 
     private void loadPlayerData(DataSaveObject dso){
         player.load(dso);
+        player.setName("Player");
         loadDefaultPlayerComponents();
     }
 

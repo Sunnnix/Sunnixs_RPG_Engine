@@ -19,6 +19,10 @@ public class TileAnimationSystem {
 
     private static long animTime;
 
+    public static void clear(){
+        tiles.clear();
+    }
+
     public static void addTile(Tile tile){
         tiles.add(tile);
     }
