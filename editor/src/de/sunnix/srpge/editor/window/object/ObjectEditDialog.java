@@ -253,7 +253,7 @@ public class ObjectEditDialog extends JDialog {
     private final Color panleBG_B = panleBG.brighter();
 
     private JComponent cellRenderer(JList<? extends IEvent> jList, IEvent event, int index, boolean selected, boolean b) {
-        var label = new JLabel(convertToHTML(event.getString(map)));
+        var label = new JLabel(convertToHTML(event.getString(window, map)));
         label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5,5));
         label.setPreferredSize(new Dimension(label.getPreferredSize().width, 20));
 

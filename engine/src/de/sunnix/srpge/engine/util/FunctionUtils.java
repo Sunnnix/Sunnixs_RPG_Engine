@@ -3,6 +3,7 @@ package de.sunnix.srpge.engine.util;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.debug.GameLogger;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -149,6 +150,21 @@ public class FunctionUtils {
                 lerp(c1.y, c2.y, factor),
                 lerp(c1.z, c2.z, factor)
         );
+    }
+
+    /**
+     * Mixes two colors to a new one
+     * @param c1 first color
+     * @param c2 second color
+     * @param factor factor of the second color
+     * @return mixed color
+     */
+    public static Vector4f mix(Vector4f c1, Vector4f c2, float factor){
+        float r = lerp(c1.x, c2.x, factor);
+        float g = lerp(c1.y, c2.y, factor);
+        float b = lerp(c1.z, c2.z, factor);
+        float a = lerp(c1.w, c2.w, factor);
+        return new Vector4f(r, g, b, a);
     }
 
 }

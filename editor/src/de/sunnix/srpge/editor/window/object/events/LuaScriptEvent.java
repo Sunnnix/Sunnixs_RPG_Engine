@@ -25,7 +25,7 @@ public class LuaScriptEvent extends de.sunnix.srpge.engine.ecs.event.LuaScriptEv
     }
 
     @Override
-    public String getGUIText(MapData map) {
+    public String getGUIText(Window window, MapData map) {
         return script;
     }
 

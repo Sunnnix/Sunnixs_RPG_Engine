@@ -27,7 +27,7 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
     }
 
     @Override
-    public String getGUIText(MapData map) {
+    public String getGUIText(Window window, MapData map) {
         String text;
         if(name.isEmpty())
             text = message;

@@ -28,7 +28,7 @@ public class GlobalColorTintEvent extends de.sunnix.srpge.engine.ecs.event.Globa
     }
 
     @Override
-    public String getGUIText(MapData map) {
+    public String getGUIText(Window window, MapData map) {
         return String.format("color /cv00 /b (%.2f, %.2f, %.2f, %.2f) /n /cx in /cv00 /b %s /n /cx frames", color[0], color[1], color[2], color[3], maxDelay);
     }
 

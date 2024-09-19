@@ -19,7 +19,7 @@ public class WaitEvent extends de.sunnix.srpge.engine.ecs.event.WaitEvent implem
     }
 
     @Override
-    public String getGUIText(MapData map) {
+    public String getGUIText(Window window, MapData map) {
         return Language.getString("event.wait.info", frames);
     }
 

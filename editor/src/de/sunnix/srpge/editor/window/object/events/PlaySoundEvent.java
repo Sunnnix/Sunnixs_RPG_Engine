@@ -27,7 +27,7 @@ public class PlaySoundEvent extends de.sunnix.srpge.engine.ecs.event.PlaySoundEv
     }
 
     @Override
-    public String getGUIText(MapData map) {
+    public String getGUIText(Window window, MapData map) {
         String s;
         if(useLocation)
             s = Language.getString("event.play_sound.info_with_location", sound, (int)(gain * 100), posX, posY, posZ, waitForEnd);

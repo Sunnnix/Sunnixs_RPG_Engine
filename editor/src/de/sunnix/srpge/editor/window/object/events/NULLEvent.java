@@ -16,7 +16,7 @@ public class NULLEvent extends de.sunnix.srpge.engine.ecs.event.NULLEvent implem
     }
 
     @Override
-    public String getGUIText(MapData map) {
+    public String getGUIText(Window window, MapData map) {
         return "";
     }
 
