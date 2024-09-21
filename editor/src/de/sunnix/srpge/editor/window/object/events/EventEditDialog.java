@@ -12,8 +12,8 @@ public class EventEditDialog extends JDialog {
     @Getter
     private boolean saved;
 
-    public EventEditDialog(JDialog parent, String name, JPanel contentPanel) {
-        super(parent, name, true);
+    public EventEditDialog(Window parent, String name, JPanel contentPanel) {
+        super(parent, name, ModalityType.APPLICATION_MODAL);
         var mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10,10, 10));
 

@@ -4,6 +4,7 @@ import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.components.ComponentRegistry;
 import de.sunnix.srpge.engine.ecs.event.Event;
+import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.event.EventRegistry;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
@@ -52,7 +53,7 @@ public class GameObject extends MemoryHolder {
     private boolean toDelete = false;
 
     @Getter
-    private List<Event> events = new ArrayList<>();
+    private List<EventList> eventLists = new ArrayList<>();
 
     private final List<TrippleConsumer<Vector3f, Vector3f, GameObject>> positionSubscribers = new ArrayList<>();
     private final List<Consumer<GameObject>> markDirtySubscribers = new ArrayList<>();
@@ -74,7 +75,9 @@ public class GameObject extends MemoryHolder {
         this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
         this.setPosition(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
 
-        events.addAll(dso.getObject("events").<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.createEvent(eDSO.getString("ID", null), eDSO)).toList());
+//        eventLists.addAll(dso.getObject("events").<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.createEvent(eDSO.getString("ID", null), eDSO)).toList());
+
+        eventLists.addAll(dso.<DataSaveObject>getList("event_lists").stream().map(EventList::new).toList());
 
         dso.<DataSaveObject>getList("components").forEach(x -> addComponent(ComponentRegistry.build(x)));
     }
@@ -123,22 +126,12 @@ public class GameObject extends MemoryHolder {
     private int currentEvent = -1;
 
     private void handleEvents(World world) {
-        if(events.isEmpty())
+        if(eventLists.isEmpty())
             return;
-        Event event = null;
-        boolean finished = currentEvent == -1 || (event = events.get(currentEvent)).isFinished(world);
-        if(finished){
-            if(event != null)
-                event.finish(world);
-            currentEvent++;
-            if(currentEvent >= events.size())
-                currentEvent = 0;
-            event = events.get(currentEvent);
-            event.prepare(world);
-            if((event.getBlockingType() & Event.BLOCK_GLOBAL_UPDATE) == Event.BLOCK_GLOBAL_UPDATE)
-                world.addBlockingEvent(event);
+        for(var el: eventLists){
+            if(el.getRunType().equals("auto"))
+                el.run(world);
         }
-        event.run(world);
     }
 
     public void addState(String id){

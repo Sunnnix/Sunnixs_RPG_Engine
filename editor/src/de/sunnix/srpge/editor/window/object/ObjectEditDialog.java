@@ -1,25 +1,21 @@
 package de.sunnix.srpge.editor.window.object;
 
-import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.customswing.ClosableTitledBorder;
-import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
-import de.sunnix.srpge.editor.window.object.events.IEvent;
-import de.sunnix.srpge.editor.window.object.events.EventSelectionDialog;
 import de.sunnix.srpge.editor.window.object.components.Component;
+import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
+import de.sunnix.srpge.editor.window.object.events.EventList;
+import de.sunnix.srpge.editor.window.object.events.IEvent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
-import static de.sunnix.srpge.editor.util.StringToHTMLConverter.convertToHTML;
 import static de.sunnix.srpge.editor.util.Texts.WINDOW_NAME;
 
 public class ObjectEditDialog extends JDialog {
@@ -31,8 +27,9 @@ public class ObjectEditDialog extends JDialog {
 
     private JTextField name;
     private JSpinner x, y, z;
-    private JList<IEvent> events;
-    private DefaultListModel<IEvent> listModel;
+    private JList<EventList> el;
+    private List<EventList> eventLists;
+    private JTabbedPane eventTabView;
 
     private List<Component> componentList;
     private JPanel componentsView;
@@ -44,15 +41,21 @@ public class ObjectEditDialog extends JDialog {
         this.window = window;
         this.map = map;
         this.object = obj;
+        this.eventLists = new ArrayList<>(obj.getEventLists().stream().map(EventList::clone).toList());
 
         setLayout(new BorderLayout(5, 5));
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5 ,5 ,5 , 5));
 
         add(setupProperties(), BorderLayout.EAST);
-        add(setupEventList(), BorderLayout.CENTER);
+        add(eventTabView = setupEventList(), BorderLayout.CENTER);
         add(setupButtons(), BorderLayout.SOUTH);
 
         addWindowListener(createWindowListener());
+
+        if(!eventLists.isEmpty()) {
+            var list = eventLists.get(0);
+            eventTabView.addTab("1 - " + list.toString(), list.genGUI(window, map, object));
+        }
 
         setResizable(false);
         pack();
@@ -119,6 +122,49 @@ public class ObjectEditDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy++;
 
+        gbc.gridwidth = 2;
+        panel.add(new JLabel("Event lists"), gbc);
+        gbc.gridy++;
+        el = new JList<>(new DefaultListModel<>());
+        ((DefaultListModel<EventList>) el.getModel()).addAll(eventLists);
+        var scroll = new JScrollPane(el);
+        scroll.setPreferredSize(new Dimension(0, 100));
+        panel.add(scroll, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+
+        el.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2){
+                    var s = el.getSelectedIndex();
+                    if(s < 0)
+                        return;
+                    var value = el.getSelectedValue();
+                    var name = (s + 1) + " - " + value.toString();
+                    var index = eventTabView.indexOfTab(name);
+                    if(index == -1) {
+                        eventTabView.addTab(name, value.genGUI(window, map, object));
+                        index = eventTabView.indexOfTab(name);
+                    }
+                    eventTabView.setSelectedIndex(index);
+                } else if(e.getButton() == MouseEvent.BUTTON3) {
+                    new JPopupMenu(){
+                        {
+                            var addEL = new JMenuItem("Add EventList");
+                            addEL.addActionListener(l -> {
+                                eventLists.add(new EventList());
+                                var model = (DefaultListModel<EventList>)el.getModel();
+                                model.clear();
+                                model.addAll(eventLists);
+                            });
+                            add(addEL);
+                        }
+                    }.show(el, e.getX(), e.getY());
+                }
+            }
+        });
+
         mainPanel.add(panel, BorderLayout.NORTH);
 
         mainPanel.add(createComponentPanel(), BorderLayout.CENTER);
@@ -136,9 +182,9 @@ public class ObjectEditDialog extends JDialog {
         var addbtn = new JButton(getString("dialog_object.add_component"));
         addbtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, addbtn.getMinimumSize().height));
         addbtn.addActionListener(a -> {
-            var component = ComponentCreateDialog.show(this, object);
-            if(component != null) {
-                componentList.add(component);
+            var component = ComponentCreateDialog.show(this, componentList);
+            if(!component.isEmpty()) {
+                componentList.addAll(component);
                 loadComponentsView();
             }
         });
@@ -164,8 +210,7 @@ public class ObjectEditDialog extends JDialog {
             var panel = ClosableTitledBorder.createClosableTitledPanel(component.genName(), c -> {
                 if(JOptionPane.showConfirmDialog(window, getString("dialog_object.remove_component.text"), getString("dialog_object.remove_component.title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
                     return;
-                object.getComponents().remove(component);
-                componentList.remove(component);
+                removeComponent(object.getComponents(), componentList, component);
                 loadComponentsView();
             });
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -178,57 +223,16 @@ public class ObjectEditDialog extends JDialog {
         componentsView.repaint();
     }
 
-    private JPanel setupEventList() {
-        var panel = new JPanel(new BorderLayout());
+    private void removeComponent(List<Component> objectComponents, List<Component> viewComponents, Component toRemove){
+        var boundComps = viewComponents.stream().filter(c -> Arrays.stream(c.getDependencies()).anyMatch(s -> s.equals(toRemove.ID))).toList();
+        viewComponents.remove(toRemove);
+        boundComps.forEach(comp -> removeComponent(objectComponents, viewComponents, comp));
+    }
 
-        events = new JList<>(listModel = new DefaultListModel<>());
-        object.getEventList().getEventsCopy().forEach(listModel::addElement);
-        events.setCellRenderer(this::cellRenderer);
-
-        events.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-                    showEventSelection();
-                } else if (e.getButton() == MouseEvent.BUTTON3){
-                    new JPopupMenu(){
-                        {
-                            var menuAdd = new JMenuItem(getString("dialog_object.add_event"));
-                            menuAdd.addActionListener(e -> showEventSelection());
-                            add(menuAdd);
-
-                            var index = events.getSelectedIndex();
-                            if(index > -1){
-                                var menuEditEvent = new JMenuItem(getString("dialog_object.edit_event"));
-                                menuEditEvent.addActionListener(e -> showEditEventDialog(events.getSelectedValue()));
-                                add(menuEditEvent);
-                                var menuRemoveEvent = new JMenuItem(getString("dialog_object.remove_event"));
-                                menuRemoveEvent.addActionListener(e -> listModel.removeElementAt(index));
-                                add(menuRemoveEvent);
-                            }
-                        }
-
-                    }.show(events, e.getX(), e.getY());
-                }
-            }
-
-            private void showEventSelection() {
-                var event = EventSelectionDialog.show(window, ObjectEditDialog.this, map, object);
-                if(event != null)
-                    listModel.add(events.getSelectedIndex() + 1, event);
-            }
-
-            private void showEditEventDialog(IEvent event){
-                if(event.openDialog(window, ObjectEditDialog.this, window.getSingleton(GameData.class), map, object))
-                    events.repaint();
-            }
-
-        });
-
-        var scroll = new JScrollPane(events);
-        scroll.setPreferredSize(new Dimension(600, 800));
-
-        panel.add(scroll, BorderLayout.CENTER);
+    private JTabbedPane setupEventList() {
+        var panel = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+        panel.setBorder(BorderFactory.createEtchedBorder());
+        panel.setPreferredSize(new Dimension(600, 800));
         return panel;
     }
 
@@ -249,29 +253,12 @@ public class ObjectEditDialog extends JDialog {
         return panel;
     }
 
-    private final Color panleBG = UIManager.getColor("Panel.background");
-    private final Color panleBG_B = panleBG.brighter();
-
-    private JComponent cellRenderer(JList<? extends IEvent> jList, IEvent event, int index, boolean selected, boolean b) {
-        var label = new JLabel(convertToHTML(event.getString(window, map)));
-        label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5,5));
-        label.setPreferredSize(new Dimension(label.getPreferredSize().width, 20));
-
-        label.setOpaque(true);
-        if(selected) {
-            label.setBackground(UIManager.getColor("List.selectionBackground"));
-            label.setForeground(UIManager.getColor("List.selectionForeground"));
-        } else if(index % 2 == 0)
-            label.setBackground(panleBG_B);
-        else
-            label.setBackground(panleBG);
-        return label;
-    }
-
     private void applyData() {
         var elm = new ArrayList<IEvent>();
-        listModel.elements().asIterator().forEachRemaining(elm::add);
-        object.getEventList().putEvents(elm);
+//        listModel.elements().asIterator().forEachRemaining(elm::add);  TODO apply lists
+        if(object.getEventLists().isEmpty())
+            object.getEventLists().add(new EventList());
+        object.getEventLists().get(0).putEvents(elm);
         object.getComponents().clear();
         object.getComponents().addAll(componentList);
         object.setName(name.getText().isBlank() ? null : name.getText());

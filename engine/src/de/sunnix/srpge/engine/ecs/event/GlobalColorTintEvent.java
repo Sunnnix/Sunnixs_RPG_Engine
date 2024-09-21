@@ -46,7 +46,7 @@ public class GlobalColorTintEvent extends Event {
 
     @Override
     public boolean isFinished(World world) {
-        return delay == maxDelay;
+        return delay >= maxDelay;
     }
 
     @Override

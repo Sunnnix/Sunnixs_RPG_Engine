@@ -26,7 +26,7 @@ public class GameObject {
     private float width, height;
 
     @Getter
-    private EventList eventList = new EventList();
+    private final List<EventList> eventLists = new ArrayList<>();
     @Getter
     private List<Component> components = new ArrayList<>();
 
@@ -41,8 +41,8 @@ public class GameObject {
         this.z -= width / 2;
     }
 
-    public GameObject(DataSaveObject dso){
-        this.ID = load(dso);
+    public GameObject(DataSaveObject dso, int[] version){
+        this.ID = load(dso, version);
     }
 
     private static final Color OBJECT_TOP_COLOR = new Color(.2f, .6f, .8f, .65f);
@@ -101,7 +101,7 @@ public class GameObject {
         return comp;
     }
 
-    public int load(DataSaveObject dso){
+    public int load(DataSaveObject dso, int[] version){
         this.name = dso.getString("name", null);
         this.x = dso.getFloat("x", 0);
         this.y = dso.getFloat("y", 0);
@@ -109,8 +109,11 @@ public class GameObject {
         this.width = dso.getFloat("width", 0);
         this.height = dso.getFloat("height", 0);
 
-        var eventDSO = dso.getObject("events");
-        eventList.load(eventDSO == null ? new DataSaveObject() : eventDSO);
+        if(version[1] < 7) {
+            var eventDSO = dso.getObject("events");
+            eventLists.add(new EventList(eventDSO == null ? new DataSaveObject() : new DataSaveObject().putList("events", eventDSO.getList("list"))));
+        } else
+            eventLists.addAll(dso.<DataSaveObject>getList("event_lists").stream().map(EventList::new).toList());
 
         components.clear();
         components.addAll(dso.<DataSaveObject>getList("components").stream().map(x ->
@@ -129,7 +132,7 @@ public class GameObject {
         dso.putFloat("width", width);
         dso.putFloat("height", height);
 
-        dso.putObject("events", eventList.save(new DataSaveObject()));
+        dso.putList("event_lists", eventLists.stream().map(list -> list.save(new DataSaveObject())).toList());
 
         dso.putList("components", components.stream().map(x -> {
             var xDSO = new DataSaveObject();

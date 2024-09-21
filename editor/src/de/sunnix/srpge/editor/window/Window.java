@@ -386,7 +386,7 @@ public class Window extends JFrame {
 
                 if(version[1] > 5)
                     try (var pStream = zip.getInputStream(new ZipEntry("player"))){
-                        loadPlayerData(new DataSaveObject().load(pStream));
+                        loadPlayerData(new DataSaveObject().load(pStream), version);
                     } catch (NullPointerException e){
                         System.err.println("Playerdata not found!");
                     }
@@ -600,8 +600,8 @@ public class Window extends JFrame {
         loadDefaultPlayerComponents();
     }
 
-    private void loadPlayerData(DataSaveObject dso){
-        player.load(dso);
+    private void loadPlayerData(DataSaveObject dso, int[] version){
+        player.load(dso, version);
         player.setName("Player");
         loadDefaultPlayerComponents();
     }

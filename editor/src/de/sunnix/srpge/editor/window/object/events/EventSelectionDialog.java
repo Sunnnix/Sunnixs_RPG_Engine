@@ -15,13 +15,13 @@ import static de.sunnix.srpge.editor.lang.Language.getString;
 public class EventSelectionDialog extends JDialog {
 
     private final Window window;
-    private final ObjectEditDialog parent;
+    private final java.awt.Window parent;
 
     @Getter
     private IEvent event;
 
-    public EventSelectionDialog(Window window, ObjectEditDialog parent, MapData map, GameObject object) {
-        super(parent, "", true);
+    public EventSelectionDialog(Window window, java.awt.Window parent, MapData map, GameObject object) {
+        super(parent, "", ModalityType.APPLICATION_MODAL);
         this.window = window;
         this.parent = parent;
         create(map, object);
@@ -48,7 +48,7 @@ public class EventSelectionDialog extends JDialog {
         });
     }
 
-    public static IEvent show(Window window, ObjectEditDialog parent, MapData map, GameObject object){
+    public static IEvent show(Window window, java.awt.Window parent, MapData map, GameObject object){
         var dialog = new EventSelectionDialog(window, parent, map, object);
         return dialog.event;
     }

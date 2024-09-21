@@ -114,7 +114,7 @@ public interface IEvent extends Cloneable {
      * @param currentObject the {@link GameObject} to which the event is attached
      * @return true if the event was saved successfully, false if the dialog was canceled
      */
-    default boolean openDialog(Window window, JDialog parent, GameData gameData, MapData map, GameObject currentObject){
+    default boolean openDialog(Window window, java.awt.Window parent, GameData gameData, MapData map, GameObject currentObject){
         var panel = new JPanel(new BorderLayout());
         var onSave = createEventEditDialog(window, gameData, map, currentObject, panel);
         var dialog = new EventEditDialog(parent, Language.getString("event_dialog.edit", getEventDisplayName()), panel);

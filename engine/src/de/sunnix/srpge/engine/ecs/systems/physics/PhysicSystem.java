@@ -22,6 +22,10 @@ public class PhysicSystem {
     public static final float EPSILON = 1e-4f;
     public static final float STEP_AMOUNT = .2f;
 
+    enum MoveDirection{
+        SOUTH, EAST, WEST, NORTH, UP, DOWN
+    }
+
     private static List<GameObject> objects;
 
     private static MapGrid mapGrid;
@@ -131,10 +135,6 @@ public class PhysicSystem {
             dro.prepareRender();
             dro.render(new Vector3f(hb.getX(), hb.getY(), hb.getZ()), new Vector2f(hb.getWidth(), hb.getHeight()));
         };
-    }
-
-    enum MoveDirection{
-        SOUTH, EAST, WEST, NORTH, UP, DOWN
     }
 
     private static void move(World world, GameObject go, float dx, float dy, float dz) {

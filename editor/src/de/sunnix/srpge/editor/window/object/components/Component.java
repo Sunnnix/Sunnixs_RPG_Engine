@@ -36,6 +36,8 @@ public abstract class Component implements Cloneable{
 
     protected <T extends JComponent> T addView(JPanel parent, T component, int height){
         component.setMaximumSize(new Dimension(Short.MAX_VALUE, height));
+        component.setPreferredSize(new Dimension(0, height));
+        component.setMinimumSize(new Dimension(Short.MAX_VALUE, height));
         component.setAlignmentX(JButton.CENTER_ALIGNMENT);
         parent.add(component);
         return component;
