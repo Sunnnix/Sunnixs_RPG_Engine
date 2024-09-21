@@ -25,7 +25,7 @@ public class PlayerSpriteManager extends JDialog {
         var component = player.getComponent(RenderComponent.class).clone();
         var centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.setPreferredSize(new Dimension(180, 250));
+        centerPanel.setPreferredSize(new Dimension(180, 295));
         var loopFunction = component.createView(window, player, centerPanel);
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 

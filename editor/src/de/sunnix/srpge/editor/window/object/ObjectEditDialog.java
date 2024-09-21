@@ -7,7 +7,6 @@ import de.sunnix.srpge.editor.window.customswing.ClosableTitledBorder;
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
 import de.sunnix.srpge.editor.window.object.events.EventList;
-import de.sunnix.srpge.editor.window.object.events.IEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,7 +53,7 @@ public class ObjectEditDialog extends JDialog {
 
         if(!eventLists.isEmpty()) {
             var list = eventLists.get(0);
-            eventTabView.addTab("1 - " + list.toString(), list.genGUI(window, map, object));
+            eventTabView.addTab("1 - " + list.toString(), list.genGUI(window, map, this, object));
         }
 
         setResizable(false);
@@ -144,7 +143,7 @@ public class ObjectEditDialog extends JDialog {
                     var name = (s + 1) + " - " + value.toString();
                     var index = eventTabView.indexOfTab(name);
                     if(index == -1) {
-                        eventTabView.addTab(name, value.genGUI(window, map, object));
+                        eventTabView.addTab(name, value.genGUI(window, map, ObjectEditDialog.this, object));
                         index = eventTabView.indexOfTab(name);
                     }
                     eventTabView.setSelectedIndex(index);
@@ -154,11 +153,29 @@ public class ObjectEditDialog extends JDialog {
                             var addEL = new JMenuItem("Add EventList");
                             addEL.addActionListener(l -> {
                                 eventLists.add(new EventList());
-                                var model = (DefaultListModel<EventList>)el.getModel();
-                                model.clear();
-                                model.addAll(eventLists);
+                                reloadELView();
                             });
                             add(addEL);
+                            var sIndex = el.getSelectedIndex();
+                            if(sIndex >= 0) {
+                                var removeEL = new JMenuItem("Remove EventList");
+                                removeEL.addActionListener(l -> {
+                                    eventLists.remove(sIndex);
+                                    reloadELView();
+                                    for(var i = 0; i < eventTabView.getTabCount(); i++){
+                                        var title = eventTabView.getTitleAt(i);
+                                        var elIndex = Integer.parseInt(title.substring(0, title.indexOf('-')).trim()) - 1;
+                                        if(elIndex == sIndex){
+                                            eventTabView.removeTabAt(i);
+                                            i--;
+                                            continue;
+                                        }
+                                        if(elIndex > sIndex)
+                                            eventTabView.setTitleAt(i, elIndex + " - " + eventLists.get(elIndex - 1).toString());
+                                    }
+                                });
+                                add(removeEL);
+                            }
                         }
                     }.show(el, e.getX(), e.getY());
                 }
@@ -170,6 +187,12 @@ public class ObjectEditDialog extends JDialog {
         mainPanel.add(createComponentPanel(), BorderLayout.CENTER);
 
         return mainPanel;
+    }
+
+    private void reloadELView(){
+        var model = (DefaultListModel<EventList>)el.getModel();
+        model.clear();
+        model.addAll(eventLists);
     }
 
     private JComponent createComponentPanel(){
@@ -254,11 +277,8 @@ public class ObjectEditDialog extends JDialog {
     }
 
     private void applyData() {
-        var elm = new ArrayList<IEvent>();
-//        listModel.elements().asIterator().forEachRemaining(elm::add);  TODO apply lists
-        if(object.getEventLists().isEmpty())
-            object.getEventLists().add(new EventList());
-        object.getEventLists().get(0).putEvents(elm);
+        object.getEventLists().clear();
+        object.getEventLists().addAll(eventLists);
         object.getComponents().clear();
         object.getComponents().addAll(componentList);
         object.setName(name.getText().isBlank() ? null : name.getText());
@@ -299,4 +319,7 @@ public class ObjectEditDialog extends JDialog {
         };
     }
 
+    public void changeTabName(EventList eventList, String name) {
+        eventTabView.setTitleAt(eventTabView.getSelectedIndex(), (eventLists.indexOf(eventList) + 1) + " - " + name);
+    }
 }

@@ -19,11 +19,13 @@ public class EventList{
         NONE, USER_INPUT, UPDATE, UPDATE_GRAPHIC
     }
 
+    public static final byte RUN_TYPE_AUTO = 0;
+
     @Getter(AccessLevel.NONE)
     private final List<Event> events = new ArrayList<>();
     protected String name;
     protected BlockType blockType;
-    protected String runType;
+    protected byte runType;
 
     /**
      * Current index of the running event
@@ -46,7 +48,7 @@ public class EventList{
         events.addAll(dso.<DataSaveObject>getList("events").stream().map(data -> EventRegistry.createEvent(data.getString("ID", null), data)).toList());
         name = dso.getString("name", null);
         blockType = BlockType.values()[dso.getByte("block", (byte) BlockType.NONE.ordinal())];
-        runType = dso.getString("type", "auto");
+        runType = dso.getByte("type", RUN_TYPE_AUTO);
         return dso;
     }
 

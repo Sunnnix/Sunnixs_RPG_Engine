@@ -129,7 +129,7 @@ public class GameObject extends MemoryHolder {
         if(eventLists.isEmpty())
             return;
         for(var el: eventLists){
-            if(el.getRunType().equals("auto"))
+            if(el.getRunType() == EventList.RUN_TYPE_AUTO)
                 el.run(world);
         }
     }

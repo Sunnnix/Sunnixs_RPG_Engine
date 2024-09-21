@@ -21,8 +21,18 @@ public class PhysicComponent extends Component {
     @Setter(AccessLevel.NONE)
     private static final Texture SHADOW_TEXTURE = new Texture("/data/texture/shadow.png");
 
+    public static final byte RUN_TYPE_PLAYER_CONSULT = 100;
+    public static final byte RUN_TYPE_TOUCH = 101;
+    public static final byte RUN_TYPE_TOUCH_TOP = 102;
+    public static final byte RUN_TYPE_TOUCH_BOTTOM = 103;
+    public static final byte RUN_TYPE_TOUCH_SOUTH = 104;
+    public static final byte RUN_TYPE_TOUCH_EAST = 105;
+    public static final byte RUN_TYPE_TOUCH_WEST = 106;
+    public static final byte RUN_TYPE_TOUCH_NORTH = 107;
+
     @Setter(AccessLevel.NONE)
     private AABB hitbox;
+    private float width, height;
     private float weight, jumpSpeed, fallSpeed;
     private boolean collision;
     private boolean falling;
@@ -46,8 +56,10 @@ public class PhysicComponent extends Component {
     private boolean hasShadow;
 
     public PhysicComponent(DataSaveObject dso) {
-        weight = dso.getFloat("weight", .8f);
-        jumpSpeed = dso.getFloat("jump_speed", .26f);
+        width = dso.getFloat("width", 1);
+        height = dso.getFloat("height", 1);
+        weight = dso.getFloat("weight", .85f);
+        jumpSpeed = dso.getFloat("jump_speed", .25f);
         collision = dso.getBool("collision", true);
         flying = dso.getBool("flying", false);
         platform = dso.getBool("platform", false);
@@ -58,6 +70,7 @@ public class PhysicComponent extends Component {
     @Override
     public void init(World world, GameObject go) {
         super.init(world, go);
+        parent.size.set(width, height);
         hitbox = new AABB(go);
         PhysicSystem.add(go);
         go.addPositionSubscriber(PhysicSystem::relocateGridObject);
@@ -83,7 +96,8 @@ public class PhysicComponent extends Component {
     }
 
     public void reloadHitbox() {
-        hitbox = new AABB(parent);
+        var pPos = parent.getPosition();
+        hitbox = new AABB(pPos.x, pPos.y, pPos.z, width, height);
     }
 
     public void setFalling(boolean falling) {

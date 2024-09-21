@@ -53,6 +53,7 @@ public class TextBoxRenderObject extends MemoryHolder {
             return;
         var size = getSize();
         shader.bind();
+        shader.uniform4f("globalColoring", 0, 0, 0, 0);
         texture.bind(0);
         mesh.bind();
 //        var model = new Matrix4f().translate(Camera.getSize().x / 2 - size.x / 2, Camera.getSize().y * .05f - offsetX, 0).scale(size.x, size.y, 1);

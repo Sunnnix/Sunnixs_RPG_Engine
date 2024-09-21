@@ -130,8 +130,19 @@ public class MapListView extends JScrollPane {
         var map = window.getSingleton(GameData.class).getMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
         if(map == null)
             return;
-        var width = new JSpinner(new SpinnerNumberModel(map.getWidth(), MapData.MINIMUM_WIDTH, 1000, 1));
-        var height = new JSpinner(new SpinnerNumberModel(map.getHeight(), MapData.MINIMUM_HEIGHT, 1000, 1));
+        var maxTiles = 62500;
+        var width = new JSpinner(new SpinnerNumberModel(map.getWidth(), MapData.MINIMUM_WIDTH,  Math.max(map.getWidth(), maxTiles / map.getHeight()), 1));
+        var height = new JSpinner(new SpinnerNumberModel(map.getHeight(), MapData.MINIMUM_HEIGHT, Math.max(map.getHeight(), maxTiles / map.getWidth()), 1));
+        width.addChangeListener(l -> {
+            var value = ((Number)width.getValue()).intValue();
+            var maxH = maxTiles / value;
+            ((SpinnerNumberModel)height.getModel()).setMaximum(maxH);
+        });
+        height.addChangeListener(l -> {
+            var value = ((Number)height.getValue()).intValue();
+            var maxW = maxTiles / value;
+            ((SpinnerNumberModel)width.getModel()).setMaximum(maxW);
+        });
         if(!showMultiInputDialog(window, getString("view.map_list.dialog.change_map_size.title"), getString("view.map_list.dialog.change_map_size.text"), new String[]{getString("name.width"), getString("name.height")}, new JComponent[]{ width, height }))
             return;
         if(width.getValue().equals(map.getWidth()) && height.getValue().equals(map.getHeight()))

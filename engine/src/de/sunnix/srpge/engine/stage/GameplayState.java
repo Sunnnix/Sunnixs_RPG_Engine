@@ -206,8 +206,9 @@ public class GameplayState implements IState {
      */
     private GameObject createPlayer(){
         var player = new GameObject(world, playerData);
-        player.size.set(.78, 1.8);
         var comp = new PhysicComponent(new DataSaveObject());
+        comp.setWidth(.78f);
+        comp.setHeight(1.8f);
         comp.setCanClimb(true);
         player.addComponent(comp);
         FunctionUtils.checkForOpenGLErrors("GameplayState - Create Player");

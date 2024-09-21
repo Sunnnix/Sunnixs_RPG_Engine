@@ -6,21 +6,44 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.Window;
-import lombok.Getter;
+import de.sunnix.srpge.editor.window.object.ObjectEditDialog;
+import de.sunnix.srpge.editor.window.object.components.Component;
+import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.util.StringToHTMLConverter.convertToHTML;
+import static de.sunnix.srpge.engine.ecs.components.PhysicComponent.*;
 
 public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implements Cloneable{
 
-    @Getter
+    private static final Map<Byte, RunType> readableRunTypes = new HashMap<>();
+
+    @SafeVarargs
+    public static void addRunTypeName(byte type, String name, Class<? extends Component>... requires){
+        readableRunTypes.put(type, new RunType(type, name, requires));
+    }
+
+    static {
+        addRunTypeName(RUN_TYPE_AUTO, "Auto");
+        addRunTypeName(RUN_TYPE_PLAYER_CONSULT, "Player consult", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH, "Touch", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH_TOP, "Step on", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH_BOTTOM, "Touch bottom", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH_SOUTH, "Touch south", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH_EAST, "Touch east", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH_WEST, "Touch west", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_TOUCH_NORTH, "Touch north", PhysicComponent.class);
+    }
+
     private List<IEvent> events;
 
     private JList<IEvent> el;
@@ -38,7 +61,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         events = new ArrayList<>(dso.<DataSaveObject>getList("events").stream().map(data -> EventRegistry.loadEvent(data.getString("ID", null), data)).toList());
         name = dso.getString("name", null);
         blockType = BlockType.values()[dso.getByte("block", (byte) BlockType.NONE.ordinal())];
-        runType = dso.getString("type", "auto");
+        runType = dso.getByte("type", RUN_TYPE_AUTO);
         return dso;
     }
 
@@ -50,7 +73,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         }).toList());
         dso.putString("name", name);
         dso.putByte("block", (byte) blockType.ordinal());
-        dso.putString("type", runType);
+        dso.putByte("type", runType);
         return dso;
     }
 
@@ -63,11 +86,53 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         this.events.addAll(events);
     }
 
-    public JPanel genGUI(Window window, MapData map, GameObject object){
+    public JPanel genGUI(Window window, MapData map, ObjectEditDialog parent, GameObject object){
         var panel = new JPanel(new BorderLayout());
 
+        var eventPropsPanel = new JPanel(new GridBagLayout());
+        var gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets.set(3, 3, 0, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        eventPropsPanel.add(new JLabel("Name:"), gbc);
+        gbc.gridx++;
+        var fieldName = new JTextField(name, 10);
+        eventPropsPanel.add(fieldName, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        eventPropsPanel.add(new JLabel("Block type:"), gbc);
+        gbc.gridx++;
+        var selectBlockType = new JComboBox<>(BlockType.values());
+        eventPropsPanel.add(selectBlockType, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        eventPropsPanel.add(new JLabel("Run type:"), gbc);
+        gbc.gridx++;
+        var selectRunType = new JComboBox<>(readableRunTypes.values().stream().filter(rt -> Arrays.stream(rt.requires).allMatch(object::hasComponent)).toArray(RunType[]::new));
+        eventPropsPanel.add(selectRunType, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        // actions / listeners
+        fieldName.addActionListener(l -> {
+            name = fieldName.getText();
+            parent.changeTabName(this, name);
+            parent.repaint();
+        });
+        selectBlockType.addActionListener(l -> blockType = (BlockType) selectBlockType.getSelectedItem());
+        selectRunType.addActionListener(l -> runType = ((RunType) selectRunType.getSelectedItem()).id);
+
+        // set values
+        selectBlockType.setSelectedItem(blockType);
+        selectRunType.setSelectedItem(readableRunTypes.get(runType));
+
+        eventPropsPanel.setPreferredSize(new Dimension(0, 150));
+        panel.add(eventPropsPanel, BorderLayout.NORTH);
+
         el = new JList<>(listModel = new DefaultListModel<>());
-        listModel.addAll(events);
+        reloadEL();
         el.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> cellRenderer(window, map, list, value, index, isSelected, cellHasFocus));
 
         el.addMouseListener(new MouseAdapter() {
@@ -88,7 +153,10 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
                                 menuEditEvent.addActionListener(e -> showEditEventDialog(el.getSelectedValue()));
                                 add(menuEditEvent);
                                 var menuRemoveEvent = new JMenuItem(getString("dialog_object.remove_event"));
-                                menuRemoveEvent.addActionListener(e -> listModel.removeElementAt(index));
+                                menuRemoveEvent.addActionListener(e -> {
+                                    events.remove(index);
+                                    reloadEL();
+                                });
                                 add(menuRemoveEvent);
                             }
                         }
@@ -99,8 +167,10 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
             private void showEventSelection() {
                 var event = EventSelectionDialog.show(window, DialogUtils.getWindowForComponent(panel), map, object);
-                if(event != null)
-                    listModel.add(el.getSelectedIndex() + 1, event);
+                if(event != null) {
+                    events.add(el.getSelectedIndex() + 1, event);
+                    reloadEL();
+                }
             }
 
             private void showEditEventDialog(IEvent event){
@@ -110,11 +180,48 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
         });
 
+        el.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                var sIndex = el.getSelectedIndex();
+                if(sIndex < 0)
+                    return;
+                if(e.getKeyCode() == KeyEvent.VK_DELETE){
+                    if(JOptionPane.showConfirmDialog(panel, "Do you want to delete this event?", "Delete event", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
+                        return;
+                    events.remove(el.getSelectedIndex());
+                    reloadEL();
+                } else if(!e.isControlDown())
+                    return;
+                if(e.getKeyCode() == KeyEvent.VK_UP){
+                    if(sIndex == 0)
+                        return;
+                    var event = events.remove(sIndex--);
+                    events.add(sIndex, event);
+                    reloadEL();
+                    el.setSelectedIndex(sIndex);
+                } else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+                    if(sIndex == events.size() - 1)
+                        return;
+                    var event = events.remove(sIndex++);
+                    events.add(sIndex, event);
+                    reloadEL();
+                    el.setSelectedIndex(sIndex);
+                }
+            }
+        });
+
         var scroll = new JScrollPane(el);
-        scroll.setPreferredSize(new Dimension(600, 800));
+        scroll.setPreferredSize(new Dimension(600, 500));
+        scroll.setBorder(BorderFactory.createEtchedBorder());
 
         panel.add(scroll, BorderLayout.CENTER);
         return panel;
+    }
+
+    private void reloadEL(){
+        listModel.clear();
+        listModel.addAll(events);
     }
 
     private final Color panleBG = UIManager.getColor("Panel.background");
@@ -148,5 +255,12 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         }
     }
 
+    private record RunType(byte id, String name, Class<? extends Component>[] requires){
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
 }
