@@ -7,6 +7,7 @@ import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
+import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.stage.GameplayState;
 import org.joml.Vector4f;
 
@@ -68,6 +69,7 @@ public class TeleportEvent extends Event{
      */
     public TeleportEvent() {
         super("teleport");
+        blockingType = EventList.BlockType.UPDATE;
     }
 
     @Override
@@ -183,6 +185,7 @@ public class TeleportEvent extends Event{
             if(map != -1 && map != world.ID) {
                 world.getGameState().switchMaps();
                 object = world.getGameState().getPlayer();
+                Camera.setAttachedObject(object);
             }
         } catch (Exception e){
             var ex = new RuntimeException("Error switching to other map!");
@@ -190,6 +193,8 @@ public class TeleportEvent extends Event{
             throw ex;
         }
         object.setPosition(x, y, z);
+        if(map != -1 && map != world.ID)
+            Camera.setPositionTo(object.getPosition());
         PhysicSystem.update(world.getGameState().getWorld());
         return true;
     }
@@ -213,8 +218,4 @@ public class TeleportEvent extends Event{
             customTransitionEvent.finish(world);
     }
 
-    @Override
-    public byte getBlockingType() {
-        return BLOCK_GLOBAL_UPDATE;
-    }
 }

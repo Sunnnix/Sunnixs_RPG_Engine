@@ -1,14 +1,12 @@
 package de.sunnix.srpge.engine.ecs;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.components.ComponentRegistry;
-import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.event.EventList;
-import de.sunnix.srpge.engine.ecs.event.EventRegistry;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
-import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector2f;
@@ -58,6 +56,11 @@ public class GameObject extends MemoryHolder {
     private final List<TrippleConsumer<Vector3f, Vector3f, GameObject>> positionSubscribers = new ArrayList<>();
     private final List<Consumer<GameObject>> markDirtySubscribers = new ArrayList<>();
 
+    @Getter
+    private Direction facing = Direction.SOUTH;
+
+    private final Set<Byte> startEvents = new HashSet<>();
+
     private GameObject(World world, long id){
         this.ID = id;
         world.addEntity(this);
@@ -74,8 +77,6 @@ public class GameObject extends MemoryHolder {
         this.name = dso.getString("name", null);
         this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
         this.setPosition(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
-
-//        eventLists.addAll(dso.getObject("events").<DataSaveObject>getList("list").stream().map(eDSO -> EventRegistry.createEvent(eDSO.getString("ID", null), eDSO)).toList());
 
         eventLists.addAll(dso.<DataSaveObject>getList("event_lists").stream().map(EventList::new).toList());
 
@@ -110,13 +111,6 @@ public class GameObject extends MemoryHolder {
             return;
         }
         handleEvents(world);
-//        position.add(velocity);
-//        velocity.set(0);
-//        position.y = Math.max(position.y, 0);
-//        if(position.y > 0)
-//            addState(States.FALLING.id());
-//        else
-//            removeState(States.FALLING.id());
     }
 
     public void postRender(){
@@ -129,9 +123,12 @@ public class GameObject extends MemoryHolder {
         if(eventLists.isEmpty())
             return;
         for(var el: eventLists){
-            if(el.getRunType() == EventList.RUN_TYPE_AUTO)
+            if(el.isActive() || el.getRunType() == EventList.RUN_TYPE_AUTO || startEvents.stream().anyMatch(rt -> rt == el.getRunType())) {
+                el.setActive(true);
                 el.run(world);
+            }
         }
+        startEvents.clear();
     }
 
     public void addState(String id){
@@ -199,6 +196,14 @@ public class GameObject extends MemoryHolder {
         return hasState(States.getState(id));
     }
 
+    public boolean containsEventType(byte runType) {
+        return eventLists.stream().anyMatch(el -> el.getRunType() == runType);
+    }
+
+    public void startEvent(byte type) {
+        startEvents.add(type);
+    }
+
     @Override
     public boolean isValid() {
         return components.values().stream().allMatch(Component::isValid);
@@ -223,5 +228,10 @@ public class GameObject extends MemoryHolder {
 
         void accept(T t, J j, K k);
 
+    }
+
+    public void setFacing(Direction facing) {
+        this.facing = facing;
+        markDirty();
     }
 }

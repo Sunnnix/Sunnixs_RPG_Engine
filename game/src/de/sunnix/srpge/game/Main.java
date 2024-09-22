@@ -19,10 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F3;
+
 public class Main {
 
     private static final ArrayList<Tuple2<Text, BiFunction<World, GameObject, String>>> debugTexts = new ArrayList<>();
-
+    private static boolean debugTextEnabled;
+    private static InputManager.Key DEBUG = new InputManager.Key(GLFW_KEY_F3);
 
     public static void main(String[] args) {
 
@@ -52,7 +55,7 @@ public class Main {
         }));
         createDebugText((world, player) -> String.format("Ground Pos: %.2f", player.getComponent(PhysicComponent.class).getGroundPos()));
         createDebugText((world, player) -> String.format("Climbing: %s", player.hasState(States.CLIMB)));
-        createDebugText((world, player) -> String.format("Global Event running: %s", world.getGameState().isGlobalEventRunnung()));
+        createDebugText((world, player) -> String.format("Global Event running: %s", world.getGameState().isGlobalEventRunning()));
         createDebugText((world, player) -> String.format("Fall speed: %.2f", world.getPlayer().getComponent(PhysicComponent.class).getFallSpeed()));
         createDebugText((world, player) -> {
             var memoryList = MemoryHandler.getSizesWithCategories();
@@ -70,7 +73,7 @@ public class Main {
         }
 
         Core.subscribeLoop("test", 4, ticks -> {
-            if(ticks > 3){
+            if(ticks > 2){
                 float h = 0;
                 float v = 0;
                 var jump = false;
@@ -98,10 +101,15 @@ public class Main {
                 var player = world.getPlayer();
 
                 world.movePlayer(h, jump, v);
+                if(InputManager.PAD_X.startPressed())
+                    world.startPlayerAction();
+
+                if(DEBUG.startPressed())
+                    debugTextEnabled = !debugTextEnabled;
 
                 // update debug texts
                 for(var debugText: debugTexts){
-                    debugText.t1().change(tc -> tc.setText(debugText.t2().apply(world, player)));
+                    debugText.t1().change(tc -> tc.setText(debugTextEnabled ? debugText.t2().apply(world, player) : ""));
                 }
             }
         });

@@ -17,8 +17,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.*;
 
 public class TileMap {
 
@@ -152,11 +151,12 @@ public class TileMap {
     }
 
     public void onDestroy() {
-        glDeleteBuffers(vertexArray);
+        glBindVertexArray(vertexArray);
         glDeleteBuffers(verticesID);
         glDeleteBuffers(textures0ID);
         glDeleteBuffers(textures1ID);
         glDeleteBuffers(elementBuffer);
+        glDeleteVertexArrays(vertexArray);
     }
 
     public void drawHitbixes() {

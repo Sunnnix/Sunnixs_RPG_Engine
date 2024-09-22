@@ -586,4 +586,8 @@ public class PhysicSystem {
         mapGrid.markDirty(object);
     }
 
+    public static List<GameObject> getCollidingObjects(float x, float z) {
+        return mapGrid.getObjectFieldOf(x, z);
+    }
+
 }

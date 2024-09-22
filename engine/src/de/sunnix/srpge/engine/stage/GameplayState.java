@@ -8,6 +8,7 @@ import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.event.Event;
+import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
 import de.sunnix.srpge.engine.graphics.Camera;
@@ -52,12 +53,20 @@ public class GameplayState implements IState {
     @Getter
     private final List<Event> blockingEventQueue = new ArrayList<>();
 
+    private final List<Event> blockingEvents = new ArrayList<>();
+
     /**
      * Is a blocking event running.<br>
      * @see GameplayState#blockingEventQueue
      */
     @Getter
-    private boolean globalEventRunnung;
+    private boolean globalEventRunning;
+    @Getter
+    private boolean playerInputBlock;
+    @Getter
+    private boolean updateBlock;
+    @Getter
+    private boolean renderBlock;
 
     /**
      * Little render object to show the middle of the screen
@@ -87,6 +96,8 @@ public class GameplayState implements IState {
                 world = nextMap;
                 player = createPlayer();
                 player.setPosition(startPos[0], startPos[1], startPos[2]);
+                Camera.setPositionTo(player.getPosition());
+                Camera.setAttachedObject(player);
                 world.init();
             } catch (Exception e){
                 GameLogger.logException("World", e);
@@ -95,26 +106,41 @@ public class GameplayState implements IState {
 
     @Override
     public void update() {
+        blockingEvents.removeIf(e -> e.isFinished(world));
+        playerInputBlock = false;
+        updateBlock = false;
+        renderBlock = false;
+        for(var event: blockingEvents){
+            var bt = event.getBlockingType();
+            if(bt == EventList.BlockType.USER_INPUT)
+                playerInputBlock = true;
+            if(bt == EventList.BlockType.UPDATE)
+                updateBlock = true;
+            if(bt == EventList.BlockType.UPDATE_GRAPHIC)
+                renderBlock = true;
+        }
         FunctionUtils.checkForOpenGLErrors("GameplayState - Pre update");
         Event event = null;
         if(!blockingEventQueue.isEmpty())
             event = blockingEventQueue.get(0);
         if(event != null){
-            globalEventRunnung = true;
+            globalEventRunning = true;
             event.run(world);
             if(event.isFinished(world)) {
                 event.finish(world);
                 blockingEventQueue.remove(0);
             }
-        } else {
-            globalEventRunnung = false;
+        } else
+            globalEventRunning = false;
+        if(!updateBlock)
             world.update();
+        if(!renderBlock){
             RenderSystem.update();
             TileAnimationSystem.update(world);
         }
         FunctionUtils.checkForOpenGLErrors("GameplayState - update after event");
         var pPos = getPlayer().getPosition();
-        Camera.getPos().set(pPos.x * 24, (-pPos.z + pPos.y) * 16);
+        Camera.calculateCameraPosition();
         AudioManager.get().setLocation(pPos.x, pPos.y, pPos.z);
         RenderSystem.prepareRender();
         FunctionUtils.checkForOpenGLErrors("GameplayState - Post update");
@@ -191,11 +217,11 @@ public class GameplayState implements IState {
             throw new NullPointerException("There is no other map to load!");
         var tmp = world;
         world = nextMap;
-        player = createPlayer();
-        world.init();
         nextMap = tmp;
+        player = createPlayer();
         nextMap.onDestroy();
         nextMap = null;
+        world.init();
         ContextQueue.runQueueOnMain();
         FunctionUtils.checkForOpenGLErrors("GameplayState - switchMaps");
     }
@@ -213,6 +239,10 @@ public class GameplayState implements IState {
         player.addComponent(comp);
         FunctionUtils.checkForOpenGLErrors("GameplayState - Create Player");
         return player;
+    }
+
+    public void registerBlockingEvent(Event event){
+        blockingEvents.add(event);
     }
 
 }

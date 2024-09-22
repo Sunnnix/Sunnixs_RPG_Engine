@@ -13,7 +13,7 @@ char id=37   x=80      y=0      width=12      height=16      xoffset=0    yoffse
 // &
 char id=38   x=96      y=0      width=11      height=16      xoffset=0    yoffset=0    xadvance=11 
 // '
-char id=30   x=112      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
+char id=39   x=112      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6
 // (
 char id=40   x=128      y=0      width=6      height=16      xoffset=0    yoffset=0    xadvance=6 
 // )

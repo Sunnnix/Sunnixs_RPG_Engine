@@ -8,6 +8,7 @@ import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
+import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.stage.GameplayState;
@@ -111,30 +112,54 @@ public class World {
     }
 
     public void movePlayer(float x, boolean y, float z){
-        if(gameState.isGlobalEventRunnung())
+        var player = getPlayer();
+        if(gameState.isPlayerInputBlock() || gameState.isUpdateBlock() || gameState.isRenderBlock()) {
+            player.removeState(States.MOVING.id());
             return;
+        }
         if(y)
             getPlayer().getComponent(PhysicComponent.class).jump();
         var pVel = getPlayer().getVelocity();
         var moveSpeed = .1f;
         pVel.add(x * moveSpeed, 0, z * moveSpeed);
 
-        var player = getPlayer();
         if(x != 0 || z != 0) {
             player.addState(States.MOVING.id());
-            var comp = player.getComponent(RenderComponent.class);
             if(Math.abs(x) > Math.abs(z))
                 if(x > 0)
-                    comp.setDirection(EAST);
+                    player.setFacing(EAST);
                 else
-                    comp.setDirection(WEST);
+                    player.setFacing(WEST);
             else
             if(z > 0)
-                comp.setDirection(SOUTH);
+                player.setFacing(SOUTH);
             else
-                comp.setDirection(NORTH);
+                player.setFacing(NORTH);
         } else
             player.removeState(States.MOVING.id());
+    }
+
+    public void startPlayerAction() {
+        if(gameState.isPlayerInputBlock() || gameState.isUpdateBlock() || gameState.isRenderBlock())
+            return;
+        var player = getPlayer();
+        var playerPos = player.getPosition();
+        var hitbox = switch (player.getFacing()){
+            case SOUTH -> new AABB(playerPos.x, playerPos.y, playerPos.z + player.size.x, player.size.x, player.size.y);
+            case EAST -> new AABB(playerPos.x + player.size.x, playerPos.y, playerPos.z, player.size.x, player.size.y);
+            case WEST -> new AABB(playerPos.x - player.size.x, playerPos.y, playerPos.z, player.size.x, player.size.y);
+            case NORTH -> new AABB(playerPos.x, playerPos.y, playerPos.z - player.size.x, player.size.x, player.size.y);
+        };
+        var objects = PhysicSystem.getCollidingObjects(hitbox.getX(), hitbox.getZ());
+        for(var obj: objects){
+            if(obj.equals(player))
+                continue;
+            var hb = obj.getComponent(PhysicComponent.class).getHitbox();
+            if(hb.intersects(hitbox) && obj.containsEventType(PhysicComponent.RUN_TYPE_PLAYER_CONSULT)){
+                obj.startEvent(PhysicComponent.RUN_TYPE_PLAYER_CONSULT);
+                return;
+            }
+        }
     }
 
     public void update(){

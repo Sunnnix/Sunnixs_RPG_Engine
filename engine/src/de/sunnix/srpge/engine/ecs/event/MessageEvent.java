@@ -17,7 +17,7 @@ public class MessageEvent extends Event{
 
     public MessageEvent() {
         super("message");
-        super.blockingType = BLOCK_GLOBAL_UPDATE;
+        super.blockingType = EventList.BlockType.USER_INPUT;
     }
 
     @Override

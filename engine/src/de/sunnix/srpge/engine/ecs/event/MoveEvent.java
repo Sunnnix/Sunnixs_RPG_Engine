@@ -67,7 +67,7 @@ public class MoveEvent extends Event{
                             direction = NORTH;
                     }
                 }
-                render.setDirection(direction);
+                go.setFacing(direction);
             }
         }
         if(rPosX < 0)

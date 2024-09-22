@@ -12,7 +12,7 @@ import static de.sunnix.srpge.editor.lang.Language.getString;
 
 public class PhysicComponent extends Component{
 
-    private float width, height;
+    private float width = 1, height = 1;
     private float weight = .85f, jumpSpeed = .25f;
     private boolean collision = true;
     private boolean flying = false;

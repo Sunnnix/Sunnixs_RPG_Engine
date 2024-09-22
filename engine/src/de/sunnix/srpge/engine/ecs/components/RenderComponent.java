@@ -23,9 +23,6 @@ public class RenderComponent extends Component{
     private long animTimer;
     private int animPos = -1;
 
-    @Setter
-    private Direction direction = SOUTH;
-
     private TextureRenderObject renderObject;
 
     public RenderComponent(DataSaveObject dso){
@@ -60,7 +57,7 @@ public class RenderComponent extends Component{
     public void render(GameObject go) {
         if(!isValid() || currentSprite == null)
             return;
-        var index = currentSprite.getTextureIndexForAnimation(animTimer, direction);
+        var index = currentSprite.getTextureIndexForAnimation(animTimer, go.getFacing());
         if(index == -1)
             return;
         if(index != animPos){

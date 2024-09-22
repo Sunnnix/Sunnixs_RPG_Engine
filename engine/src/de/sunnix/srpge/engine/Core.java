@@ -302,11 +302,11 @@ public class Core {
         AudioManager.get();
 
         subscribeLoop("fps_generator", 0, ticks -> calculateFPS());
-        subscribeLoop("input_process", 0, ticks -> InputManager.process(window));
-        subscribeLoop("update", 1, ticks -> update());
-        subscribeLoop("context_queue", 2, ticks ->  ContextQueue.runQueueOnMain());
-        subscribeLoop("render", 3, ticks -> render());
-        subscribeLoop("postUpdate", 4, ticks -> postUpdate());
+        subscribeLoop("input_process", 1, ticks -> InputManager.process(window));
+        subscribeLoop("update", 10, ticks -> update());
+        subscribeLoop("context_queue", 20, ticks ->  ContextQueue.runQueueOnMain());
+        subscribeLoop("render", 30, ticks -> render());
+        subscribeLoop("postUpdate", 40, ticks -> postUpdate());
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
@@ -352,6 +352,8 @@ public class Core {
         EventRegistry.registerEvent("script-lua", LuaScriptEvent::new);
         EventRegistry.registerEvent("global_color_tint", GlobalColorTintEvent::new);
         EventRegistry.registerEvent("teleport", TeleportEvent::new);
+        EventRegistry.registerEvent("look", LookEvent::new);
+        EventRegistry.registerEvent("camera", CameraEvent::new);
     }
 
     /**

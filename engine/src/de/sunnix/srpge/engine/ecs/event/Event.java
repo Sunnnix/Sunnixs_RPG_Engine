@@ -4,6 +4,7 @@ import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import lombok.Getter;
+import de.sunnix.srpge.engine.ecs.event.EventList.BlockType;
 
 /**
  * The Event class is used to represent actions that {@link GameObject GameObjects} can perform to interact with the game world.
@@ -19,26 +20,13 @@ import lombok.Getter;
 public abstract class Event implements Cloneable {
 
     /**
-     * Blocks global updates when this event is active.
-     */
-    public static final byte BLOCK_GLOBAL_UPDATE = 0b1;
-    /**
-     * Blocks user input when this event is active.
-     */
-    public static final byte BLOCK_USER_INPUT = 0b10;
-    /**
-     * Blocks graphic updates when this event is active.
-     */
-    public static final byte BLOCK_UPDATE_GRAPHICS = 0b100;
-
-    /**
      * Unique identifier for this event.
      */
     public final String ID;
     /**
      * Type of blocking applied by this event (e.g., blocking user input, global updates).
      */
-    protected byte blockingType;
+    protected BlockType blockingType = BlockType.NONE;
 
     /**
      * Constructs a new event with the specified ID.

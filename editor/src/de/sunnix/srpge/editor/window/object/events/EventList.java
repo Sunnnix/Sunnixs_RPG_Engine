@@ -23,10 +23,24 @@ import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.util.StringToHTMLConverter.convertToHTML;
 import static de.sunnix.srpge.engine.ecs.components.PhysicComponent.*;
 
+/**
+ * The EventList subclass extends the base EventList of the engine and
+ * adds functionality for managing and displaying a list of {@link IEvent}
+ * objects in a graphical user interface. This class also supports cloning
+ * and handling custom event run types.
+ */
 public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implements Cloneable{
 
+    /** Map of readable run types for user-friendly display in the GUI. */
     private static final Map<Byte, RunType> readableRunTypes = new HashMap<>();
 
+    /**
+     * Registers a new run type with a name and required components.
+     *
+     * @param type     the run type byte identifier.
+     * @param name     the readable name of the run type.
+     * @param requires the required components for this run type to display in the GUI.
+     */
     @SafeVarargs
     public static void addRunTypeName(byte type, String name, Class<? extends Component>... requires){
         readableRunTypes.put(type, new RunType(type, name, requires));
@@ -44,15 +58,23 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         addRunTypeName(RUN_TYPE_TOUCH_NORTH, "Touch north", PhysicComponent.class);
     }
 
+    /** List of events managed by this EventList. */
     private List<IEvent> events;
 
+    /** Swing list component for displaying the events. */
     private JList<IEvent> el;
+    /** Swing list model for managing event data in the GUI. */
     private DefaultListModel<IEvent> listModel;
 
+    /**
+     * Constructor for creating new EventList's.
+     */
     public EventList(){
         super(new DataSaveObject());
     }
-
+    /**
+     * Constructor for loading an EventList.
+     */
     public EventList(DataSaveObject dso) {
         super(dso);
     }
@@ -77,18 +99,38 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         return dso;
     }
 
+    /**
+     * Returns a copy of the current event list as a new list of cloned events.
+     *
+     * @return a list of cloned {@code IEvent} objects.
+     */
     public List<IEvent> getEventsCopy(){
         return events.stream().map(x -> (IEvent) x.clone()).toList();
     }
 
+    /**
+     * Replaces the current event list with a new list of {@code IEvent} objects.
+     *
+     * @param events the new list of events to replace the current list.
+     */
     public void putEvents(List<IEvent> events) {
         this.events.clear();
         this.events.addAll(events);
     }
 
+    /**
+     * Generates a graphical user interface (GUI) component for editing the event list.
+     *
+     * @param window  the parent window of the editor.
+     * @param map     the map data of the current map.
+     * @param parent  the parent dialog for object editing.
+     * @param object  the game object that owns the event list.
+     * @return the generated {@link JPanel} containing the GUI.
+     */
     public JPanel genGUI(Window window, MapData map, ObjectEditDialog parent, GameObject object){
         var panel = new JPanel(new BorderLayout());
 
+        // Event properties panel
         var eventPropsPanel = new JPanel(new GridBagLayout());
         var gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -96,6 +138,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         gbc.insets.set(3, 3, 0, 0);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Name field
         eventPropsPanel.add(new JLabel("Name:"), gbc);
         gbc.gridx++;
         var fieldName = new JTextField(name, 10);
@@ -104,18 +147,22 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         gbc.gridy++;
         eventPropsPanel.add(new JLabel("Block type:"), gbc);
         gbc.gridx++;
+
+        // Block type dropdown
         var selectBlockType = new JComboBox<>(BlockType.values());
         eventPropsPanel.add(selectBlockType, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
         eventPropsPanel.add(new JLabel("Run type:"), gbc);
         gbc.gridx++;
+
+        // Run type dropdown
         var selectRunType = new JComboBox<>(readableRunTypes.values().stream().filter(rt -> Arrays.stream(rt.requires).allMatch(object::hasComponent)).toArray(RunType[]::new));
         eventPropsPanel.add(selectRunType, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
 
-        // actions / listeners
+        // listeners
         fieldName.addActionListener(l -> {
             name = fieldName.getText();
             parent.changeTabName(this, name);
@@ -128,8 +175,15 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         selectBlockType.setSelectedItem(blockType);
         selectRunType.setSelectedItem(readableRunTypes.get(runType));
 
-        eventPropsPanel.setPreferredSize(new Dimension(0, 150));
-        panel.add(eventPropsPanel, BorderLayout.NORTH);
+        // conditions TODO not implemented yet
+        var conditionsPanel = new JPanel(new BorderLayout(5, 5));
+
+        var tmpPanel = new JPanel(new BorderLayout(5, 5));
+        tmpPanel.add(eventPropsPanel, BorderLayout.WEST);
+        tmpPanel.add(conditionsPanel, BorderLayout.CENTER);
+        tmpPanel.add(new JSeparator(JSeparator.HORIZONTAL), BorderLayout.SOUTH);
+
+        panel.add(tmpPanel, BorderLayout.NORTH);
 
         el = new JList<>(listModel = new DefaultListModel<>());
         reloadEL();
@@ -219,6 +273,9 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         return panel;
     }
 
+    /**
+     * Reloads the event list in the GUI.
+     */
     private void reloadEL(){
         listModel.clear();
         listModel.addAll(events);
@@ -255,6 +312,9 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         }
     }
 
+    /**
+     * Utility class for storing information about event run types.
+     */
     private record RunType(byte id, String name, Class<? extends Component>[] requires){
 
         @Override

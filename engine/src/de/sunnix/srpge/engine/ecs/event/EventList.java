@@ -1,6 +1,7 @@
 package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,31 +12,50 @@ import java.util.List;
 
 import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 
+/**
+ * The EventList class manages a list of {@link Event} objects for a
+ * {@link GameObject} in the game. Events in the list can be run sequentially,
+ * and can optionally block certain game processes (like user input or updates).
+ * The list provides functionality to {@link #reset() reset}, {@link #run(World) run}, and manage event states.
+ */
 @Getter
 @Setter
 public class EventList{
 
+    /**
+     * {@code BlockType} defines how events can block game processes during execution.
+     */
     public enum BlockType {
-        NONE, USER_INPUT, UPDATE, UPDATE_GRAPHIC
+        /** No processes are blocked. */
+        NONE,
+        /** User input is blocked while the event is running. */
+        USER_INPUT,
+        /** The world update is blocked while the event is running. */
+        UPDATE,
+        /** Graphic updates are blocked while the event is running. */
+        UPDATE_GRAPHIC
     }
 
+    /** The default run type indicating automatic execution of events. */
     public static final byte RUN_TYPE_AUTO = 0;
 
+    /** List of events managed by this EventList. */
     @Getter(AccessLevel.NONE)
     private final List<Event> events = new ArrayList<>();
+    /** The name of this event list. */
     protected String name;
+    /** The type of blocking this event list enforces. */
     protected BlockType blockType;
+    /** The run type for this event list, defining how it executes its events. */
     protected byte runType;
 
-    /**
-     * Current index of the running event
-     */
+    /** The index of the current event being run from the list. */
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private int currentIndex = -1;
-    /**
-     * Should the list and index be reset on event finish
-     */
+    /** Indicates whether the event list has been started and is active. */
+    private boolean active;
+    /** Flag to determine if the event list should reset after the current event finishes. */
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private boolean reset;
@@ -46,12 +66,20 @@ public class EventList{
 
     public DataSaveObject load(DataSaveObject dso){
         events.addAll(dso.<DataSaveObject>getList("events").stream().map(data -> EventRegistry.createEvent(data.getString("ID", null), data)).toList());
-        name = dso.getString("name", null);
         blockType = BlockType.values()[dso.getByte("block", (byte) BlockType.NONE.ordinal())];
+        events.forEach(e -> e.blockingType = blockType.ordinal() > e.blockingType.ordinal() ? blockType : e.blockingType);
+        name = dso.getString("name", null);
         runType = dso.getByte("type", RUN_TYPE_AUTO);
         return dso;
     }
 
+    /**
+     * Runs the current event in the list. If the current event is finished, it moves
+     * to the next event and executes it. If all events are finished, it resets or deactivates
+     * the event list as necessary.
+     *
+     * @param world the {@link World} in which the events are running.
+     */
     public void run(World world){
         if(events.isEmpty())
             return;
@@ -62,29 +90,47 @@ public class EventList{
                 event.finish(world);
                 if(reset){
                     currentIndex = -1;
+                    active = false;
                     reset = false;
                     return;
                 }
             }
             currentIndex++;
-            if(currentIndex >= events.size())
-                currentIndex = 0;
+            if(currentIndex >= events.size()) {
+                currentIndex = -1;
+                active = false;
+                return;
+            }
             event = events.get(currentIndex);
-            event.prepare(world);
-            if(bitcheck(event.getBlockingType(), Event.BLOCK_GLOBAL_UPDATE))
+            event.prepare(world);;
+            if(event.blockingType != BlockType.NONE)
+                world.getGameState().registerBlockingEvent(event);
+            if(event.blockingType == BlockType.UPDATE)
                 world.addBlockingEvent(event);
         }
         event.run(world);
     }
 
+    /** Resets the event list to its initial state, making it ready to run again. */
     public void reset(){
         reset = true;
     }
 
+    /**
+     * Checks if the event list is empty, i.e., contains no events.
+     *
+     * @return true if the event list has no events, otherwise {@code false}.
+     */
     public boolean isEmpty() {
         return events.isEmpty();
     }
 
+    /**
+     * Returns a string representation of the event list, which is either the name of the list
+     * or a default string if the name is not set.
+     *
+     * @return a string representation of the event list.
+     */
     @Override
     public String toString() {
         return name == null ? "Event list" : name;
