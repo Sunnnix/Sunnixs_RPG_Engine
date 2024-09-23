@@ -16,14 +16,33 @@ import java.nio.charset.StandardCharsets;
 
 public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent implements IEvent {
 
+    private EventList onYes, onNo;
+
     @Override
     public DataSaveObject save(DataSaveObject dso) {
         if(!name.isBlank())
             dso.putArray("name", name.getBytes(StandardCharsets.UTF_8));
         dso.putArray("msg", message.getBytes(StandardCharsets.UTF_8));
+        dso.putBool("yn", yesNoOption);
         if(soundType != SpeechBox.SoundType.NONE)
             dso.putByte("st", (byte) soundType.ordinal());
+        if(onYes != null)
+            dso.putObject("y_events", onYes.save(new DataSaveObject()));
+        if(onNo != null)
+            dso.putObject("n_events", onNo.save(new DataSaveObject()));
         return dso;
+    }
+
+    @Override
+    public void load(DataSaveObject dso) {
+        name = new String(dso.getByteArray("name"), StandardCharsets.UTF_8);
+        message = new String(dso.getByteArray("msg"), StandardCharsets.UTF_8);
+        soundType = SpeechBox.SoundType.values()[dso.getByte("st", (byte)0)];
+        yesNoOption = dso.getBool("yn", false);
+        if(yesNoOption){
+            onYes = new EventList(dso.getObject("y_events"));
+            onNo = new EventList(dso.getObject("n_events"));
+        }
     }
 
     @Override
@@ -43,18 +62,22 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
 
     @Override
     public String getEventDisplayName() {
-        return Language.getString("event.msg.name");
+        return yesNoOption ? "Yes No Message" : Language.getString("event.msg.name");
     }
 
     @Override
     public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel contentPanel) {
         contentPanel.setLayout(new BorderLayout());
+
+        var messageProperties = new JPanel(new BorderLayout());
+        messageProperties.setBorder(BorderFactory.createTitledBorder("Message"));
+
         var name = new JTextField(this.name, 30);
 
-        contentPanel.add(name, BorderLayout.NORTH);
+        messageProperties.add(name, BorderLayout.NORTH);
 
         var text = new JTextArea(message, 4, 30);
-        contentPanel.add(new JScrollPane(text), BorderLayout.CENTER);
+        messageProperties.add(new JScrollPane(text), BorderLayout.CENTER);
 
         var specialCharPanel = new JPanel();
         specialCharPanel.setLayout(new BoxLayout(specialCharPanel, BoxLayout.Y_AXIS));
@@ -97,12 +120,44 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
 
         specialCharPanel.add(techPanel);
 
-        contentPanel.add(specialCharPanel, BorderLayout.SOUTH);
+        messageProperties.add(specialCharPanel, BorderLayout.SOUTH);
+
+        contentPanel.add(messageProperties, BorderLayout.NORTH);
+
+        var yesNoProperties = new JPanel(new GridBagLayout());
+        yesNoProperties.setBorder(new TitledBorder("Yes/No Options"));
+        var gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+
+        var yesNoOptionCheck = new JCheckBox("As Yes/No Message", yesNoOption);
+        yesNoProperties.add(yesNoOptionCheck, gbc);
+        gbc.gridy++;
+
+        yesNoProperties.add(new JLabel("On Yes:"), gbc);
+        gbc.gridy++;
+        yesNoProperties.add(new JLabel("On No:"), gbc);
+        gbc.gridy++;
+
+        yesNoOptionCheck.addChangeListener(l -> {
+            if(yesNoOptionCheck.isSelected()) {
+                if (onYes == null)
+                    onYes = new EventList();
+                if (onNo == null)
+                    onNo = new EventList();
+            }
+        });
+
+        contentPanel.add(yesNoProperties);
 
         return () -> {
             message = text.getText();
             this.name = name.getText();
             this.soundType = (SpeechBox.SoundType) soundType.getSelectedItem();
+            this.yesNoOption = yesNoOptionCheck.isSelected();
         };
     }
 

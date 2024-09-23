@@ -81,8 +81,11 @@ public class EventList{
      * @param world the {@link World} in which the events are running.
      */
     public void run(World world){
-        if(events.isEmpty())
+        if(events.isEmpty()) {
+            active = !active;
+            reset = !reset;
             return;
+        }
         Event event = null;
         boolean finished = currentIndex == -1 || (event = events.get(currentIndex)).isFinished(world);
         if(finished){

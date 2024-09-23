@@ -1,9 +1,6 @@
 package de.sunnix.srpge.engine.util;
 
-public final class Tuple {
-
-    private Tuple() {
-    }
+public record Tuple<T>(T... values) {
 
     public static <T> Tuple1<T> create(T t) {
         return new Tuple1<>(t);
