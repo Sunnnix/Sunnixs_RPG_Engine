@@ -105,9 +105,7 @@ public class EventList{
                 return;
             }
             event = events.get(currentIndex);
-            event.prepare(world);;
-            if(event.blockingType != BlockType.NONE)
-                world.getGameState().registerBlockingEvent(event);
+            event.prepare(world);
             if(event.blockingType == BlockType.UPDATE)
                 world.addBlockingEvent(event);
         }
@@ -126,6 +124,17 @@ public class EventList{
      */
     public boolean isEmpty() {
         return events.isEmpty();
+    }
+
+    /**
+     * Returns the current highest blocking type of the event list and the current event
+     * @return the highest blocking type
+     */
+    public BlockType getCurrentEventBlockType(){
+        if(currentIndex == -1)
+            return blockType;
+        var event = events.get(currentIndex);
+        return blockType.ordinal() > event.getBlockingType().ordinal() ? blockType : event.blockingType;
     }
 
     /**

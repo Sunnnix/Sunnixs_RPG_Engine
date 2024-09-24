@@ -133,31 +133,48 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
-        var yesNoOptionCheck = new JCheckBox("As Yes/No Message", yesNoOption);
+        var yesNoOptionCheck = new JCheckBox("As Yes/No Message");
         yesNoProperties.add(yesNoOptionCheck, gbc);
         gbc.gridy++;
 
+
+        var elYes = onYes == null ? new EventList() : onYes.clone();
+        var elNo = onNo == null ? new EventList() : onNo.clone();
+        var elYesPanel = elYes.genSmallGUI(window, map, yesNoProperties, currentObject);
+        var elNoPanel = elNo.genSmallGUI(window, map, yesNoProperties, currentObject);
+        elYesPanel.setPreferredSize(new Dimension(0, 150));
+        elNoPanel.setPreferredSize(new Dimension(0, 150));
         yesNoProperties.add(new JLabel("On Yes:"), gbc);
+        gbc.gridy++;
+        yesNoProperties.add(elYesPanel, gbc);
         gbc.gridy++;
         yesNoProperties.add(new JLabel("On No:"), gbc);
         gbc.gridy++;
+        yesNoProperties.add(elNoPanel, gbc);
+        gbc.gridy++;
 
-        yesNoOptionCheck.addChangeListener(l -> {
-            if(yesNoOptionCheck.isSelected()) {
-                if (onYes == null)
-                    onYes = new EventList();
-                if (onNo == null)
-                    onNo = new EventList();
-            }
+        elYesPanel.getViewport().getView().setEnabled(false);
+        elNoPanel.getViewport().getView().setEnabled(false);
+
+        yesNoOptionCheck.addActionListener(l -> {
+            elYesPanel.getViewport().getView().setEnabled(yesNoOptionCheck.isSelected());
+            elNoPanel.getViewport().getView().setEnabled(yesNoOptionCheck.isSelected());
         });
 
-        contentPanel.add(yesNoProperties);
+        if(yesNoOption)
+            yesNoOptionCheck.doClick();
+
+        contentPanel.add(yesNoProperties, BorderLayout.SOUTH);
 
         return () -> {
             message = text.getText();
             this.name = name.getText();
             this.soundType = (SpeechBox.SoundType) soundType.getSelectedItem();
             this.yesNoOption = yesNoOptionCheck.isSelected();
+            if(this.yesNoOption){
+                onYes = elYes;
+                onNo = elNo;
+            }
         };
     }
 

@@ -15,6 +15,12 @@ import org.joml.Vector3f;
 import java.util.*;
 import java.util.function.Consumer;
 
+/**
+ * The Entity to hold all the data for the objects in the game
+ * @see World
+ * @see EventList
+ * @see de.sunnix.srpge.engine.ecs.event.Event Event
+ */
 public class GameObject extends MemoryHolder {
 
     private final Map<Class<? extends Component>, Component> components = new HashMap<>();
@@ -117,16 +123,12 @@ public class GameObject extends MemoryHolder {
         statesChanged = false;
     }
 
-    private int currentEvent = -1;
-
     private void handleEvents(World world) {
         if(eventLists.isEmpty())
             return;
         for(var el: eventLists){
-            if(el.isActive() || el.getRunType() == EventList.RUN_TYPE_AUTO || startEvents.stream().anyMatch(rt -> rt == el.getRunType())) {
-                el.setActive(true);
-                el.run(world);
-            }
+            if(!el.isActive() && (el.getRunType() == EventList.RUN_TYPE_AUTO || startEvents.stream().anyMatch(rt -> rt == el.getRunType())))
+                world.getGameState().startEventList(el);
         }
         startEvents.clear();
     }

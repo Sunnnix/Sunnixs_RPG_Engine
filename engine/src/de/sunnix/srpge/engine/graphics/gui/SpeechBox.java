@@ -104,7 +104,7 @@ public class SpeechBox {
             {
                 InputStream stream;
                 putString("name", name);
-                putFloat("def_gain", 2);
+                putFloat("def_gain", 4);
                 putArray("data", (stream = new BufferedInputStream(getClass().getResourceAsStream(path))).readAllBytes());
                 putString("extension", "wav");
                 stream.close();
@@ -182,7 +182,7 @@ public class SpeechBox {
             second_line.render();
         if(!third_line.getText().isEmpty())
             third_line.render();
-        if(state == NONE && (!finished || onYesNo == null))
+        if(state == NONE && !finished && onYesNo == null)
             text_arrow.render();
     }
 
@@ -203,20 +203,21 @@ public class SpeechBox {
                         AudioManager.get().playSound(option_cursor);
                     }
                 updateArrow();
-                if(InputManager.PAD_A.startPressed() || InputManager.PAD_X.startPressed())
-                    if(finished) {
-                        if(onYesNo != null) {
+                if(finished) {
+                    if(onYesNo != null) {
+                        if(InputManager.PAD_A.startPressed()) {
                             onYesNo.accept(selectedOption == 0);
                             AudioManager.get().playSound(selectedOption == 0 ? option_confirm : option_cancel);
                             AudioManager.get().playSound(option_close);
                             state = FADE_OUT_YES_NO;
-                        } else {
-                            AudioManager.get().playSound(close);
-                            state = FADE_OUT;
                         }
+                    } else if (InputManager.PAD_X.startPressed()) {
+                        AudioManager.get().playSound(close);
+                        state = FADE_OUT;
                     }
-                    else
-                        state = ANIMATE_TEXT;
+                }
+                else if(InputManager.PAD_X.startPressed())
+                    state = ANIMATE_TEXT;
             }
         }
     }
@@ -268,7 +269,7 @@ public class SpeechBox {
         var ignoreCheck = false;
         if(state == ANIMATE_TEXT_SHIFT){
             var maxShiftAnim = 20;
-            shiftAnimation += ((InputManager.PAD_A.isPressed() || InputManager.PAD_X.isPressed()) ? 3 : 1);
+            shiftAnimation += ((InputManager.PAD_X.isPressed()) ? 3 : 1);
             var animProgress = 1f / maxShiftAnim * shiftAnimation;
             if(shiftAnimation < maxShiftAnim) {
                 first_line.change(tc -> tc.setColor(textColor[0], textColor[1], textColor[2], 1 - animProgress * 2));
@@ -284,7 +285,7 @@ public class SpeechBox {
                 third_line.change(tc -> tc.setText(""));
             }
         }
-        if(timer % ((InputManager.PAD_A.isPressed() || InputManager.PAD_X.isPressed()) ? 4 : 8) == 0)
+        if(timer % ((InputManager.PAD_X.isPressed()) ? 4 : 7) == 0)
             switch (soundType){
                 case MALE -> AudioManager.get().playSound(male);
                 case FEMALE -> AudioManager.get().playSound(female);
@@ -292,7 +293,7 @@ public class SpeechBox {
                 case EVIL -> AudioManager.get().playSound(evil);
             }
 
-        if(!ignoreCheck && (!(InputManager.PAD_A.isPressed() || InputManager.PAD_X.isPressed()) && timer % 6 != 0))
+        if(!ignoreCheck && (!(InputManager.PAD_X.isPressed()) && timer % 4 != 0))
             return;
         cursorPos++;
         if(cursorPos == text.length() + 1) {
@@ -332,7 +333,7 @@ public class SpeechBox {
         if(!visible)
             return;
         if(timer % 10 == 0)
-            if(!finished || onYesNo == null)
+            if(!finished && onYesNo == null)
                 text_arrow.change(tc -> tc.setText(Character.toString((text_arrow.getText().charAt(0) - CURSOR_0 + 1) % 4 + CURSOR_0)));
             else
                 question_arrow.change(tc -> tc.setText(Character.toString((question_arrow.getText().charAt(0) - CURSOR_0 + 1) % 4 + CURSOR_0)));

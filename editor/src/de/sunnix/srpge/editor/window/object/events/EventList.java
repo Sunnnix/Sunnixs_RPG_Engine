@@ -28,6 +28,9 @@ import static de.sunnix.srpge.engine.ecs.components.PhysicComponent.*;
  * adds functionality for managing and displaying a list of {@link IEvent}
  * objects in a graphical user interface. This class also supports cloning
  * and handling custom event run types.
+ * @see IEvent
+ * @see GameObject
+ * @see ObjectEditDialog
  */
 public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implements Cloneable{
 
@@ -60,11 +63,6 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
     /** List of events managed by this EventList. */
     private List<IEvent> events;
-
-    /** Swing list component for displaying the events. */
-    private JList<IEvent> el;
-    /** Swing list model for managing event data in the GUI. */
-    private DefaultListModel<IEvent> listModel;
 
     /**
      * Constructor for creating new EventList's.
@@ -119,7 +117,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
     }
 
     /**
-     * Generates a graphical user interface (GUI) component for editing the event list.
+     * Generates a graphical user interface (GUI) component with properties for editing the event list in the {@link ObjectEditDialog}.
      *
      * @param window  the parent window of the editor.
      * @param map     the map data of the current map.
@@ -185,13 +183,40 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
         panel.add(tmpPanel, BorderLayout.NORTH);
 
-        el = new JList<>(listModel = new DefaultListModel<>());
-        reloadEL();
+        var elScroll = genSmallGUI(window, map, panel, object);
+        elScroll.setPreferredSize(new Dimension(600, 500));
+        panel.add(elScroll, BorderLayout.CENTER);
+        return panel;
+    }
+
+    /**
+     * Generates an un-sized graphical user interface (GUI) component without properties for editing the event list in any Component.
+     *
+     * @param window  the parent window of the editor.
+     * @param map     the map data of the current map.
+     * @param parent  the parent dialog for object editing.
+     * @param object  the game object that owns the event list.
+     * @return the generated {@link JScrollPane} containing the GUI.
+     */
+    public JScrollPane genSmallGUI(Window window, MapData map, JComponent parent, GameObject object) {
+        var el = new JList<IEvent>(new DefaultListModel<>()){
+            @Override
+            public void setEnabled(boolean enabled) {
+                super.setEnabled(enabled);
+                if(enabled)
+                    setBackground(UIManager.getColor("List.background"));
+                else
+                    setBackground(UIManager.getColor("List.background").darker());
+            }
+        };
+        reloadEL(el);
         el.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> cellRenderer(window, map, list, value, index, isSelected, cellHasFocus));
 
         el.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                if(!el.isEnabled())
+                    return;
                 if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
                     showEventSelection();
                 } else if (e.getButton() == MouseEvent.BUTTON3){
@@ -209,7 +234,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
                                 var menuRemoveEvent = new JMenuItem(getString("dialog_object.remove_event"));
                                 menuRemoveEvent.addActionListener(e -> {
                                     events.remove(index);
-                                    reloadEL();
+                                    reloadEL(el);
                                 });
                                 add(menuRemoveEvent);
                             }
@@ -220,15 +245,15 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
             }
 
             private void showEventSelection() {
-                var event = EventSelectionDialog.show(window, DialogUtils.getWindowForComponent(panel), map, object);
+                var event = EventSelectionDialog.show(window, DialogUtils.getWindowForComponent(parent), map, object);
                 if(event != null) {
                     events.add(el.getSelectedIndex() + 1, event);
-                    reloadEL();
+                    reloadEL(el);
                 }
             }
 
             private void showEditEventDialog(IEvent event){
-                if(event.openDialog(window, DialogUtils.getWindowForComponent(panel), window.getSingleton(GameData.class), map, object))
+                if(event.openDialog(window, DialogUtils.getWindowForComponent(parent), window.getSingleton(GameData.class), map, object))
                     el.repaint();
             }
 
@@ -237,14 +262,16 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         el.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if(!el.isEnabled())
+                    return;
                 var sIndex = el.getSelectedIndex();
                 if(sIndex < 0)
                     return;
                 if(e.getKeyCode() == KeyEvent.VK_DELETE){
-                    if(JOptionPane.showConfirmDialog(panel, "Do you want to delete this event?", "Delete event", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
+                    if(JOptionPane.showConfirmDialog(parent, "Do you want to delete this event?", "Delete event", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
                         return;
                     events.remove(el.getSelectedIndex());
-                    reloadEL();
+                    reloadEL(el);
                 } else if(!e.isControlDown())
                     return;
                 if(e.getKeyCode() == KeyEvent.VK_UP){
@@ -252,38 +279,39 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
                         return;
                     var event = events.remove(sIndex--);
                     events.add(sIndex, event);
-                    reloadEL();
+                    reloadEL(el);
                     el.setSelectedIndex(sIndex);
                 } else if(e.getKeyCode() == KeyEvent.VK_DOWN){
                     if(sIndex == events.size() - 1)
                         return;
                     var event = events.remove(sIndex++);
                     events.add(sIndex, event);
-                    reloadEL();
+                    reloadEL(el);
                     el.setSelectedIndex(sIndex);
                 }
             }
         });
 
         var scroll = new JScrollPane(el);
-        scroll.setPreferredSize(new Dimension(600, 500));
         scroll.setBorder(BorderFactory.createEtchedBorder());
-
-        panel.add(scroll, BorderLayout.CENTER);
-        return panel;
+        return scroll;
     }
 
     /**
      * Reloads the event list in the GUI.
      */
-    private void reloadEL(){
-        listModel.clear();
-        listModel.addAll(events);
+    private void reloadEL(JList<IEvent> list){
+        var model = (DefaultListModel<IEvent>) list.getModel();
+        model.clear();
+        model.addAll(events);
     }
 
     private final Color panleBG = UIManager.getColor("Panel.background");
     private final Color panleBG_B = panleBG.brighter();
 
+    /**
+     * Creates a cell renderer for displaying the events in the list
+     */
     private JComponent cellRenderer(Window window, MapData map, JList<? extends IEvent> jList, IEvent event, int index, boolean selected, boolean b) {
         var label = new JLabel(convertToHTML(event.getString(window, map)));
         label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5,5));
@@ -294,9 +322,15 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
             label.setBackground(UIManager.getColor("List.selectionBackground"));
             label.setForeground(UIManager.getColor("List.selectionForeground"));
         } else if(index % 2 == 0)
-            label.setBackground(panleBG_B);
+            if(jList.isEnabled())
+                label.setBackground(panleBG_B);
+            else
+                label.setBackground(panleBG_B.darker());
         else
-            label.setBackground(panleBG);
+            if(jList.isEnabled())
+                label.setBackground(panleBG);
+            else
+                label.setBackground(panleBG.darker());
         return label;
     }
 

@@ -48,12 +48,14 @@ public class GameplayState implements IState {
     @Getter
     private GameObject player;
     /**
+     * The list of all active event lists on the world
+     */
+    private final List<EventList> activeEventLists = new ArrayList<>();
+    /**
      * Listed events that are blocking the world from updating, like showing a text box, where the world shouldn't update
      */
     @Getter
     private final List<Event> blockingEventQueue = new ArrayList<>();
-
-    private final List<Event> blockingEvents = new ArrayList<>();
 
     /**
      * Is a blocking event running.<br>
@@ -106,20 +108,13 @@ public class GameplayState implements IState {
 
     @Override
     public void update() {
-        blockingEvents.removeIf(e -> e.isFinished(world));
-        playerInputBlock = false;
-        updateBlock = false;
-        renderBlock = false;
-        for(var event: blockingEvents){
-            var bt = event.getBlockingType();
-            if(bt == EventList.BlockType.USER_INPUT)
-                playerInputBlock = true;
-            if(bt == EventList.BlockType.UPDATE)
-                updateBlock = true;
-            if(bt == EventList.BlockType.UPDATE_GRAPHIC)
-                renderBlock = true;
-        }
+        renderBlock = activeEventLists.stream().anyMatch(e -> e.getCurrentEventBlockType() == EventList.BlockType.UPDATE_GRAPHIC);
+        updateBlock = renderBlock || !blockingEventQueue.isEmpty() || activeEventLists.stream().anyMatch(e -> e.getCurrentEventBlockType() == EventList.BlockType.UPDATE);
+        playerInputBlock = updateBlock || activeEventLists.stream().anyMatch(e -> e.getCurrentEventBlockType() == EventList.BlockType.USER_INPUT);
+        activeEventLists.removeIf(e -> !e.isActive());
+
         FunctionUtils.checkForOpenGLErrors("GameplayState - Pre update");
+
         Event event = null;
         if(!blockingEventQueue.isEmpty())
             event = blockingEventQueue.get(0);
@@ -132,8 +127,10 @@ public class GameplayState implements IState {
             }
         } else
             globalEventRunning = false;
-        if(!updateBlock)
+        if(!updateBlock) {
             world.update();
+            activeEventLists.forEach(el -> el.run(world));
+        }
         if(!renderBlock){
             RenderSystem.update();
             TileAnimationSystem.update(world);
@@ -221,6 +218,7 @@ public class GameplayState implements IState {
         player = createPlayer();
         nextMap.onDestroy();
         nextMap = null;
+        activeEventLists.clear();
         world.init();
         ContextQueue.runQueueOnMain();
         FunctionUtils.checkForOpenGLErrors("GameplayState - switchMaps");
@@ -241,8 +239,15 @@ public class GameplayState implements IState {
         return player;
     }
 
-    public void registerBlockingEvent(Event event){
-        blockingEvents.add(event);
+    /**
+     * Marks the event list as {@link EventList#setActive(boolean) active} and adds it to the {@link #activeEventLists}
+     * to run every update until the event list is finished.
+     * @param eventList the event list to add.
+     * @see EventList
+     */
+    public void startEventList(EventList eventList){
+        eventList.setActive(true);
+        activeEventLists.add(eventList);
     }
 
 }
