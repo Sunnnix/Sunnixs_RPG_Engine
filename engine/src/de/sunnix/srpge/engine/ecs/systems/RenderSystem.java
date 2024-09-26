@@ -1,7 +1,6 @@
 package de.sunnix.srpge.engine.ecs.systems;
 
 import de.sunnix.srpge.engine.Core;
-import de.sunnix.srpge.engine.ecs.components.Component;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
@@ -12,9 +11,9 @@ import org.joml.Vector3f;
 import java.util.*;
 import java.util.function.Function;
 
-public class RenderSystem {
+import static de.sunnix.srpge.engine.util.FunctionUtils.*;
 
-    public static final float EPSILON = 1e-4f;
+public class RenderSystem {
 
     private static ArrayList<GameObject> objects;
     private static MapGrid mapGrid;

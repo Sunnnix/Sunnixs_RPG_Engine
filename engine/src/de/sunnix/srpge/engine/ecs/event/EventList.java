@@ -106,8 +106,8 @@ public class EventList{
             }
             event = events.get(currentIndex);
             event.prepare(world);
-            if(event.blockingType == BlockType.UPDATE)
-                world.addBlockingEvent(event);
+            if(getCurrentEventBlockType().ordinal() >= BlockType.UPDATE.ordinal())
+                world.addBlockingEvent(this);
         }
         event.run(world);
     }
@@ -131,8 +131,8 @@ public class EventList{
      * @return the highest blocking type
      */
     public BlockType getCurrentEventBlockType(){
-        if(currentIndex == -1)
-            return blockType;
+        if(!active)
+            return BlockType.NONE;
         var event = events.get(currentIndex);
         return blockType.ordinal() > event.getBlockingType().ordinal() ? blockType : event.blockingType;
     }

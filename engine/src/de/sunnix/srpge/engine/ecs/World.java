@@ -6,7 +6,7 @@ import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.AudioResource;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
-import de.sunnix.srpge.engine.ecs.event.Event;
+import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
@@ -202,7 +202,7 @@ public class World {
         gameObjects.values().forEach(GameObject::freeMemory);
     }
 
-    public void addBlockingEvent(Event event) {
+    public void addBlockingEvent(EventList event) {
         gameState.getBlockingEventQueue().add(event);
     }
 

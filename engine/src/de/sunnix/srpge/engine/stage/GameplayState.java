@@ -55,7 +55,7 @@ public class GameplayState implements IState {
      * Listed events that are blocking the world from updating, like showing a text box, where the world shouldn't update
      */
     @Getter
-    private final List<Event> blockingEventQueue = new ArrayList<>();
+    private final List<EventList> blockingEventQueue = new ArrayList<>();
 
     /**
      * Is a blocking event running.<br>
@@ -115,15 +115,16 @@ public class GameplayState implements IState {
 
         FunctionUtils.checkForOpenGLErrors("GameplayState - Pre update");
 
-        Event event = null;
+        EventList blockingEventList = null;
         if(!blockingEventQueue.isEmpty())
-            event = blockingEventQueue.get(0);
-        if(event != null){
+            blockingEventList = blockingEventQueue.get(0);
+        if(blockingEventList != null){
             globalEventRunning = true;
-            event.run(world);
-            if(event.isFinished(world)) {
-                event.finish(world);
+            blockingEventList.run(world);
+            if(blockingEventList.getCurrentEventBlockType().ordinal() < EventList.BlockType.UPDATE.ordinal()){
                 blockingEventQueue.remove(0);
+                if(!blockingEventList.isActive())
+                    activeEventLists.remove(blockingEventList);
             }
         } else
             globalEventRunning = false;
@@ -131,10 +132,9 @@ public class GameplayState implements IState {
             world.update();
             activeEventLists.forEach(el -> el.run(world));
         }
-        if(!renderBlock){
+        if(!renderBlock)
             RenderSystem.update();
-            TileAnimationSystem.update(world);
-        }
+        TileAnimationSystem.update(world);
         FunctionUtils.checkForOpenGLErrors("GameplayState - update after event");
         var pPos = getPlayer().getPosition();
         Camera.calculateCameraPosition();

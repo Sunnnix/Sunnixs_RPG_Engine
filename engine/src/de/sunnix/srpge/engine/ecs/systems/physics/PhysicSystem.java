@@ -8,6 +8,7 @@ import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.systems.MapGrid;
 import de.sunnix.srpge.engine.graphics.Camera;
+import de.sunnix.srpge.engine.util.FunctionUtils;
 import de.sunnix.srpge.engine.util.Tuple.*;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -19,7 +20,6 @@ import static de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem.MoveDirect
 import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 
 public class PhysicSystem {
-    public static final float EPSILON = 1e-4f;
     public static final float STEP_AMOUNT = .2f;
 
     enum MoveDirection{
@@ -103,7 +103,7 @@ public class PhysicSystem {
                     comp.reloadHitbox();
                 }
                 else
-                    comp.setFalling(obj.getPosition().y > comp.getGroundPos() + EPSILON);
+                    comp.setFalling(obj.getPosition().y > comp.getGroundPos() + FunctionUtils.EPSILON);
             }
         };
     }
@@ -480,9 +480,9 @@ public class PhysicSystem {
                 }
                 for(var tile: cTiles){
                     tile.prepare(hitbox);
-                    if(tile.getMaxZ() < hitbox.getMaxZ() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
+                    if(tile.getMaxZ() < hitbox.getMaxZ() && tile.getMaxY() - FunctionUtils.EPSILON < hitbox.getMinY()){
                         yield -Math.abs(speed) / 2;
-                    } else if(tile.getMinZ() > hitbox.getMinZ() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
+                    } else if(tile.getMinZ() > hitbox.getMinZ() && tile.getMaxY() - FunctionUtils.EPSILON < hitbox.getMinY()){
                         yield Math.abs(speed) / 2;
                     }
                 }
@@ -502,9 +502,9 @@ public class PhysicSystem {
                 }
                 for(var tile: cTiles){
                     tile.prepare(hitbox);
-                    if(tile.getMaxX() < hitbox.getMaxX() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
+                    if(tile.getMaxX() < hitbox.getMaxX() && tile.getMaxY() - FunctionUtils.EPSILON < hitbox.getMinY()){
                         yield -Math.abs(speed) / 2;
-                    } else if(tile.getMinX() > hitbox.getMinX() && tile.getMaxY() - EPSILON < hitbox.getMinY()){
+                    } else if(tile.getMinX() > hitbox.getMinX() && tile.getMaxY() - FunctionUtils.EPSILON < hitbox.getMinY()){
                         yield Math.abs(speed) / 2;
                     }
                 }
@@ -524,9 +524,9 @@ public class PhysicSystem {
         for(var hb: toCheck){
             if(hb instanceof AABB.TileAABB tile)
                 tile.prepare(goHB);
-            if(hb.getMaxY() - EPSILON > oY)
+            if(hb.getMaxY() - FunctionUtils.EPSILON > oY)
                 continue;
-            if(hb.getMaxY() - EPSILON > ground)
+            if(hb.getMaxY() - FunctionUtils.EPSILON > ground)
                 ground = hb.getMaxY();
         }
         return ground;
@@ -571,7 +571,7 @@ public class PhysicSystem {
                 continue;
             var oHB = comp.getHitbox();
             if(oHB.intersects(hitbox))
-                if(oHB.getMinY() <= hitbox.getMaxY() + EPSILON)
+                if(oHB.getMinY() <= hitbox.getMaxY() + FunctionUtils.EPSILON)
                     if(oHB.getMinY() >= hitbox.getMaxY() - .1f)
                         list.add(obj);
         }

@@ -5,7 +5,7 @@ import de.sunnix.srpge.engine.ecs.Tile;
 import lombok.Getter;
 import org.joml.Vector3f;
 
-import static de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem.EPSILON;
+import static de.sunnix.srpge.engine.util.FunctionUtils.EPSILON;
 
 @Getter
 public class AABB {

@@ -15,6 +15,8 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class FunctionUtils {
 
+    public static final float EPSILON = 1e-4f;
+
     /**
      * Checks the latest GL errors and prints them into the logger
      * @param caller The name to be displayed in the logger
