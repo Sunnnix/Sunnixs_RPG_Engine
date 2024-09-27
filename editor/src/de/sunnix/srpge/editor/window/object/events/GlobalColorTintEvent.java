@@ -24,6 +24,8 @@ public class GlobalColorTintEvent extends de.sunnix.srpge.engine.ecs.event.Globa
     public DataSaveObject save(DataSaveObject dso) {
         dso.putArray("color", color);
         dso.putInt("delay", maxDelay);
+        if(parallel)
+            dso.putBool("parallel", true);
         return dso;
     }
 
@@ -67,12 +69,16 @@ public class GlobalColorTintEvent extends de.sunnix.srpge.engine.ecs.event.Globa
         for(var i = 0; i < spinners.length; i++)
             bindSpinnerToSlider(spinners[i], sliders[i]);
 
+        var runParallelCheck = new JCheckBox("Run parallel", parallel);
+        content.add(runParallelCheck, gbc);
+
         return () -> {
             color[0] = ((Number)spinners[0].getValue()).floatValue();
             color[1] = ((Number)spinners[1].getValue()).floatValue();
             color[2] = ((Number)spinners[2].getValue()).floatValue();
             color[3] = ((Number)spinners[3].getValue()).floatValue();
             maxDelay = ((Number)delay.getValue()).intValue();
+            parallel = runParallelCheck.isSelected();
         };
     }
 

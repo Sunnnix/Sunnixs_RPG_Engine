@@ -16,6 +16,7 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
         dso.putInt("object", objectID);
         dso.putBool("move_cam", moveCamera);
         dso.putArray("pos", new float[]{ x, y, z });
+        dso.putBool("instant", instant);
         return dso;
     }
 
@@ -92,6 +93,9 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
         var setPosObjectsCombo = new JComboBox<>(objects.toArray(GameObject[]::new));
         content.add(setPosObjectsCombo, gbc);
         gbc.gridy++;
+        var moveInstantCheck = new JCheckBox("Move instant", instant);
+        content.add(moveInstantCheck, gbc);
+        gbc.gridy++;
 
         // Listeners
         attachObjectCheck.addChangeListener(l -> objectsCombo.setEnabled(attachObjectCheck.isSelected()));
@@ -123,6 +127,7 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
             x = ((Number)xSpinner.getValue()).floatValue();
             y = ((Number)ySpinner.getValue()).floatValue();
             z = ((Number)zSpinner.getValue()).floatValue();
+            instant = moveInstantCheck.isSelected();
         };
     }
 }

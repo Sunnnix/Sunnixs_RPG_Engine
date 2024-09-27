@@ -48,6 +48,8 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         dso.putFloat("s", speed);
         if(onBlockHandle != NONE)
             dso.putByte("handle", (byte) onBlockHandle.ordinal());
+        if(parallel)
+            dso.putBool("parallel", true);
         return dso;
     }
 
@@ -151,6 +153,12 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         var handleWaitForCompletionBtn = new JRadioButton("Wait for completion", onBlockHandle == WAIT_FOR_COMPLETION);
         group.add(handleWaitForCompletionBtn);
         content.add(handleWaitForCompletionBtn, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        gbc.gridwidth = 3;
+        var runParallelCheck = new JCheckBox("Run parallel", parallel);
+        content.add(runParallelCheck, gbc);
 
         return () -> {
             var index = objects.getSelectedIndex();
@@ -160,6 +168,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
             movZ = ((Number) tf_z.getValue()).floatValue();
             speed = ((Number) tf_speed.getValue()).floatValue();
             onBlockHandle = handleNoneBtn.isSelected() ? NONE : handleCancelMovementBtn.isSelected() ? CANCEL_MOVEMENT : WAIT_FOR_COMPLETION;
+            parallel = runParallelCheck.isSelected();
         };
     }
 }

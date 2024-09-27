@@ -354,6 +354,7 @@ public class Core {
         EventRegistry.registerEvent("teleport", TeleportEvent::new);
         EventRegistry.registerEvent("look", LookEvent::new);
         EventRegistry.registerEvent("camera", CameraEvent::new);
+        EventRegistry.registerEvent("change_state", ChangeStateEvent::new);
     }
 
     /**

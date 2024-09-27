@@ -187,6 +187,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("teleport", "Teleport", TeleportEvent::new);
         EventRegistry.registerEvent("look", "Look at", LookEvent::new);
         EventRegistry.registerEvent("camera", "Camera", CameraEvent::new);
+        EventRegistry.registerEvent("change_state", "Change State", ChangeStateEvent::new);
     }
 
     private void registerComponents(){

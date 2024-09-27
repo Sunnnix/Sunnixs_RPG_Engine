@@ -22,6 +22,7 @@ public class GlobalColorTintEvent extends Event {
     public void load(DataSaveObject dso) {
         color = dso.getFloatArray("color", 4);
         maxDelay = dso.getInt("delay", 0);
+        parallel = dso.getBool("parallel", false);
     }
 
     @Override

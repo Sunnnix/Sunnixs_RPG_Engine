@@ -176,6 +176,9 @@ public class MapData {
         return removeObject(getObject(id));
     }
 
+    /**
+     * Returns a copy of the objects list
+     */
     public List<GameObject> getObjects() {
         return new ArrayList<>(objects);
     }

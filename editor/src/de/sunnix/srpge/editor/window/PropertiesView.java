@@ -20,6 +20,7 @@ public class PropertiesView extends JPanel {
     private boolean loadingData;
     private NumberPicker wallDrawLayer;
     private NumberPicker floorY, wallHeight;
+    private JCheckBox shiftWalls;
 
     private JComboBox<String> slopeDirection;
 
@@ -66,10 +67,14 @@ public class PropertiesView extends JPanel {
         wallHeight = new NumberPicker(getString("view.properties.wall_height"), 0, 2, 0, 255);
         wallHeight.addChangeListener(this::wallHeightChanged);
         add(wallHeight, gbc);
-
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 2;
+
+        shiftWalls = new JCheckBox("Shift walls");
+        add(shiftWalls, gbc);
+        gbc.gridy++;
+
         slopeDirection = new JComboBox<>(new String[]{ "None", "South", "East", "West", "North" });
         slopeDirection.addActionListener(this::slopeDirectionChanged);
         add(slopeDirection, gbc);
@@ -122,7 +127,7 @@ public class PropertiesView extends JPanel {
                     height = 0;
                 if(height > 255)
                     height = 255;
-                tile.setWallHeight(height);
+                tile.setWallHeight(height, shiftWalls.isSelected());
             }
         mapView.repaint();
         window.setProjectChanged();

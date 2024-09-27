@@ -41,6 +41,8 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
         dso.putInt("transition_time", transitionTime);
         if(customTransitionEvent != null)
             dso.putObject("custom_transition_event", ((GlobalColorTintEvent)customTransitionEvent).save(new DataSaveObject()));
+        if(!fadeIn)
+            dso.putBool("fade_in", false);
         return dso;
     }
 
@@ -111,6 +113,10 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
         );
         var setTime = createNamedComponent(content, gbc, "Time", new JSpinner(new SpinnerNumberModel(transitionTime, 0, 1000, 1)), true);
 
+        gbc.gridwidth = 2;
+        var fadeInCheck = new JCheckBox("Fade in", fadeIn);
+        content.add(fadeInCheck, gbc);
+
         // Listeners & co
         var defRenderer = selectObj.getRenderer();
         selectObj.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
@@ -150,6 +156,7 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
             this.z = ((Number)fZ.getValue()).floatValue();
             this.transitionType = (TransitionType) selectType.getSelectedItem();
             this.transitionTime = ((Number) setTime.getValue()).intValue();
+            this.fadeIn = fadeInCheck.isSelected();
         };
     }
 

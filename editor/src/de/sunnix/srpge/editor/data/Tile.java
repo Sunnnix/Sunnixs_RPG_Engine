@@ -1,6 +1,5 @@
 package de.sunnix.srpge.editor.data;
 
-import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
 import de.sunnix.sdso.DataSaveObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -84,9 +83,18 @@ public class Tile implements Cloneable{
         return Byte.toUnsignedInt(groundY);
     }
 
-    public void setWallHeight(int height){
+    public void setWallHeight(int height, boolean shift) {
         var arr = new int[height];
-        System.arraycopy(wallTex, 0, arr, 0, Math.min(wallTex.length, arr.length));
+
+        if (shift) {
+            var diff = height - wallHeight;
+            int targetStart = Math.max(0, diff);
+            int sourceStart = Math.max(0, -diff);
+            int length = Math.min(wallTex.length - sourceStart, height - targetStart);
+            System.arraycopy(wallTex, sourceStart, arr, targetStart, length);
+        } else {
+            System.arraycopy(wallTex, 0, arr, 0, Math.min(wallTex.length, height));
+        }
         wallTex = arr;
         wallHeight = (byte) height;
     }

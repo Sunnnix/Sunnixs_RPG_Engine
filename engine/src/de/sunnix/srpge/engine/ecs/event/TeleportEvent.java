@@ -51,10 +51,11 @@ public class TeleportEvent extends Event{
      * The duration of the transition in frames. This defines how long the visual effect lasts.
      */
     protected int transitionTime;
-    /**
-     * Custom transition event for handling more complex color transitions, if transitionType is CUSTOM. <font color="#F66">(Not implemented yet)</font>
-     */
+    /** Custom transition event for handling more complex color transitions, if transitionType is CUSTOM. <font color="#F66">(Not implemented yet)</font> */
     protected GlobalColorTintEvent customTransitionEvent;
+
+    /** Determines if the fading in (clearing the color) after the map switch happened should occur */
+    protected boolean fadeIn = true;
 
     // Internal attributes used during the teleportation process
     private GameObject object;
@@ -87,6 +88,7 @@ public class TeleportEvent extends Event{
             customTransitionEvent = new GlobalColorTintEvent();
             customTransitionEvent.load(obj);
         }
+        fadeIn = dso.getBool("fade_in", true);
     }
 
     /**
@@ -153,10 +155,14 @@ public class TeleportEvent extends Event{
                     }
                 }
                 // Second phase: fade back in
-                else {
+                else if(fadeIn) {
                     processedTime++;
                     float progress = Math.min((float) (processedTime - startTime - 1) / endTime, 1.0f);
                     Core.getGlobalColoring().set(mix(initialColor, new Vector4f(0), progress));
+                }
+                // skip fade in
+                else {
+                    processedTime += endTime;
                 }
             }
             case CUSTOM -> customTransitionEvent.run(world);
@@ -185,7 +191,7 @@ public class TeleportEvent extends Event{
             if(map != -1 && map != world.ID) {
                 world.getGameState().switchMaps();
                 object = world.getGameState().getPlayer();
-                Camera.setAttachedObject(object);
+                Camera.setAttachedObject(object, false);
             }
         } catch (Exception e){
             var ex = new RuntimeException("Error switching to other map!");
@@ -194,7 +200,7 @@ public class TeleportEvent extends Event{
         }
         object.setPosition(x, y, z);
         if(map != -1 && map != world.ID)
-            Camera.setPositionTo(object.getPosition());
+            Camera.setPositionTo(object.getPosition(), true);
         PhysicSystem.update(world.getGameState().getWorld());
         return true;
     }

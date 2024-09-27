@@ -23,6 +23,8 @@ public class CameraEvent extends Event{
     protected float y;
     protected float z;
 
+    protected boolean instant;
+
     private GameObject object;
 
     public CameraEvent() {
@@ -38,6 +40,7 @@ public class CameraEvent extends Event{
         x = pos[0];
         y = pos[1];
         z = pos[2];
+        instant = dso.getBool("instant", false);
     }
 
     @Override
@@ -50,9 +53,9 @@ public class CameraEvent extends Event{
     public void run(World world) {
         Camera.setAttachObject(attachObject);
         if(attachObject)
-            Camera.setAttachedObject(object);
+            Camera.setAttachedObject(object, instant);
         if(moveCamera)
-            Camera.setPositionTo(x, y, z);
+            Camera.setPositionTo(x, y, z, instant);
     }
 
     @Override

@@ -42,6 +42,9 @@ public class EventList{
     /** List of events managed by this EventList. */
     @Getter(AccessLevel.NONE)
     private final List<Event> events = new ArrayList<>();
+    /** List of events that will update parallel to other events. */
+    @Getter(AccessLevel.NONE)
+    private final List<Event> parallelEvents = new ArrayList<>();
     /** The name of this event list. */
     protected String name;
     /** The type of blocking this event list enforces. */
@@ -92,29 +95,41 @@ public class EventList{
             if(event != null) {
                 event.finish(world);
                 if(reset){
-                    currentIndex = -1;
-                    active = false;
-                    reset = false;
+                    reset();
                     return;
                 }
             }
-            currentIndex++;
-            if(currentIndex >= events.size()) {
-                currentIndex = -1;
-                active = false;
-                return;
-            }
-            event = events.get(currentIndex);
-            event.prepare(world);
+            do {
+                currentIndex++;
+                if(currentIndex >= events.size()) {
+                    reset();
+                    return;
+                }
+                event = events.get(currentIndex);
+                event.prepare(world);
+                if(event.isParallel())
+                    parallelEvents.add(event);
+            } while (event.isParallel());
             if(getCurrentEventBlockType().ordinal() >= BlockType.UPDATE.ordinal())
                 world.addBlockingEvent(this);
         }
+        parallelEvents.removeIf(e -> {
+           e.run(world);
+           if(e.isFinished(world)) {
+               e.finish(world);
+               return true;
+           }
+           return false;
+        });
         event.run(world);
     }
 
     /** Resets the event list to its initial state, making it ready to run again. */
     public void reset(){
-        reset = true;
+        currentIndex = -1;
+        active = false;
+        reset = false;
+        parallelEvents.clear();
     }
 
     /**

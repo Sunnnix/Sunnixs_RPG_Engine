@@ -4,6 +4,7 @@ import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.Direction;
 import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
+import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 
 import static de.sunnix.srpge.engine.ecs.Direction.*;
@@ -55,6 +56,7 @@ public class MoveEvent extends Event{
         movZ = dso.getFloat("z", 0);
         speed = dso.getFloat("s", .035f);
         onBlockHandle = MoveEventHandle.values()[dso.getByte("handle", (byte) MoveEventHandle.NONE.ordinal())];
+        parallel = dso.getBool("parallel", false);
     }
 
     /**
@@ -84,6 +86,10 @@ public class MoveEvent extends Event{
      */
     @Override
     public void run(World world) {
+        float xFactor, zFactor;
+        zFactor = Math.min(1, rMovX == 0 ? 1 : rMovZ / rMovX);
+        xFactor = Math.min(1, rMovZ == 0 ? 1 : rMovX / rMovZ);
+
         var go = world.getGameObject(object);
         if (go == null)
             return;
@@ -114,7 +120,7 @@ public class MoveEvent extends Event{
             }
 
         // Calculate the velocities based on remaining distances and speed
-        float[] velocities = calculateVelocity(rMovX, rMovY, rMovZ, speed);
+        float[] velocities = calculateVelocity(rMovX, rMovY, rMovZ, speed, xFactor, zFactor);
         float velX = velocities[0], velY = velocities[1], velZ = velocities[2];
 
         go.getVelocity().add(velX, velY, velZ);
@@ -128,26 +134,33 @@ public class MoveEvent extends Event{
 
         // Update remaining distances if not waiting for completion
         if(onBlockHandle != MoveEventHandle.WAIT_FOR_COMPLETION) {
-            rMovX = updateRemainingPosition(rMovX, speed);
+            rMovX = updateRemainingPosition(rMovX, speed * xFactor);
             rMovY = updateRemainingPosition(rMovY, speed);
-            rMovZ = updateRemainingPosition(rMovZ, speed);
+            rMovZ = updateRemainingPosition(rMovZ, speed * zFactor);
+        }
+
+        if(go.getComponent(PhysicComponent.class) == null){
+            go.getVelocity().sub(velX, velY, velZ);
+            go.addPosition(velX, velY, velZ);
         }
     }
 
     /**
      * Calculates the velocity for each axis based on the remaining movement and speed.
      *
-     * @param rMovX the remaining distance along the X-axis
-     * @param rMovY the remaining distance along the Y-axis
-     * @param rMovZ the remaining distance along the Z-axis
-     * @param speed the speed of the movement
+     * @param rMovX   the remaining distance along the X-axis
+     * @param rMovY   the remaining distance along the Y-axis
+     * @param rMovZ   the remaining distance along the Z-axis
+     * @param speed   the speed of the movement
+     * @param xFactor
+     * @param zFactor
      * @return an array containing the calculated velocities for each axis
      */
-    private float[] calculateVelocity(float rMovX, float rMovY, float rMovZ, float speed) {
+    private float[] calculateVelocity(float rMovX, float rMovY, float rMovZ, float speed, float xFactor, float zFactor) {
         return new float[]{
-                rMovX < 0 ? Math.max(rMovX, -speed) : Math.min(rMovX, speed),
+                rMovX < 0 ? Math.max(rMovX, -speed * xFactor) : Math.min(rMovX, speed * xFactor),
                 rMovY < 0 ? Math.max(rMovY, -speed) : Math.min(rMovY, speed),
-                rMovZ < 0 ? Math.max(rMovZ, -speed) : Math.min(rMovZ, speed)
+                rMovZ < 0 ? Math.max(rMovZ, -speed * zFactor) : Math.min(rMovZ, speed * zFactor)
         };
     }
 

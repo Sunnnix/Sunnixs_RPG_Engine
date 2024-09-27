@@ -98,8 +98,7 @@ public class GameplayState implements IState {
                 world = nextMap;
                 player = createPlayer();
                 player.setPosition(startPos[0], startPos[1], startPos[2]);
-                Camera.setPositionTo(player.getPosition());
-                Camera.setAttachedObject(player);
+                Camera.setAttachedObject(player, true);
                 world.init();
             } catch (Exception e){
                 GameLogger.logException("World", e);

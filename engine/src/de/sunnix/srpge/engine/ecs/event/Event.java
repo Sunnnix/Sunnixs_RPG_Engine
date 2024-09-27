@@ -19,14 +19,12 @@ import de.sunnix.srpge.engine.ecs.event.EventList.BlockType;
 @Getter
 public abstract class Event implements Cloneable {
 
-    /**
-     * Unique identifier for this event.
-     */
+    /** Unique identifier for this event. */
     public final String ID;
-    /**
-     * Type of blocking applied by this event (e.g., blocking user input, global updates).
-     */
+    /** Type of blocking applied by this event (e.g., blocking user input, global updates). */
     protected BlockType blockingType = BlockType.NONE;
+    /** Will other events wait for this event to finish */
+    protected boolean parallel;
 
     /**
      * Constructs a new event with the specified ID.
