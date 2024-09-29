@@ -2,9 +2,9 @@ package de.sunnix.srpge.editor.data;
 
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
-import de.sunnix.srpge.editor.window.object.events.EventList;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.object.events.EventList;
 import lombok.Getter;
 import lombok.Setter;
 

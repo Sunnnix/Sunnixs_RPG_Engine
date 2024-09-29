@@ -11,6 +11,7 @@ import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
+import de.sunnix.srpge.engine.evaluation.Variables;
 import de.sunnix.srpge.engine.graphics.Camera;
 import de.sunnix.srpge.engine.graphics.TestCubeRenderObject;
 import de.sunnix.srpge.engine.memory.ContextQueue;
@@ -92,6 +93,14 @@ public class GameplayState implements IState {
 
                 if(!loadMap(startMapID))
                     throw new RuntimeException("The entry map could not be loaded!");
+
+                // load global variables
+                var stream = zip.getInputStream(new ZipEntry("res/variables"));
+                if(stream != null){
+                    Variables.load(new DataSaveObject().load(stream));
+                    stream.close();
+                } else
+                    Variables.load(new DataSaveObject());
 
                 playerData = new DataSaveObject().load(zip.getInputStream(new ZipEntry("player")));
 

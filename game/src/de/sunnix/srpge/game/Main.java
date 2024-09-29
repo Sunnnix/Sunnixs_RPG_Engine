@@ -8,6 +8,7 @@ import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
+import de.sunnix.srpge.engine.evaluation.Variables;
 import de.sunnix.srpge.engine.graphics.gui.text.Font;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
 import de.sunnix.srpge.engine.memory.MemoryHandler;
@@ -57,6 +58,7 @@ public class Main {
         createDebugText((world, player) -> String.format("Climbing: %s", player.hasState(States.CLIMB)));
         createDebugText((world, player) -> String.format("Global Event running: %s", world.getGameState().isGlobalEventRunning()));
         createDebugText((world, player) -> String.format("Fall speed: %.2f", world.getPlayer().getComponent(PhysicComponent.class).getFallSpeed()));
+        createDebugText((world, player) -> String.format("Int var 0: %s", Variables.getInt(0)));
         createDebugText((world, player) -> {
             var memoryList = MemoryHandler.getSizesWithCategories();
             var sb = new StringBuilder("Memory usage:\n");

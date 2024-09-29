@@ -3,6 +3,8 @@ package de.sunnix.srpge.engine.ecs.event;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
+import de.sunnix.srpge.engine.evaluation.Condition;
+import de.sunnix.srpge.engine.evaluation.EvaluationRegistry;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,6 +65,8 @@ public class EventList{
     @Setter(AccessLevel.NONE)
     private boolean reset;
 
+    private List<Condition<?>> conditions = new ArrayList<>();
+
     public EventList(DataSaveObject dso){
         load(dso);
     }
@@ -73,7 +77,17 @@ public class EventList{
         events.forEach(e -> e.blockingType = blockType.ordinal() > e.blockingType.ordinal() ? blockType : e.blockingType);
         name = dso.getString("name", null);
         runType = dso.getByte("type", RUN_TYPE_AUTO);
+        conditions = new ArrayList<>(dso.<DataSaveObject>getList("conditions").stream().map(cDSO -> EvaluationRegistry.createCondition(cDSO.getString("id", null), cDSO)).toList());
         return dso;
+    }
+
+    /**
+     * Determines, if this event list is ready to start<br>
+     * This only happens, if this event list is not active and all {@link #conditions} evaluate true
+     * @return is this event list ready to start
+     */
+    public boolean canStart(World world){
+        return !isActive() && conditions.stream().allMatch(c -> c.evaluate(world));
     }
 
     /**

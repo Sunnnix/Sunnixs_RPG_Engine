@@ -6,6 +6,8 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.evaluation.EvaluationRegistry;
+import de.sunnix.srpge.editor.window.evaluation.ICondition;
 import de.sunnix.srpge.editor.window.object.ObjectEditDialog;
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
@@ -63,6 +65,8 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
     /** List of events managed by this EventList. */
     private List<IEvent> events;
+    /**  */
+    public List<ICondition> conditions;
 
     /**
      * Constructor for creating new EventList's.
@@ -82,6 +86,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         name = dso.getString("name", null);
         blockType = BlockType.values()[dso.getByte("block", (byte) BlockType.NONE.ordinal())];
         runType = dso.getByte("type", RUN_TYPE_AUTO);
+        conditions = new ArrayList<>(dso.<DataSaveObject>getList("conditions").stream().map(cDSO -> EvaluationRegistry.loadCondition(cDSO.getString("id", null), cDSO)).toList());
         return dso;
     }
 
@@ -94,6 +99,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         dso.putString("name", name);
         dso.putByte("block", (byte) blockType.ordinal());
         dso.putByte("type", runType);
+        dso.putList("conditions", conditions.stream().map(c -> c.save(new DataSaveObject())).toList());
         return dso;
     }
 
@@ -173,12 +179,9 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         selectBlockType.setSelectedItem(blockType);
         selectRunType.setSelectedItem(readableRunTypes.get(runType));
 
-        // conditions TODO not implemented yet
-        var conditionsPanel = new JPanel(new BorderLayout(5, 5));
-
         var tmpPanel = new JPanel(new BorderLayout(5, 5));
         tmpPanel.add(eventPropsPanel, BorderLayout.WEST);
-        tmpPanel.add(conditionsPanel, BorderLayout.CENTER);
+        tmpPanel.add(genConditions(window, map, object), BorderLayout.CENTER);
         tmpPanel.add(new JSeparator(JSeparator.HORIZONTAL), BorderLayout.SOUTH);
 
         panel.add(tmpPanel, BorderLayout.NORTH);
@@ -187,6 +190,111 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         elScroll.setPreferredSize(new Dimension(600, 500));
         panel.add(elScroll, BorderLayout.CENTER);
         return panel;
+    }
+
+    private JPanel genConditions(Window window, MapData map, GameObject object){
+        var conditionsPanel = new JPanel(new BorderLayout());
+        conditionsPanel.setBorder(BorderFactory.createTitledBorder("Conditions"));
+        var conditionModel = new DefaultListModel<ICondition>();
+        conditionModel.addAll(conditions);
+        var conditionsList = new JList<>(conditionModel);
+        var cRenderer = conditionsList.getCellRenderer();
+        conditionsList.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            var comp = (JLabel) cRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            comp.setText(value.getString(window, map, object));
+            if(index % 2 == 0)
+                comp.setBackground(comp.getBackground().brighter());
+            return comp;
+        });
+        conditionsList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON3) {
+                    new JPopupMenu() {
+                        {
+                            var index = conditionsList.getSelectedIndex();
+                            var createConditionMenu = new JMenuItem("Create condition");
+                            createConditionMenu.addActionListener(a -> {
+                                var newCondition = createCondition(window, map, object, conditionsList);
+                                if(newCondition != null) {
+                                    conditions.add(newCondition);
+                                    conditionModel.addElement(newCondition);
+                                }
+                            });
+                            add(createConditionMenu);
+                            if (index >= 0) {
+                                var editConditionMenu = new JMenuItem("Edit condition");
+                                editConditionMenu.addActionListener(l -> {
+                                    if(editCondition(window, map, object, conditionsList, conditions.get(index)))
+                                        conditionsList.repaint();
+                                });
+                                add(editConditionMenu);
+                                var removeConditionMenu = new JMenuItem("Remove condition");
+                                removeConditionMenu.addActionListener(l -> {
+                                    conditions.remove(index);
+                                    conditionModel.removeElementAt(index);
+                                });
+                                add(removeConditionMenu);
+                            }
+                        }
+                    }.show(conditionsList, e.getX(), e.getY());
+                } else if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2){
+                    var index = conditionsList.getSelectedIndex();
+                    if(index == -1){
+                        var newCondition = createCondition(window, map, object, conditionsList);
+                        if(newCondition != null) {
+                            conditions.add(newCondition);
+                            conditionModel.addElement(newCondition);
+                        }
+                    }
+                    else if(editCondition(window, map, object, conditionsList, conditions.get(index)))
+                        conditionsList.repaint();
+                }
+            }
+        });
+        var scroll = new JScrollPane(conditionsList);
+        scroll.setPreferredSize(new Dimension(0, 0));
+        conditionsPanel.add(scroll);
+        return conditionsPanel;
+    }
+
+    private ICondition createCondition(Window window, MapData map, GameObject object, JComponent parent){
+        var condition = EvaluationRegistry.showConditionCreateDialog(parent);
+        if(condition != null && editCondition(window, map, object, parent, condition))
+            return condition;
+        else
+            return null;
+    }
+
+    private boolean editCondition(Window window, MapData map, GameObject object, JComponent parent, ICondition condition){
+        var dialog = new JDialog(DialogUtils.getWindowForComponent(parent), "Edit condition", Dialog.ModalityType.APPLICATION_MODAL){
+            boolean successfully;
+            {
+                ((JComponent)getContentPane()).setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+                setLayout(new BorderLayout());
+                var content = new JPanel();
+                var onApply = condition.getEditGUI(window, map, object, content);
+                add(content, BorderLayout.CENTER);
+
+                var buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                var applyBtn = new JButton(getString("button.apply"));
+                applyBtn.addActionListener(l -> {
+                    if(onApply != null)
+                        onApply.run();
+                    successfully = true;
+                    dispose();
+                });
+                buttons.add(applyBtn);
+                var cancelBtn = new JButton(getString("button.cancel"));
+                cancelBtn.addActionListener(l -> dispose());
+                buttons.add(cancelBtn);
+                add(buttons, BorderLayout.SOUTH);
+                pack();
+                setLocationRelativeTo(parent);
+                setVisible(true);
+            }
+        };
+        return dialog.successfully;
     }
 
     /**
@@ -339,6 +447,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         try {
             var clone = (EventList) super.clone();
             clone.events = new ArrayList<>(this.events.stream().map(e -> (IEvent) e.clone()).toList());
+            clone.conditions = new ArrayList<>(this.conditions.stream().map(c -> (ICondition) c.clone()).toList());
             return clone;
         } catch (CloneNotSupportedException e){
             // should never happen

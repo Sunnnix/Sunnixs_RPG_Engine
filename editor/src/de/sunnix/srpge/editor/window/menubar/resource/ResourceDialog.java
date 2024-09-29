@@ -52,6 +52,7 @@ public class ResourceDialog extends JDialog {
                 ),
                 createNode(getString("dialog_resources.node.data"),
                         createNode(getString("dialog_resources.node.data.states"), p -> new StatesView(parent, p)),
+                        createNode(getString("Variables"), p -> new VariablesView(parent, p)),
                         createNode(getString("dialog_resources.node.data.lua_scripts"), p -> new LuaScriptView(parent, p))
                 )
         );

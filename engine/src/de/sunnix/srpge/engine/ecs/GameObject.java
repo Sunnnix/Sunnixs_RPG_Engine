@@ -127,7 +127,7 @@ public class GameObject extends MemoryHolder {
         if(eventLists.isEmpty())
             return;
         for(var el: eventLists){
-            if(!el.isActive() && (el.getRunType() == EventList.RUN_TYPE_AUTO || startEvents.stream().anyMatch(rt -> rt == el.getRunType())))
+            if(el.canStart(world) && (el.getRunType() == EventList.RUN_TYPE_AUTO || startEvents.stream().anyMatch(rt -> rt == el.getRunType())))
                 world.getGameState().startEventList(el);
         }
         startEvents.clear();

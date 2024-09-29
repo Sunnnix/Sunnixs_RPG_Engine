@@ -40,7 +40,7 @@ public class Camera {
     @Getter
     private static Vector2f pos = new Vector2f();
 
-    private static Vector2f targetPosition = new Vector2f();
+    private static final Vector2f targetPosition = new Vector2f();
 
     /**
      * Updates the camera's view and projection matrices. The view matrix adjusts

@@ -3,9 +3,13 @@ package de.sunnix.srpge.editor.window;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
+import de.sunnix.srpge.editor.data.Variables;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
+import de.sunnix.srpge.editor.window.evaluation.EvaluationRegistry;
+import de.sunnix.srpge.editor.window.evaluation.NumberCondition;
+import de.sunnix.srpge.editor.window.evaluation.NumberVariableProvider;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
@@ -115,6 +119,7 @@ public class Window extends JFrame {
         initSingletons();
         registerEvents();
         registerComponents();
+        registerEvaluation();
         var config = getSingleton(Config.class);
 
         var lang = config.get("language", Locale.getDefault().getCountry().toLowerCase());
@@ -188,11 +193,17 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("look", "Look at", LookEvent::new);
         EventRegistry.registerEvent("camera", "Camera", CameraEvent::new);
         EventRegistry.registerEvent("change_state", "Change State", ChangeStateEvent::new);
+        EventRegistry.registerEvent("change_var", "Change Variable", ChangeVariableEvent::new);
     }
 
     private void registerComponents(){
         ComponentRegistry.registerComponent("render", "Renderer", RenderComponent::new);
         ComponentRegistry.registerComponent("physic", "Physic", PhysicComponent::new);
+    }
+
+    private void registerEvaluation(){
+        EvaluationRegistry.registerCondition("number", NumberCondition::new);
+        EvaluationRegistry.registerProvider("num_var", NumberVariableProvider::new);
     }
 
     private void setupViews(){
@@ -273,6 +284,7 @@ public class Window extends JFrame {
         updateTitle();
         undoManager.discardAllEdits();
         copyObject = null;
+        Variables.reset();
     }
 
     public void setProjectOpen(boolean projectOpen) {
@@ -384,6 +396,14 @@ public class Window extends JFrame {
                 startMap = config.get("start_map", -1);
                 startMapPosition = config.getFloatArr("start_map_pos", 3);
                 dialog.addProgress(500);
+                // load global variables
+                var stream = zip.getInputStream(new ZipEntry("res/variables"));
+                if(stream != null){
+                    Variables.load(new DataSaveObject().load(stream));
+                    stream.close();
+                } else
+                    Variables.load(new DataSaveObject());
+
                 getSingleton(Resources.class).loadResources(dialog, 5000, zip, version);
                 getSingleton(GameData.class).loadData(dialog, 3500, zip, version);
 
@@ -478,6 +498,14 @@ public class Window extends JFrame {
                 config.put("start_map_pos", startMapPosition);
                 config.put("editor_version", Core.VERSION);
                 dialog.addProgress(500);
+                // save global variables
+                zip.putNextEntry(new ZipEntry("res/variables"));
+                var varDSO = Variables.save(new DataSaveObject());
+                var byteOutput = new ByteArrayOutputStream();
+                varDSO.save(byteOutput);
+                zip.write(byteOutput.toByteArray());
+                byteOutput.close();
+
                 getSingleton(Resources.class).saveResources(dialog, 5000, zip);
                 getSingleton(GameData.class).saveData(dialog, 3500, zip);
 

@@ -73,6 +73,8 @@ public class PhysicComponent extends Component{
         flying.addActionListener(l -> this.flying = flying.isSelected());
         var platform = new JCheckBox("Platform", this.platform);
         platform.addActionListener(l -> this.platform = platform.isSelected());
+        var canClimb = new JCheckBox("Can climb", this.canClimb);
+        canClimb.addActionListener(l -> this.canClimb = canClimb.isSelected());
         var hasShadow = new JCheckBox("Has shadow", this.hasShadow);
         hasShadow.addActionListener(l -> this.hasShadow = hasShadow.isSelected());
 
@@ -115,6 +117,7 @@ public class PhysicComponent extends Component{
         addView(parent, collision);
         addView(parent, flying);
         addView(parent, platform);
+        addView(parent, canClimb);
         addView(parent, hasShadow);
 
         return null;

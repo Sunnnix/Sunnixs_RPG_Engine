@@ -58,7 +58,7 @@ public class PhysicSystem {
                     obj.removeState(States.CLIMBING_UP.id());
                     obj.removeState(States.CLIMBING_DOWN.id());
                 } else {
-                    vel.y -= vel.z * .5f;
+                    vel.y -= vel.z * .5;
                     vel.z = 0;
                     if (obj.hasState(States.MOVING)) {
                         obj.removeState(States.MOVING.id());

@@ -3,6 +3,9 @@ package de.sunnix.srpge.engine;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.OpenALContext;
 import de.sunnix.srpge.engine.ecs.event.*;
+import de.sunnix.srpge.engine.evaluation.EvaluationRegistry;
+import de.sunnix.srpge.engine.evaluation.NumberCondition;
+import de.sunnix.srpge.engine.evaluation.NumberVariableProvider;
 import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.memory.MemoryHandler;
 import de.sunnix.srpge.engine.debug.FPSGenerator;
@@ -231,6 +234,7 @@ public class Core {
         OpenALContext.setUp();
 
         registerEvents();
+        registerEvaluation();
 
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             logException("UncaughtExceptionHandler", throwable);
@@ -355,6 +359,12 @@ public class Core {
         EventRegistry.registerEvent("look", LookEvent::new);
         EventRegistry.registerEvent("camera", CameraEvent::new);
         EventRegistry.registerEvent("change_state", ChangeStateEvent::new);
+        EventRegistry.registerEvent("change_var", ChangeVariableEvent::new);
+    }
+
+    private static void registerEvaluation(){
+        EvaluationRegistry.registerCondition("number", NumberCondition::new);
+        EvaluationRegistry.registerProvider("num_var", NumberVariableProvider::new);
     }
 
     /**
