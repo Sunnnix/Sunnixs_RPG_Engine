@@ -93,6 +93,16 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Create 3D maps with walls                | 0.2   |
 | Start the game from the editor           | 0.1   |
 
+## Known Bugs
+<details>
+    <summary>Physic System</summary>
+
+    A moving object can get stuck on a stair when moving against another object on that stair.
+    Additionally, if an object runs up the stairs and collides with an object that is jumping, 
+    the other objects get teleported above the jumping object.
+    
+</details>
+
 ## Upcoming Features
 
 | Description                                                  | Planned | Progress | Priority |
@@ -101,11 +111,13 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Physics System                                               | 0.7     | 100%     | High     |
 | Map Transition System / Teleporter objects and events        | 0.7     | 100%     | High     |
 | Lua implementation for Events via JLua (Experimental)        | 0.7     | 100%     | Medium   |
-| Interacting System                                           | 0.7     | 93%      | High     |
+| Interacting System                                           | 0.7     | 95%      | High     |
 | Lua implementation for KI                                    | n/a     | 0%       | Medium   |
 | Graphic Effects via Shader                                   | n/a     | 10%      | Medium   |
 | Plugin system for editor and engine customization            | n/a     | 10%      | Low      |
 | Battle System                                                | n/a     | 0%       | High     |
+| Inventory                                                    | n/a     | 0%       | High     |
+| GUI                                                          | n/a     | 0%       | High     |
 | Audio System V3 (more 3D options)                            | n/a     | 0%       | Medium   |
 | Lua implementation for Events via JLua (Full implementation) | n/a     | 50%      | Low      |
 | Python implementation for Events via Jython                  | n/a     | 0%       | Low      |

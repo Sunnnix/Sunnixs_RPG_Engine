@@ -194,6 +194,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("camera", "Camera", CameraEvent::new);
         EventRegistry.registerEvent("change_state", "Change State", ChangeStateEvent::new);
         EventRegistry.registerEvent("change_var", "Change Variable", ChangeVariableEvent::new);
+        EventRegistry.registerEvent("change_tile", "Change Tile", ChangeTileEvent::new);
     }
 
     private void registerComponents(){

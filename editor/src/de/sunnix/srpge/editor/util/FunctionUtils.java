@@ -4,6 +4,7 @@ import de.sunnix.srpge.editor.window.customswing.DefaultValueComboboxModel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
@@ -48,6 +49,16 @@ public class FunctionUtils {
 
     public static <T> JComboBox<T> createComboBox(T defaultValue, T[] content){
         return new JComboBox<>(new DefaultValueComboboxModel<>(defaultValue, content));
+    }
+
+    public static GridBagConstraints genDefaultGBC(){
+        var gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets.set(3, 3, 0, 0);
+        return gbc;
     }
 
 }

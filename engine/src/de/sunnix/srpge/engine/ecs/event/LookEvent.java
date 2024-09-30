@@ -63,7 +63,7 @@ public class LookEvent extends Event {
             var horizontal = Math.abs(xDiff) > Math.abs(zDiff);
 
             if (horizontal)
-                obj.setFacing(xDiff < 0 ? Direction.WEST : Direction.EAST);
+                obj.setFacing(xDiff < 0 ? Direction.EAST : Direction.WEST);
             else
                 obj.setFacing(zDiff > 0 ? Direction.NORTH : Direction.SOUTH);
         }

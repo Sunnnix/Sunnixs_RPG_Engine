@@ -4,10 +4,15 @@ import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
 import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
+import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.resources.Tileset;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.resources.TilesetPropertie;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 import static org.lwjgl.opengl.GL15.*;
@@ -305,6 +310,59 @@ public class Tile {
             properties[i * 2 + 1] = tileset.getProperty(getTexIndexOf(false, wallTex[y]));
         }
         return properties;
+    }
+
+    public void changeTextures(World world, Consumer<TextureChanger> textureChanger) {
+        var tc = new TextureChanger(world);
+        textureChanger.accept(tc);
+        tc.apply();
+    }
+
+    public class TextureChanger {
+
+        private final World world;
+        private final List<ChangeData> dataL0 = new ArrayList<>();
+        private final List<ChangeData> dataL1 = new ArrayList<>();
+
+        private TextureChanger(World world){
+            this.world = world;
+        }
+
+        public void changeGround(int index, boolean firstLayer){
+            if(firstLayer)
+                dataL0.add(new ChangeData(-1, index));
+            else
+                dataL1.add(new ChangeData(-1, index));
+        }
+
+        public void changeWall(int wall, int index, boolean firstLayer){
+            if(wall < 0 || wall >= wallTex.length)
+                return;
+            if(firstLayer)
+                dataL0.add(new ChangeData(wall, index));
+            else
+                dataL1.add(new ChangeData(wall, index));
+        }
+
+        private void apply(){
+            ContextQueue.addQueue(() -> {
+                if(tileset == null)
+                    return;
+                if(!dataL0.isEmpty()){
+                    world.getMap().bindTextures(0);
+                    for(var data: dataL0)
+                        glBufferSubData(GL_ARRAY_BUFFER, (bufferOffset + (data.wall + 1)) * 8L * Float.BYTES, tileset.getTexturePositions(data.index));
+                }
+                if(!dataL1.isEmpty()){
+                    world.getMap().bindTextures(1);
+                    for(var data: dataL1)
+                        glBufferSubData(GL_ARRAY_BUFFER, (bufferOffset + (data.wall + 1)) * 8L * Float.BYTES, tileset.getTexturePositions(data.index));
+                }
+            });
+        }
+
+        private record ChangeData(int wall, int index){}
+
     }
 
 }

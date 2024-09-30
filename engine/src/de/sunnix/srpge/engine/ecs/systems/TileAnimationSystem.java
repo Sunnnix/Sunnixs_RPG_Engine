@@ -36,7 +36,7 @@ public class TileAnimationSystem {
         var layer1Update = new ArrayList<Tile>();
 
         for(var tile: tiles){
-            if(!camera.contains(tile.getX(), tile.getY()))
+            if(!camera.intersects(new Rectangle(tile.getX(), tile.getY() - tile.getHeight(), 1, tile.getHeight() + 1)))
                 continue;
             var layers = tile.checkAndUpdateAnimation(animTime);
             if(layers == 0)

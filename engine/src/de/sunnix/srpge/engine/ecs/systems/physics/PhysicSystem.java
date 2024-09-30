@@ -221,28 +221,25 @@ public class PhysicSystem {
         // if the object moves horizontal (correctMovement == false) then don't climb
         if(correctMovement && comp.isCanClimb() && bitcheck(flag, MOVE_EVENT_FLAG_HIT_TILE) && bitcheck(flag, MOVE_EVENT_FLAG_HIT_NORTH)){
             var tZ = (int) Math.floor(hitbox.getMinZ() - .1f);
+            var tX = (int) (hitbox.getX() + hitbox.getWidth() / 2);
             var ladder = false;
-            for(var tX = (int) hitbox.getMinX(); tX < Math.ceil(hitbox.getMaxX()); tX++){
-                var tile = world.getTile(tX, tZ);
-                if(tile == null)
-                    continue;
-                var wallProps = tile.getWallProperties((int)hitbox.getMinY(), (int) Math.ceil(hitbox.getMaxY()));
-                for(var prop: wallProps)
-                    if(prop != null && prop.isLadder()){
+            var tile = world.getTile(tX, tZ);
+            if(tile != null) {
+                var wallProps = tile.getWallProperties((int) hitbox.getMinY(), (int) Math.ceil(hitbox.getMaxY()));
+                for (var prop : wallProps)
+                    if (prop != null && prop.isLadder()) {
                         ladder = true;
                         break;
                     }
-                if(ladder) {
+                if (ladder) {
                     correctMovement = false;
                     go.addState(States.CLIMB.id());
                     comp.setFalling(false);
-                    break;
+                } else {
+                    go.removeState(States.CLIMB.id());
+                    go.removeState(States.CLIMBING_UP.id());
+                    go.removeState(States.CLIMBING_DOWN.id());
                 }
-            }
-            if(!ladder){
-                go.removeState(States.CLIMB.id());
-                go.removeState(States.CLIMBING_UP.id());
-                go.removeState(States.CLIMBING_DOWN.id());
             }
         }
 

@@ -360,6 +360,7 @@ public class Core {
         EventRegistry.registerEvent("camera", CameraEvent::new);
         EventRegistry.registerEvent("change_state", ChangeStateEvent::new);
         EventRegistry.registerEvent("change_var", ChangeVariableEvent::new);
+        EventRegistry.registerEvent("change_tile", ChangeTileEvent::new);
     }
 
     private static void registerEvaluation(){
