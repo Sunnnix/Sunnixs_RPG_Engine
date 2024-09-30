@@ -10,6 +10,7 @@ import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
 import de.sunnix.srpge.editor.window.evaluation.EvaluationRegistry;
 import de.sunnix.srpge.editor.window.evaluation.NumberCondition;
 import de.sunnix.srpge.editor.window.evaluation.NumberVariableProvider;
+import de.sunnix.srpge.editor.window.evaluation.ObjectVariableProvider;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
@@ -195,6 +196,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("change_state", "Change State", ChangeStateEvent::new);
         EventRegistry.registerEvent("change_var", "Change Variable", ChangeVariableEvent::new);
         EventRegistry.registerEvent("change_tile", "Change Tile", ChangeTileEvent::new);
+        EventRegistry.registerEvent("change_local_var", "Change Object Variable", ChangeObjectVariableEvent::new);
     }
 
     private void registerComponents(){
@@ -205,6 +207,7 @@ public class Window extends JFrame {
     private void registerEvaluation(){
         EvaluationRegistry.registerCondition("number", NumberCondition::new);
         EvaluationRegistry.registerProvider("num_var", NumberVariableProvider::new);
+        EvaluationRegistry.registerProvider("loc_var", ObjectVariableProvider::new);
     }
 
     private void setupViews(){

@@ -1,5 +1,6 @@
 package de.sunnix.srpge.editor.window.evaluation;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.data.Variables;
@@ -64,6 +65,14 @@ public class NumberVariableProvider extends de.sunnix.srpge.engine.evaluation.Nu
         for(var i = 0; i < size; i++)
             names.add(String.format("%03d: %s", i, isInt ? Variables.getIntName(i) : Variables.getFloatName(i)));
         return names;
+    }
+
+    @Override
+    public DataSaveObject save(DataSaveObject dso) {
+        IValueProvider.super.save(dso);
+         dso.putByte("array", (byte) array.ordinal());
+         dso.putInt("index", index);
+        return dso;
     }
 
     @Override

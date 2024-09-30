@@ -23,6 +23,8 @@ import java.util.function.Consumer;
  */
 public class GameObject extends MemoryHolder {
 
+    public static final int localVarCount = 4;
+
     private final Map<Class<? extends Component>, Component> components = new HashMap<>();
 
     private final HashSet<State> states = new HashSet<>();
@@ -66,6 +68,7 @@ public class GameObject extends MemoryHolder {
     private Direction facing = Direction.SOUTH;
 
     private final Set<Byte> startEvents = new HashSet<>();
+    private final int[] localVars = new int[localVarCount];
 
     private GameObject(World world, long id){
         this.ID = id;
@@ -204,6 +207,18 @@ public class GameObject extends MemoryHolder {
 
     public void startEvent(byte type) {
         startEvents.add(type);
+    }
+
+    public int getVariable(int index){
+        if(index < 0 || index >= localVarCount)
+            return 0;
+        return localVars[index];
+    }
+
+    public void setVariable(int index, int value){
+        if(index < 0 || index >= localVarCount)
+            return;
+        localVars[index] = value;
     }
 
     @Override

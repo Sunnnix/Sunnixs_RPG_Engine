@@ -6,6 +6,7 @@ import de.sunnix.srpge.engine.ecs.event.*;
 import de.sunnix.srpge.engine.evaluation.EvaluationRegistry;
 import de.sunnix.srpge.engine.evaluation.NumberCondition;
 import de.sunnix.srpge.engine.evaluation.NumberVariableProvider;
+import de.sunnix.srpge.engine.evaluation.ObjectVariableProvider;
 import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.memory.MemoryHandler;
 import de.sunnix.srpge.engine.debug.FPSGenerator;
@@ -361,11 +362,13 @@ public class Core {
         EventRegistry.registerEvent("change_state", ChangeStateEvent::new);
         EventRegistry.registerEvent("change_var", ChangeVariableEvent::new);
         EventRegistry.registerEvent("change_tile", ChangeTileEvent::new);
+        EventRegistry.registerEvent("change_local_var", ChangeObjectVariableEvent::new);
     }
 
     private static void registerEvaluation(){
         EvaluationRegistry.registerCondition("number", NumberCondition::new);
         EvaluationRegistry.registerProvider("num_var", NumberVariableProvider::new);
+        EvaluationRegistry.registerProvider("loc_var", ObjectVariableProvider::new);
     }
 
     /**

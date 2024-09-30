@@ -139,7 +139,7 @@ public interface IEvent extends Cloneable {
      * @return the formatted string with color commands
      */
     default String getVarColoring(Object text){
-        return "/cv00 /b " + text.toString() + " /n /cx";
+        return "/cv00 /b " + text + " /n /cx";
     }
 
 }

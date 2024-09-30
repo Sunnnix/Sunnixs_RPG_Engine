@@ -87,7 +87,11 @@ public class NumberCondition extends de.sunnix.srpge.engine.evaluation.NumberCon
             public void mousePressed(MouseEvent e) {
                 if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2)
                     if(tmpProvider == null) {
-                        tmpProvider = createProvider(window, content, map, object);
+                        var selector = new JComboBox<>(new String[]{ "Global", "Local" });
+                        selector.setSelectedIndex(0);
+                        if(!DialogUtils.showMultiInputDialog(content, "Add Provider", null, new String[]{"Provider:"}, new JComponent[]{selector}))
+                            return;
+                        tmpProvider = createProvider(window, content, map, object, selector.getSelectedIndex() == 0 ? new NumberVariableProvider() : new ObjectVariableProvider());
                         if(tmpProvider != null)
                             providerText.setText(tmpProvider.getText(window, map, object));
                     } else
@@ -99,6 +103,7 @@ public class NumberCondition extends de.sunnix.srpge.engine.evaluation.NumberCon
         // Set values
         if(tmpProvider != null)
             providerText.setText(tmpProvider.getText(window, map, object));
+        typeCombo.setSelectedIndex(type.ordinal());
 
         return () -> {
             provider = tmpProvider;
@@ -107,8 +112,7 @@ public class NumberCondition extends de.sunnix.srpge.engine.evaluation.NumberCon
         };
     }
 
-    private IValueProvider createProvider(Window window, JPanel content, MapData map, GameObject object){
-        var provider = new NumberVariableProvider();
+    private IValueProvider createProvider(Window window, JPanel content, MapData map, GameObject object, IValueProvider provider){
         if(editProvider(window, content, map, object, provider))
             return provider;
         else
