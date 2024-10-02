@@ -5,7 +5,7 @@ import de.sunnix.srpge.engine.ecs.World;
 
 public class ObjectVariableProvider extends ValueProvider<Number>{
 
-    protected int objectID;
+    protected int objectID = -1;
     protected int index;
 
     public ObjectVariableProvider() {

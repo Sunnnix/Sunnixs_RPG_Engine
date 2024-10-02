@@ -22,13 +22,13 @@ public class PhysicComponent extends Component {
     private static final Texture SHADOW_TEXTURE = new Texture("/data/texture/shadow.png");
 
     public static final byte RUN_TYPE_PLAYER_CONSULT = 100;
-    public static final byte RUN_TYPE_TOUCH = 101;
-    public static final byte RUN_TYPE_TOUCH_TOP = 102;
-    public static final byte RUN_TYPE_TOUCH_BOTTOM = 103;
-    public static final byte RUN_TYPE_TOUCH_SOUTH = 104;
-    public static final byte RUN_TYPE_TOUCH_EAST = 105;
-    public static final byte RUN_TYPE_TOUCH_WEST = 106;
-    public static final byte RUN_TYPE_TOUCH_NORTH = 107;
+    public static final byte RUN_TYPE_PLAYER_TOUCH = 101;
+    public static final byte RUN_TYPE_PLAYER_TOUCH_TOP = 102;
+    public static final byte RUN_TYPE_PLAYER_TOUCH_BOTTOM = 103;
+    public static final byte RUN_TYPE_PLAYER_TOUCH_SOUTH = 104;
+    public static final byte RUN_TYPE_PLAYER_TOUCH_EAST = 105;
+    public static final byte RUN_TYPE_PLAYER_TOUCH_WEST = 106;
+    public static final byte RUN_TYPE_PLAYER_TOUCH_NORTH = 107;
 
     @Setter(AccessLevel.NONE)
     private AABB hitbox;

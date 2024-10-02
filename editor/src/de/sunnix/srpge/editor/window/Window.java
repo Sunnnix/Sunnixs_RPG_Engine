@@ -197,6 +197,7 @@ public class Window extends JFrame {
         EventRegistry.registerEvent("change_var", "Change Variable", ChangeVariableEvent::new);
         EventRegistry.registerEvent("change_tile", "Change Tile", ChangeTileEvent::new);
         EventRegistry.registerEvent("change_local_var", "Change Object Variable", ChangeObjectVariableEvent::new);
+        EventRegistry.registerEvent("obj_prop", "Change Object Properties", ObjectPropertyEvent::new);
     }
 
     private void registerComponents(){

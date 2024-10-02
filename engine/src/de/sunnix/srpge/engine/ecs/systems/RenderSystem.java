@@ -28,6 +28,8 @@ public class RenderSystem {
         final var camPos = Camera.getPos().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1, -1).sub(camSize.div(2, new Vector2f()));
 
         for(var go: objects) {
+            if(!go.isEnabled())
+                continue;
             var goPos = go.getPosition();
             var goSize = go.size;
             if(goPos.x > camPos.x + camSize.x || goPos.x + goSize.x < camPos.x || goPos.z - goPos.y > camPos.y + camSize.y || goPos.z + goSize.x < camPos.y)
@@ -75,6 +77,7 @@ public class RenderSystem {
         var objects = mapGrid.getDirtyObjects();
         if(objects.isEmpty())
            return;
+        objects.removeIf(go -> !go.isEnabled());
         objects.forEach(go -> go.setZ_pos(go.getPosition().z + go.size.x));
 
         var colliding = new ArrayList<Set<GameObject>>();

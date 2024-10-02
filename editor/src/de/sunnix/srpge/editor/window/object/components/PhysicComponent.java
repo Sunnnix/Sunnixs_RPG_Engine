@@ -35,7 +35,7 @@ public class PhysicComponent extends Component{
         height = dso.getFloat("height", 1);
         weight = dso.getFloat("weight", .85f);
         jumpSpeed = dso.getFloat("jump_speed", .25f);
-        flying = dso.getBool("collision", true);
+        collision = dso.getBool("collision", true);
         flying = dso.getBool("flying", false);
         platform = dso.getBool("platform", false);
         canClimb = dso.getBool("can_climb", false);

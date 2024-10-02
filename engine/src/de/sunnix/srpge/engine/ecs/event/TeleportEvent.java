@@ -4,6 +4,7 @@ import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.debug.GameLogger;
+import de.sunnix.srpge.engine.ecs.Direction;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
@@ -57,6 +58,9 @@ public class TeleportEvent extends Event{
     /** Determines if the fading in (clearing the color) after the map switch happened should occur */
     protected boolean fadeIn = true;
 
+    /** In which direction should the object look after the teleport */
+    protected Direction facing;
+
     // Internal attributes used during the teleportation process
     private GameObject object;
     private int startTime, endTime;
@@ -89,6 +93,8 @@ public class TeleportEvent extends Event{
             customTransitionEvent.load(obj);
         }
         fadeIn = dso.getBool("fade_in", true);
+        var fID = dso.getByte("facing", (byte) -1);
+        facing = fID == -1 ? null : Direction.values()[fID];
     }
 
     /**
@@ -181,8 +187,8 @@ public class TeleportEvent extends Event{
      * @return true if the teleportation is successful, false if the map is still loading.
      */
     private boolean teleport(World world){
+        var curFacing = object.getFacing();
         if(map != -1 && map != world.ID) {
-            AudioManager.get().setBGM(null);
             if (mapLoader.isAlive())
                 return false; // Wait for the map to load
         }
@@ -191,7 +197,6 @@ public class TeleportEvent extends Event{
             if(map != -1 && map != world.ID) {
                 world.getGameState().switchMaps();
                 object = world.getGameState().getPlayer();
-                Camera.setAttachedObject(object, false);
             }
         } catch (Exception e){
             var ex = new RuntimeException("Error switching to other map!");
@@ -199,8 +204,9 @@ public class TeleportEvent extends Event{
             throw ex;
         }
         object.setPosition(x, y, z);
-        if(map != -1 && map != world.ID)
-            Camera.setPositionTo(object.getPosition(), true);
+        object.setFacing(facing == null ? curFacing : facing);
+        if(object.getID() == 999 && Camera.getAttachedObject() != null && Camera.getAttachedObject().getID() == 999)
+            Camera.setAttachedObject(object, true);
         PhysicSystem.update(world.getGameState().getWorld());
         return true;
     }

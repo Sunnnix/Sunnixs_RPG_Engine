@@ -5,6 +5,7 @@ import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.object.events.EventList;
+import de.sunnix.srpge.engine.ecs.Direction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +25,8 @@ public class GameObject {
     private String name;
     private float x, y, z;
     private float width, height;
+    private Direction facing = Direction.SOUTH;
+    private boolean enabled = true;
 
     @Getter
     private final List<EventList> eventLists = new ArrayList<>();
@@ -49,6 +52,10 @@ public class GameObject {
     private static final Color OBJECT_TOP_COLOR_S = new Color(.8f, .8f, 0f, .65f);
     private static final Color OBJECT_SIDE_COLOR = new Color(.0f, .5f, 1f, .65f);
     private static final Color OBJECT_SIDE_COLOR_S = new Color(.6f, .6f, 0f, .65f);
+    private static final Color OBJECT_TOP_COLOR_DISABLED = new Color(.8f, .8f, .8f, .65f);
+    private static final Color OBJECT_TOP_COLOR_DISABLED_S = new Color(1f, 1f, 1f, .65f);
+    private static final Color OBJECT_SIDE_COLOR_DISABLED = new Color(.5f, .5f, .5f, .65f);
+    private static final Color OBJECT_SIDE_COLOR_DISABLED_S = new Color(.75f, .75f, .75f, .65f);
     private static final Color PLAYER_OBJECT_TOP_COLOR = new Color(.6f, 1f, 1f, .65f);
     private static final Color PLAYER_OBJECT_SIDE_COLOR = new Color(.4f, .75f, .75f, .65f);
 
@@ -72,10 +79,10 @@ public class GameObject {
         var w = (int)(this.width * TW);
         var h = (int)(this.height * TH);
         var d = (int)(this.width * TH);
-        g.setColor(selected ? OBJECT_SIDE_COLOR_S : getID() == 999 ? PLAYER_OBJECT_SIDE_COLOR : OBJECT_SIDE_COLOR);
+        g.setColor(selected ? (enabled ? OBJECT_SIDE_COLOR_S : OBJECT_SIDE_COLOR_DISABLED_S) : getID() == 999 ? PLAYER_OBJECT_SIDE_COLOR : (enabled ? OBJECT_SIDE_COLOR : OBJECT_SIDE_COLOR_DISABLED));
         g.fillRect(x, y, w, h);
         y -= d;
-        g.setColor(selected ? OBJECT_TOP_COLOR_S : getID() == 999 ? PLAYER_OBJECT_TOP_COLOR :OBJECT_TOP_COLOR);
+        g.setColor(selected ? (enabled ? OBJECT_TOP_COLOR_S : OBJECT_TOP_COLOR_DISABLED_S) : getID() == 999 ? PLAYER_OBJECT_TOP_COLOR : (enabled ? OBJECT_TOP_COLOR : OBJECT_TOP_COLOR_DISABLED));
         g.fillRect(x, y, w, d);
     }
 
@@ -91,6 +98,7 @@ public class GameObject {
         return components.stream().anyMatch(comp -> comp.getClass().equals(clazz));
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Component> T getComponent(Class<T> clazz) {
         T comp = null;
         for(var component : components)
@@ -108,6 +116,8 @@ public class GameObject {
         this.z = dso.getFloat("z", 0);
         this.width = dso.getFloat("width", 0);
         this.height = dso.getFloat("height", 0);
+        this.facing = Direction.values()[dso.getByte("facing", (byte) Direction.SOUTH.ordinal())];
+        this.enabled = dso.getBool("enabled", true);
 
         if(version[1] < 7) {
             var eventDSO = dso.getObject("events");
@@ -131,6 +141,8 @@ public class GameObject {
         dso.putFloat("z", z);
         dso.putFloat("width", width);
         dso.putFloat("height", height);
+        dso.putByte("facing", (byte) facing.ordinal());
+        dso.putBool("enabled", enabled);
 
         dso.putList("event_lists", eventLists.stream().map(list -> list.save(new DataSaveObject())).toList());
 

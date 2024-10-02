@@ -74,6 +74,8 @@ public class MapGrid {
             for(var z = Math.max(0, mZ - 1); z <= Math.min((mapHeight - 1) / MAP_GRID_SIZE ,mZ + 3); z++)
                 list.addAll(mapGrid[x + z * mapWidth / MAP_GRID_SIZE]);
 
+        list.removeIf(go -> !go.isEnabled());
+
         return list;
     }
 
@@ -149,6 +151,7 @@ public class MapGrid {
         var list = new ArrayList<GameObject>();
         for(var dirtyChunk: dirtyChunks)
             list.addAll(mapGrid[dirtyChunk]);
+        list.removeIf(go -> !go.isEnabled());
         dirtyChunks.clear();
         return list;
     }
@@ -169,6 +172,8 @@ public class MapGrid {
         for(var fX = Math.max(0, mX - 1); fX < Math.min((mapWidth - 1) / MAP_GRID_SIZE, mX + 3); fX++)
             for(var fZ = Math.max(0, mZ - 1); fZ <= Math.min((mapHeight - 1) / MAP_GRID_SIZE, mZ + 3); fZ++)
                 list.addAll(mapGrid[fX + fZ * mapWidth / MAP_GRID_SIZE]);
+
+        list.removeIf(go -> !go.isEnabled());
 
         return list;
     }

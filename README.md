@@ -102,6 +102,12 @@ To download and try out the editor/engine, you can download it from this [repo](
     the other objects get teleported above the jumping object.
     
 </details>
+<details>
+    <summary>Editor</summary>
+
+    Sometimes, parallel threads do not terminate correctly, causing the Java program to continue running. 
+    In such cases, the program must be closed using the task manager.
+</details>
 
 ## Upcoming Features
 
@@ -111,7 +117,7 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Physics System                                               | 0.7     | 100%     | High     |
 | Map Transition System / Teleporter objects and events        | 0.7     | 100%     | High     |
 | Lua implementation for Events via JLua (Experimental)        | 0.7     | 100%     | Medium   |
-| Interacting System                                           | 0.7     | 96%      | High     |
+| Interacting System                                           | 0.7     | 99%      | High     |
 | Lua implementation for KI                                    | n/a     | 0%       | Medium   |
 | Graphic Effects via Shader                                   | n/a     | 10%      | Medium   |
 | Plugin system for editor and engine customization            | n/a     | 10%      | Low      |
@@ -122,3 +128,4 @@ To download and try out the editor/engine, you can download it from this [repo](
 | Lua implementation for Events via JLua (Full implementation) | n/a     | 50%      | Low      |
 | Python implementation for Events via Jython                  | n/a     | 0%       | Low      |
 | Ruby implementation for Events via JRuby                     | n/a     | 0%       | Low      |
+| Object templates                                             | n/a     | 0%       | Medium   |

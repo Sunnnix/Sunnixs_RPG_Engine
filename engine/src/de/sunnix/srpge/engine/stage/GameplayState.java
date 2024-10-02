@@ -74,7 +74,7 @@ public class GameplayState implements IState {
     /**
      * Little render object to show the middle of the screen
      */
-    private final TestCubeRenderObject tcro = new TestCubeRenderObject();
+//    private final TestCubeRenderObject tcro = new TestCubeRenderObject();
 
     @Override
     public void onStart() {
@@ -104,11 +104,12 @@ public class GameplayState implements IState {
 
                 playerData = new DataSaveObject().load(zip.getInputStream(new ZipEntry("player")));
 
-                world = nextMap;
-                player = createPlayer();
+//                world = nextMap;
+//                player = createPlayer();
+                switchMaps();
                 player.setPosition(startPos[0], startPos[1], startPos[2]);
                 Camera.setAttachedObject(player, true);
-                world.init();
+//                world.init();
             } catch (Exception e){
                 GameLogger.logException("World", e);
             }
@@ -156,7 +157,7 @@ public class GameplayState implements IState {
         FunctionUtils.checkForOpenGLErrors("GameplayState - Pre render");
         world.render();
         FunctionUtils.checkForOpenGLErrors("GameplayState - Post render world");
-        tcro.render();
+//        tcro.render();
         FunctionUtils.checkForOpenGLErrors("GameplayState - Post render");
     }
 
@@ -224,7 +225,8 @@ public class GameplayState implements IState {
         world = nextMap;
         nextMap = tmp;
         player = createPlayer();
-        nextMap.onDestroy();
+        if(nextMap != null)
+            nextMap.onDestroy();
         nextMap = null;
         activeEventLists.clear();
         world.init();

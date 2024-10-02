@@ -18,6 +18,7 @@ import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.util.FunctionUtils.createMenuItem;
 import static de.sunnix.srpge.editor.window.Window.TILE_HEIGHT;
 import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
+import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 
 public class ObjectModule extends MapViewModule {
 
@@ -75,15 +76,21 @@ public class ObjectModule extends MapViewModule {
                 return false;
             var TW = (int)(TILE_WIDTH * view.getZoom());
             var TH = (int)(TILE_HEIGHT * view.getZoom());
-            float diffX, diffY;
-            diffX = ((float)(mapX - preX) / TW);
-            diffY = ((float)(mapY - preY) / TH);
-            preX = mapX;
-            preY = mapY;
-            obj.setX(obj.getX() + diffX);
-            obj.setZ(obj.getZ() + diffY);
-            updateInfo(view, map, mapX, mapY, tileX, tileY);
-            window.setProjectChanged();
+            if(bitcheck(mask, MouseEvent.SHIFT_DOWN_MASK)){
+                var oZ = (int)obj.getZ();
+                var nY = Math.max(0, oZ - tileY);
+                obj.setY(nY);
+            } else {
+                float diffX, diffY;
+                diffX = ((float) (mapX - preX) / TW);
+                diffY = ((float) (mapY - preY) / TH);
+                preX = mapX;
+                preY = mapY;
+                obj.setX(obj.getX() + diffX);
+                obj.setZ(obj.getZ() + diffY);
+                updateInfo(view, map, mapX, mapY, tileX, tileY);
+                window.setProjectChanged();
+            }
             return true;
         }
         updateInfo(view, map, mapX, mapY, tileX, tileY);

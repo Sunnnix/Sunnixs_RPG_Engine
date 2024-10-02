@@ -363,6 +363,7 @@ public class Core {
         EventRegistry.registerEvent("change_var", ChangeVariableEvent::new);
         EventRegistry.registerEvent("change_tile", ChangeTileEvent::new);
         EventRegistry.registerEvent("change_local_var", ChangeObjectVariableEvent::new);
+        EventRegistry.registerEvent("obj_prop", ObjectPropertyEvent::new);
     }
 
     private static void registerEvaluation(){

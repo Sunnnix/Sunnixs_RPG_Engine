@@ -7,6 +7,7 @@ import de.sunnix.srpge.editor.window.customswing.ClosableTitledBorder;
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.ComponentCreateDialog;
 import de.sunnix.srpge.editor.window.object.events.EventList;
+import de.sunnix.srpge.engine.ecs.Direction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,8 @@ public class ObjectEditDialog extends JDialog {
 
     private JTextField name;
     private JSpinner x, y, z;
+    private JCheckBox enablde;
+    private JComboBox<Direction> facing;
     private JList<EventList> el;
     private List<EventList> eventLists;
     private JTabbedPane eventTabView;
@@ -121,7 +124,20 @@ public class ObjectEditDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy++;
 
+        panel.add(new JLabel("Facing:"), gbc);
+        gbc.gridx++;
+        facing = new JComboBox<>(Direction.values());
+        facing.setSelectedItem(object.getFacing());
+        panel.add(facing, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
         gbc.gridwidth = 2;
+        enablde = new JCheckBox("Enabled", object.isEnabled());
+        enablde.setHorizontalTextPosition(JCheckBox.LEFT);
+        panel.add(enablde, gbc);
+        gbc.gridy++;
+
         panel.add(new JLabel("Event lists"), gbc);
         gbc.gridy++;
         el = new JList<>(new DefaultListModel<>());
@@ -286,6 +302,8 @@ public class ObjectEditDialog extends JDialog {
         object.setX(((Number)x.getValue()).floatValue());
         object.setY(((Number)y.getValue()).floatValue());
         object.setZ(((Number)z.getValue()).floatValue());
+        object.setFacing((Direction) facing.getSelectedItem());
+        object.setEnabled(enablde.isSelected());
         window.setProjectChanged();
         window.getMapView().repaint();
     }

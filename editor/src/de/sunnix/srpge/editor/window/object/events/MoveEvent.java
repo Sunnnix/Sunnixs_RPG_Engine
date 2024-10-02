@@ -9,6 +9,7 @@ import de.sunnix.srpge.editor.window.Window;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 import static de.sunnix.srpge.engine.ecs.event.MoveEvent.MoveEventHandle.*;
 
@@ -76,21 +77,14 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
     @Override
     public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel content) {
-        JComboBox<String> objects;
+        JComboBox<GameObject> objects;
         JSpinner tf_x, tf_y, tf_z, tf_speed;
 
-        var current = -1;
-        var oList = map.getObjects();
-        for(var i = 0; i < oList.size(); i++)
-            if(oList.get(i).ID == object) {
-                current = i;
-                break;
-            }
-        if(current == -1)
-            current = oList.indexOf(currentObject);
+        var oList = new ArrayList<>(map.getObjects());
+        oList.add(0, window.getPlayer());
 
-        objects = new JComboBox<>(oList.stream().map(o -> String.format("%03d: %s", o.ID, o.getName() == null ? "" : o.getName())).toArray(String[]::new));
-        objects.setSelectedIndex(current);
+        objects = new JComboBox<>(oList.toArray(GameObject[]::new));
+        objects.setSelectedItem(object == -1 ? currentObject : object == 999 ? window.getPlayer() : map.getObject(object));
 
         tf_x = new JSpinner(new SpinnerNumberModel(movX, -10000, 10000, .1f));
         tf_y = new JSpinner(new SpinnerNumberModel(movY, -1000, 10000, .1f));
@@ -161,8 +155,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         content.add(runParallelCheck, gbc);
 
         return () -> {
-            var index = objects.getSelectedIndex();
-            object = index == -1 ? index : oList.get(index).ID;
+            object = objects.getSelectedIndex() == -1 ? -1 : ((GameObject)objects.getSelectedItem()).getID();
             movX = ((Number) tf_x.getValue()).floatValue();
             movY = ((Number) tf_y.getValue()).floatValue();
             movZ = ((Number) tf_z.getValue()).floatValue();

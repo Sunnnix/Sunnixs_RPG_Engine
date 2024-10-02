@@ -69,6 +69,9 @@ public class GameObject extends MemoryHolder {
 
     private final Set<Byte> startEvents = new HashSet<>();
     private final int[] localVars = new int[localVarCount];
+    /** if false, this component does not update and render. */
+    @Getter
+    private boolean enabled = true;
 
     private GameObject(World world, long id){
         this.ID = id;
@@ -86,6 +89,8 @@ public class GameObject extends MemoryHolder {
         this.name = dso.getString("name", null);
         this.size.set(dso.getFloat("width", 0), dso.getFloat("height", 0));
         this.setPosition(dso.getFloat("x", 0), dso.getFloat("y", 0), dso.getFloat("z", 0));
+        this.facing = Direction.values()[dso.getByte("facing", (byte) Direction.SOUTH.ordinal())];
+        enabled = dso.getBool("enabled", true);
 
         eventLists.addAll(dso.<DataSaveObject>getList("event_lists").stream().map(EventList::new).toList());
 
@@ -115,6 +120,8 @@ public class GameObject extends MemoryHolder {
     }
 
     public void update(World world){
+        if(!enabled)
+            return;
         if(!inited) {
             GameLogger.logI("GameObject", "Object " + name + " updated without initialisation!");
             return;
@@ -219,6 +226,23 @@ public class GameObject extends MemoryHolder {
         if(index < 0 || index >= localVarCount)
             return;
         localVars[index] = value;
+    }
+
+    public void runInitEvents(World world){
+        for(var el: eventLists){
+            if(el.getRunType() == EventList.RUN_TYPE_INIT)
+                if(el.canStart(world)) {
+                    el.setActive(true);
+                    while (el.isActive())
+                        el.run(world);
+                }
+        }
+    }
+
+    public void setEnabled(boolean enabled){
+        if(!this.enabled && enabled)
+            markDirty();
+        this.enabled = enabled;
     }
 
     @Override

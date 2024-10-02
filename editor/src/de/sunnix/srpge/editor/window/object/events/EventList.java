@@ -53,14 +53,15 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
     static {
         addRunTypeName(RUN_TYPE_AUTO, "Auto");
+        addRunTypeName(RUN_TYPE_INIT, "<html><span style='color: #ff8888; font-weight: bold;'>Init</span></html>");
         addRunTypeName(RUN_TYPE_PLAYER_CONSULT, "Player consult", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH, "Touch", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH_TOP, "Step on", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH_BOTTOM, "Touch bottom", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH_SOUTH, "Touch south", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH_EAST, "Touch east", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH_WEST, "Touch west", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_TOUCH_NORTH, "Touch north", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH, "Touch", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_TOP, "Step on", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_BOTTOM, "Touch bottom", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_SOUTH, "Touch south", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_EAST, "Touch east", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_WEST, "Touch west", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_NORTH, "Touch north", PhysicComponent.class);
     }
 
     /** List of events managed by this EventList. */
@@ -266,6 +267,10 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
             return null;
     }
 
+    /**
+     * Shows the GUI for editing an condition.
+     * @return if the edit was successfully otherwise canceled.
+     */
     private boolean editCondition(Window window, MapData map, GameObject object, JComponent parent, ICondition condition){
         var dialog = new JDialog(DialogUtils.getWindowForComponent(parent), "Edit condition", Dialog.ModalityType.APPLICATION_MODAL){
             boolean successfully;

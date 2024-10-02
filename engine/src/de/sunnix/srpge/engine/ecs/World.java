@@ -74,7 +74,6 @@ public class World {
         map.init();
         var am = AudioManager.get();
         am.setBGM(bgm);
-        am.playBGM();
 
         RenderSystem.init(map.width, map.height);
         PhysicSystem.init(map.width, map.height);
@@ -95,6 +94,8 @@ public class World {
             obj.addComponent(comp);
             obj.init(this);
         }
+
+        gameObjects.values().forEach(go -> go.runInitEvents(this));
     }
 
     public void addEntity(GameObject entity){

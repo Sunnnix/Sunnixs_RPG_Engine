@@ -34,10 +34,14 @@ public class AudioManager {
     }
 
     public void setBGM(AudioResource audio){
-        if(Objects.equals(audio, bgm_resource))
-            return;
-        bgm_resource = audio;
-        bgm.setAudio(audio);
+        if(audio != bgm_resource) {
+            bgm_resource = audio;
+            bgm.setAudio(audio);
+        }
+        if(audio != null) {
+            if(!bgm.isPlaying())
+                bgm.play();
+        }
     }
 
     public void playBGM(){

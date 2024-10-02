@@ -40,6 +40,13 @@ public class EventList{
 
     /** The default run type indicating automatic execution of events. */
     public static final byte RUN_TYPE_AUTO = 0;
+    /**
+     * This run type is executed once during the initialization of the map.<br>
+     * Unlike other run types, using this type will be processed consecutively in a single frame until completion.<br>
+     * Disabled objects still execute init event lists
+     * <font color="#F66">Be cautious: if an event with this run type contains an endless loop, the game will softlock.</font>
+     */
+    public static final byte RUN_TYPE_INIT = 1;
 
     /** List of events managed by this EventList. */
     @Getter(AccessLevel.NONE)
