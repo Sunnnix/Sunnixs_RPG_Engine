@@ -12,6 +12,72 @@ To download and try out the editor/engine, you can download it from this [repo](
 ## Patch Notes
 
 <details>
+    <summary>V0.7</summary>
+
+### New Features
+- **Global Variables** for conditional control of events.
+- **Objects with Events and Components**:
+    - New object shadow rendering.
+    - Local Object Variables.
+    - Objects can be enabled/disabled:
+        - Disabled objects are not rendered, have no physics, and no events are executed (except for init run types).
+    - **Events**:
+        - Change Object Variable.
+        - Change Global Variable.
+        - Change Object State.
+        - Change Object Properties (only enable/disable).
+        - Global Tint.
+        - Teleport.
+        - Look At.
+        - Lua Script Execution (Experimental).
+        - Camera Control.
+        - Change Tile (graphical changes only).
+    - **Components**:
+        - Physics Component for handling object collisions and interactions.
+    - **Event List**:
+        - Support for multiple event lists per object.
+        - **Conditions**: Event lists only run if all conditions are met.
+            - Number Condition (for global and local number variables).
+        - **Run Types**:
+            - Auto (Runs automatically).
+            - Init (Runs once during world initialization).
+            - Player Consult (Runs when player presses action in front of the object).
+            - Touch (Runs when the player touches this object).
+            - Step On (Runs only when the player moves downwards).
+            - Touch Bottom (Runs when the player moves upwards).
+            - Touch South (Runs when the player moves north).
+            - Touch East (Runs when the player moves west).
+            - Touch West (Runs when the player moves east).
+            - Touch North (Runs when the player moves south).
+        - Events can now run in parallel.
+
+### User Interface Improvements
+- **Textbox**: Added a Yes/No option for dialogues.
+- **Tile Animation**: Animated tiles for dynamic environments.
+- **Undo/Redo System**:
+    - Support for undo/redo when drawing or copying tiles.
+- **Copy/Paste System**:
+    - Selected tiles in mode `F1` can now be copied and pasted.
+
+### Map Editor Enhancements
+- **Project Properties**:
+    - Project name can be modified.
+    - Option to display PlayStation or Xbox buttons in the text box.
+- **New Option** to move wall textures up when changing wall size.
+- **New Popup Menu**: Allows setting the player's starting position when editing objects.
+
+### Performance and Stability
+- **Render Ordering**: Fixed issues with render ordering.
+- **Fill Option**: No longer works recursively, reducing memory usage and preventing stack overflow errors.
+- **Engine Memory Usage**: Reduced by 65%.
+- **Rendering Performance**: Massively improved.
+
+### Miscellaneous
+- Added a tile ladder option for better object traversal.
+
+</details>
+
+<details>
     <summary>V0.6</summary>
 
 - Objects with events and components
@@ -80,18 +146,23 @@ To download and try out the editor/engine, you can download it from this [repo](
 
 ## Supported Features
 
-| Description                              | Since |
-|------------------------------------------|-------|
-| Audio System V2 (playable Sounds)        | 0.6   |
-| Sprite animation                         | 0.6   |
-| Dynamic Object properties via Components | 0.6   |
-| Object control via Events                | 0.6   |
-| Objects                                  | 0.6   |
-| Audio System V1 (only BGM)               | 0.4   |
-| Editor multi-language support            | 0.4   |
-| Load custom tilesets                     | 0.3   |
-| Create 3D maps with walls                | 0.2   |
-| Start the game from the editor           | 0.1   |
+| Description                                           | Since |
+|-------------------------------------------------------|-------|
+| Tile animation                                        | 0.7   |
+| Physics System                                        | 0.7   |
+| Map Transition System / Teleport event                | 0.7   |
+| Lua implementation for Events via JLua (Experimental) | 0.7   |
+| Interacting System                                    | 0.7   |
+| Audio System V2 (playable Sounds)                     | 0.6   |
+| Sprite animation                                      | 0.6   |
+| Dynamic Object properties via Components              | 0.6   |
+| Object control via Events                             | 0.6   |
+| Objects                                               | 0.6   |
+| Audio System V1 (only BGM)                            | 0.4   |
+| Editor multi-language support                         | 0.4   |
+| Load custom tilesets                                  | 0.3   |
+| Create 3D maps with walls                             | 0.2   |
+| Start the game from the editor                        | 0.1   |
 
 ## Known Bugs
 <details>
@@ -113,19 +184,15 @@ To download and try out the editor/engine, you can download it from this [repo](
 
 | Description                                                  | Planned | Progress | Priority |
 |--------------------------------------------------------------|---------|----------|----------|
-| Tile animation                                               | 0.7     | 100%     | Medium   |
-| Physics System                                               | 0.7     | 100%     | High     |
-| Map Transition System / Teleporter objects and events        | 0.7     | 100%     | High     |
-| Lua implementation for Events via JLua (Experimental)        | 0.7     | 100%     | Medium   |
-| Interacting System                                           | 0.7     | 99%      | High     |
-| Lua implementation for KI                                    | n/a     | 0%       | Medium   |
+| Battle System                                                | 0.8     | 0%       | High     |
+| Lua implementation for KI                                    | 0.8     | 0%       | Medium   |
+| Object templates                                             | 0.8     | 0%       | Medium   |
+| Copy Objects                                                 | 0.8     | 0%       | Medium   |
 | Graphic Effects via Shader                                   | n/a     | 10%      | Medium   |
 | Plugin system for editor and engine customization            | n/a     | 10%      | Low      |
-| Battle System                                                | n/a     | 0%       | High     |
 | Inventory                                                    | n/a     | 0%       | High     |
 | GUI                                                          | n/a     | 0%       | High     |
 | Audio System V3 (more 3D options)                            | n/a     | 0%       | Medium   |
 | Lua implementation for Events via JLua (Full implementation) | n/a     | 50%      | Low      |
 | Python implementation for Events via Jython                  | n/a     | 0%       | Low      |
 | Ruby implementation for Events via JRuby                     | n/a     | 0%       | Low      |
-| Object templates                                             | n/a     | 0%       | Medium   |

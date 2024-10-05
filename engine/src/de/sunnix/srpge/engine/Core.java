@@ -165,6 +165,8 @@ public class Core {
     public static final int TILE_HEIGHT = 16;
     @Getter
     private static boolean vsync = true;
+    @Getter
+    private static float screenWidth, screenHeight;
     @Setter
     @Getter
     private static float pixel_scale = 2;
@@ -175,6 +177,11 @@ public class Core {
     @Getter
     @Setter
     private static String gameFile = "GameFile.sgf";
+
+    /** Specifies whether Playstation or X-Box buttons should be displayed in a text box when buttons are displayed */
+    @Getter
+    @Setter
+    private static boolean psMode = false;
 
     // *************************************************************** //
 
@@ -259,6 +266,8 @@ public class Core {
     public static void createWindow(String title, int width, int height, Consumer<Window.WindowBuilder> windowBuilder){
         validateCoreStage(CoreStage.INITED);
 
+        screenWidth = width;
+        screenHeight = height;
         var builder = new Window.WindowBuilder(title, width, height, gl_debug_enabled);
         if(windowBuilder != null)
             windowBuilder.accept(builder);

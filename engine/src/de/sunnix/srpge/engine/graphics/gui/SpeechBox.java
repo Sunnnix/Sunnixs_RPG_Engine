@@ -1,7 +1,7 @@
 package de.sunnix.srpge.engine.graphics.gui;
 
 import de.sunnix.sdso.DataSaveObject;
-import de.sunnix.srpge.engine.GlobalConfig;
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.InputManager;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.AudioResource;
@@ -146,7 +146,7 @@ public class SpeechBox {
         this.visible = true;
 
         // convert buttons
-        if(GlobalConfig.isPsMode()){
+        if(Core.isPsMode()){
             text = text.replaceAll(String.valueOf(XBOX_X), String.valueOf(PS_RECT));
             text = text.replaceAll(String.valueOf(XBOX_Y), String.valueOf(PS_TRI));
             text = text.replaceAll(String.valueOf(XBOX_B), String.valueOf(PS_CIR));

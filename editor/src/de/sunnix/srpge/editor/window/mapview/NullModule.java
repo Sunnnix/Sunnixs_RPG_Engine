@@ -33,7 +33,7 @@ public class NullModule extends MapViewModule{
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, float offsetX, float offsetY, long animTime) {
 
     }
 

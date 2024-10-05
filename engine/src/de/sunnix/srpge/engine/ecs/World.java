@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs;
 
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
+import de.sunnix.srpge.engine.Parallax;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.AudioResource;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
@@ -38,6 +39,8 @@ public class World {
 
     @Getter
     private TileMap map;
+    @Getter
+    private Parallax parallax;
 
     /**
      * The current world ticks<br>
@@ -64,6 +67,11 @@ public class World {
             var object = new GameObject(this, o);
             object.size.set(1, 1);
         });
+        var pDSO = dso.getObject("parallax");
+        if(pDSO != null) {
+            parallax = new Parallax();
+            parallax.load(pDSO);
+        }
     }
 
     public void init() throws IOException, InvocationTargetException, IllegalAccessException {
@@ -82,6 +90,9 @@ public class World {
             go.init(this);
             gameObjects.put(go.getID(), go);
         });
+
+        if(parallax != null)
+            parallax.init();
 
         for (var i = 0; i < 0; i++){
             var obj = new GameObject(this, 1, 1);
@@ -184,6 +195,8 @@ public class World {
             PhysicSystem.renderHitboxes();
             FunctionUtils.checkForOpenGLErrors("GameplayState - Post render hitboxes");
         }
+        if(parallax != null)
+            parallax.render();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         gameObjects.values().forEach(GameObject::postRender);
     }

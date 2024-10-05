@@ -87,8 +87,8 @@ public class MoveEvent extends Event{
     @Override
     public void run(World world) {
         float xFactor, zFactor;
-        zFactor = Math.min(1, rMovX == 0 ? 1 : rMovZ / rMovX);
-        xFactor = Math.min(1, rMovZ == 0 ? 1 : rMovX / rMovZ);
+        zFactor = Math.min(1, rMovX == 0 ? 1 : Math.abs(rMovZ) / Math.abs(rMovX));
+        xFactor = Math.min(1, rMovZ == 0 ? 1 : Math.abs(rMovX) / Math.abs(rMovZ));
 
         var go = world.getGameObject(object);
         if (go == null)

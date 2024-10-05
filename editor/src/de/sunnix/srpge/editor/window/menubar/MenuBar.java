@@ -1,6 +1,5 @@
 package de.sunnix.srpge.editor.window.menubar;
 
-import de.sunnix.srpge.editor.docu.UserGuide;
 import de.sunnix.srpge.editor.window.Config;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.menubar.resource.ResourceDialog;
@@ -11,9 +10,16 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
-import java.awt.event.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
-import java.util.*;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
@@ -51,6 +57,7 @@ public class MenuBar extends JMenuBar {
 
         mm.add(new JSeparator());
 
+        mm.add(addProjectDependentComponent(createDefaultMenuItem("Project properties", e -> new ProjectPropertiesDialog(window))));
         mm.add(addProjectDependentComponent(createDefaultMenuItem(getString("menu.file.open_resource_manager"), e -> new ResourceDialog(window))));
 
         mm.add(new JSeparator());
@@ -123,9 +130,9 @@ public class MenuBar extends JMenuBar {
 
         mm.add(new JSeparator(JSeparator.HORIZONTAL));
 
-        var paste = createDefaultMenuItem(getString("manu.edit.paste"), KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, l -> window.onPaste());
+        var paste = createDefaultMenuItem(getString("menu.edit.paste"), KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, l -> window.onPaste());
         paste.setEnabled(false);
-        mm.add(createDefaultMenuItem(getString("manu.edit.copy"), KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK, l -> {
+        mm.add(createDefaultMenuItem(getString("menu.edit.copy"), KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK, l -> {
             if(window.onCopy() != null)
                 paste.setEnabled(true);
         }));
@@ -175,7 +182,14 @@ public class MenuBar extends JMenuBar {
 
     private JMenu setUpMMHelp() {
         var mm = new JMenu(getString("menu.help"));
-        mm.add(createDefaultMenuItem(getString("menu.help.user_guide"), e -> new UserGuide(window)));
+        mm.add(createDefaultMenuItem(getString("menu.help.user_guide"), e -> {
+            var url = "https://sunnix.de/wiki";
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(window, "There was an error opening the URL (" + url + ")!\n" + ex.getMessage(), "Error opening URL", JOptionPane.ERROR_MESSAGE);
+            }
+        }));
         var langMenu = createDefaultMenuItem(getString("menu.help.language"), e -> new LanguageDialog(window));
         mm.add(langMenu);
         mm.add(createDefaultMenuItem(getString("menu.help.about"), e -> new AboutDialog(window)));

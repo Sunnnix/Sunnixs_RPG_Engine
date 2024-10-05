@@ -131,7 +131,7 @@ public class RenderComponent extends Component{
     }
 
     @Override
-    public void onDraw(Window window, GameObject parent, Graphics2D g, float zoom, int x, int y, int w, int h, int d, boolean selected) {
+    public void onDraw(Window window, GameObject parent, Graphics2D g, float zoom, float x, float y, float w, float h, float d, boolean selected) {
         var sprite = window.getSingleton(Resources.class).sprites.getData(this.defaultSprite);
         if(sprite == null)
             return;
@@ -141,7 +141,7 @@ public class RenderComponent extends Component{
         var image = imageRes.getImage();
         if(image == null)
             return;
-        sprite.drawSprite(window, g, 0, 0, zoom, x + (int)(image.getWidth() / imageRes.getWidth() / 2 * zoom), (int)(y + parent.getWidth() * TILE_HEIGHT));
+        sprite.drawSprite(window, g, 0, 0, zoom, (int)(x + image.getWidth() / imageRes.getWidth() / 2 * zoom), (int)(y + parent.getWidth() * TILE_HEIGHT));
     }
 
     private static class StateSpriteEditDialog extends JDialog {

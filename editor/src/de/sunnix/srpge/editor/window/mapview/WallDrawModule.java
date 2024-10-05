@@ -187,16 +187,16 @@ public class WallDrawModule extends MapViewModule {
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, float offsetX, float offsetY, long animTime) {
         var mapWidth = map.getWidth();
         var mapHeight = map.getHeight();
-        var TW = (int)(TILE_WIDTH * view.getZoom());
-        var TH = (int)(TILE_HEIGHT * view.getZoom());
-        var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
-        var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
+        var TW = TILE_WIDTH * view.getZoom();
+        var TH = TILE_HEIGHT * view.getZoom();
+        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX;
+        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY;
 
         var minX = -x / TW;
-        var minY = -y / TH;
+        var minY = Math.floor(-y / TH);
         var maxX = minX + screenWidth / TW + 2;
         var maxY = minY + screenHeight / TH + 2;
 
@@ -206,7 +206,7 @@ public class WallDrawModule extends MapViewModule {
         var tiles = map.getTiles();
         // draw complete with black layer
         g.setColor(new Color(0f, 0f, 0f, .75f));
-        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
+        for (var tX = (int)Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
             for (var tY = 0; tY < mapHeight; tY++) {
                 var tile = tiles[tX + tY * mapWidth];
 
@@ -260,9 +260,9 @@ public class WallDrawModule extends MapViewModule {
                         iX = (texID % tsWidth) * TILE_WIDTH;
                         iY = (texID / tsWidth) * TILE_HEIGHT;
                     }
-                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
-                g.fillRect(dX, dY, TW, TH);
+                g.fillRect((int)dX, (int)dY, (int)TW, (int)TH);
                 // draw walls
                 for (var wall = 0; wall < wallHeight; wall++) {
                     for (var layer = 0; layer < 2; layer++) {
@@ -306,15 +306,15 @@ public class WallDrawModule extends MapViewModule {
                             iX = (wallIndex % tsWidth) * TILE_WIDTH;
                             iY = (wallIndex / tsWidth) * TILE_HEIGHT;
                         }
-                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
-                        g.fillRect(dX, dY, TW, TH);
+                        g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        g.fillRect((int)dX, (int)dY, (int)TW, (int)TH);
                     }
                 }
             }
 
         // draw selected layer
         g.setColor(Color.BLACK);
-        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++) {
+        for (var tX = (int)Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++) {
             var tile = tiles[tX + wallDrawLayer * mapWidth];
 
             var floorY = tile.getgroundY();
@@ -363,7 +363,7 @@ public class WallDrawModule extends MapViewModule {
                     iX = (texID % tsWidth) * TILE_WIDTH;
                     iY = (texID / tsWidth) * TILE_HEIGHT;
                 }
-                g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
             }
 
             for(var wall = 0; wall < tile.getWallHeight(); wall++) {
@@ -413,7 +413,7 @@ public class WallDrawModule extends MapViewModule {
                             iX = (tex[1] % tsWidth) * TILE_WIDTH;
                             iY = (tex[1] / tsWidth) * TILE_HEIGHT;
                         }
-                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                         continue;
                     }
                     var tex = tile.getWallTex(wall);
@@ -458,10 +458,10 @@ public class WallDrawModule extends MapViewModule {
                         iX = (wallIndex % tsWidth) * TILE_WIDTH;
                         iY = (wallIndex / tsWidth) * TILE_HEIGHT;
                     }
-                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 if(window.isShowGrid())
-                    g.drawRect(dX, dY, TW, TH);
+                    g.drawRect((int)dX, (int)dY, (int)TW, (int)TH);
             }
         }
     }

@@ -31,11 +31,11 @@ public class ObjectModule extends MapViewModule {
     @Override
     public boolean onMousePresses(MapView view, MapData map, MouseEvent me, int mapX, int mapY, int tileX, int tileY) {
         var button = me.getButton();
-        var TW = (int)(TILE_WIDTH * view.getZoom());
-        var TH = (int)(TILE_HEIGHT * view.getZoom());
+        var TW = TILE_WIDTH * view.getZoom();
+        var TH = TILE_HEIGHT * view.getZoom();
         float x, y;
-        x = ((float)mapX / TW);
-        y = ((float)mapY / TH);
+        x = mapX / TW;
+        y = mapY / TH;
         if(button == MouseEvent.BUTTON1) {
             preX = mapX;
             preY = mapY;
@@ -43,14 +43,14 @@ public class ObjectModule extends MapViewModule {
             map.setSelectedObject(obj != null ? obj.ID : -1);
             if(me.getClickCount() == 2)
                 if(obj == null) {
-                    obj = createNewObject(map, (float) mapX / TW, (float) mapY / TH);
+                    obj = createNewObject(map, mapX / TW, mapY / TH);
                     map.setSelectedObject(obj.getID());
                 } else
                     openObjectEditor(map, obj);
         } else {
             var obj = map.getObjectAt(x, y);
             map.setSelectedObject(obj != null ? obj.ID : -1);
-            showPopUp(view, map, obj, me.getX(), me.getY(), (float)mapX / TW, (float)mapY / TH);
+            showPopUp(view, map, obj, me.getX(), me.getY(), mapX / TW, mapY / TH);
         }
         window.getObjectListView().reloadObjectsList();
         updateInfo(view, map, mapX, mapY, tileX, tileY);
@@ -98,23 +98,23 @@ public class ObjectModule extends MapViewModule {
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, float offsetX, float offsetY, long animTime) {
         var mapWidth = map.getWidth();
         var mapHeight = map.getHeight();
-        var TW = (int)(TILE_WIDTH * view.getZoom());
-        var TH = (int)(TILE_HEIGHT * view.getZoom());
-        var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
-        var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
+        var TW = TILE_WIDTH * view.getZoom();
+        var TH = TILE_HEIGHT * view.getZoom();
+        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX;
+        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY;
 
         var minX = -x / TW;
-        var minY = -y / TH;
+        var minY = Math.floor(-y / TH);
         var maxX = minX + screenWidth / TW + 2;
         var maxY = minY + screenHeight / TH + 2;
 
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
         // ground tex
-        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
+        for (var tX = (int)Math.max(0, minX); tX < (int)Math.min(mapWidth, maxX); tX++)
             for (var tY = 0; tY < mapHeight; tY++) {
                 var tile = tiles[tX + tY * mapWidth];
 
@@ -168,7 +168,7 @@ public class ObjectModule extends MapViewModule {
                         iX = (texID % tsWidth) * TILE_WIDTH;
                         iY = (texID / tsWidth) * TILE_HEIGHT;
                     }
-                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 // wall tex
                 for(var wall = 0; wall < wallHeight; wall++){
@@ -213,16 +213,16 @@ public class ObjectModule extends MapViewModule {
                             iX = (wallIndex % tsWidth) * TILE_WIDTH;
                             iY = (wallIndex / tsWidth) * TILE_HEIGHT;
                         }
-                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                     }
                 }
             }
 
         if(window.isShowGrid()) {
             g.setColor(Color.BLACK);
-            for (var i = Math.max(0, minX); i < Math.min(mapWidth, maxX); i++)
-                for (var j = Math.max(0, minY); j < Math.min(mapHeight, maxY); j++)
-                    g.drawRect(x + TW * i, y + TH * j, TW, TH);
+            for (var i = (int)Math.max(0, minX); i < Math.min(mapWidth, maxX); i++)
+                for (var j = (int)Math.max(0, minY); j < Math.min(mapHeight, maxY); j++)
+                    g.drawRect((int)(x + TW * i), (int)(y + TH * j), (int)TW, (int)TH);
         }
 
         map.drawObjects(window, g, view.getZoom(), x, y);

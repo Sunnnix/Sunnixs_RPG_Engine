@@ -82,7 +82,7 @@ public abstract class MapViewModule {
      * @param offsetY
      * @param animTime timer to calculate animated tiles
      */
-    public abstract void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime);
+    public abstract void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, float offsetX, float offsetY, long animTime);
 
     /**
      * @param view    content of tab

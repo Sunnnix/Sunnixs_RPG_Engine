@@ -73,7 +73,12 @@ public class Window extends JFrame {
     @Getter
     private File projectPath;
     @Getter
+    @Setter
     private String projectName;
+    /** Specifies whether Playstation or X-Box buttons should be displayed in a text box when buttons are displayed */
+    @Getter
+    @Setter
+    private boolean psMode = false;
     @Getter
     private boolean projectOpen;
     @Getter
@@ -283,6 +288,7 @@ public class Window extends JFrame {
         projectChanged = false;
         startMap = -1;
         startMapPosition = new float[3];
+        psMode = false;
         getSingleton(Resources.class).reset();
         getSingleton(GameData.class).reset();
         setProjectOpen(false);
@@ -400,6 +406,7 @@ public class Window extends JFrame {
                 projectName = config.get("project_name", getString("name.unnamed_project"));
                 startMap = config.get("start_map", -1);
                 startMapPosition = config.getFloatArr("start_map_pos", 3);
+                psMode = config.get("ps_mode", false);
                 dialog.addProgress(500);
                 // load global variables
                 var stream = zip.getInputStream(new ZipEntry("res/variables"));
@@ -501,6 +508,7 @@ public class Window extends JFrame {
                 config.put("project_name", projectName);
                 config.put("start_map", startMap);
                 config.put("start_map_pos", startMapPosition);
+                config.put("ps_mode", psMode);
                 config.put("editor_version", Core.VERSION);
                 dialog.addProgress(500);
                 // save global variables

@@ -7,13 +7,11 @@ import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
-import de.sunnix.srpge.engine.ecs.event.Event;
 import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.ecs.systems.TileAnimationSystem;
 import de.sunnix.srpge.engine.evaluation.Variables;
 import de.sunnix.srpge.engine.graphics.Camera;
-import de.sunnix.srpge.engine.graphics.TestCubeRenderObject;
 import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.util.BetterJSONObject;
@@ -86,6 +84,8 @@ public class GameplayState implements IState {
                     throw new IOException("The version of the GameFile is not equal to the version of the Engine!");
                 Resources.get().loadResources(zip);
 
+                Core.setPsMode(config.get("ps_mode", false));
+
                 var startMapID = config.get("start_map", -1);
                 var startPos = config.getFloatArr("start_map_pos", 3);
                 if(startMapID == -1)
@@ -141,8 +141,12 @@ public class GameplayState implements IState {
             world.update();
             activeEventLists.forEach(el -> el.run(world));
         }
-        if(!renderBlock)
+        if(!renderBlock) {
             RenderSystem.update();
+            var parallax = world.getParallax();
+            if(parallax != null)
+                parallax.update();
+        }
         TileAnimationSystem.update(world);
         FunctionUtils.checkForOpenGLErrors("GameplayState - update after event");
         var pPos = getPlayer().getPosition();

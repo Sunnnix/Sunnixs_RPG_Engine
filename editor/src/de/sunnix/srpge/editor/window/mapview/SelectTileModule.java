@@ -8,6 +8,7 @@ import de.sunnix.srpge.editor.window.resource.Resources;
 import de.sunnix.srpge.editor.window.resource.Tileset;
 import de.sunnix.srpge.editor.window.resource.TilesetPropertie;
 import de.sunnix.srpge.editor.data.Tile;
+import de.sunnix.srpge.editor.window.undoredo.UndoableTilePasteEdit;
 import de.sunnix.srpge.engine.util.Tuple;
 
 import javax.swing.*;
@@ -112,23 +113,23 @@ public class SelectTileModule extends MapViewModule {
     }
 
     @Override
-    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, int offsetX, int offsetY, long animTime) {
+    public void onDraw(Graphics2D g, MapView view, MapData map, int screenWidth, int screenHeight, float offsetX, float offsetY, long animTime) {
         var mapWidth = map.getWidth();
         var mapHeight = map.getHeight();
-        var TW = (int)(TILE_WIDTH * view.getZoom());
-        var TH = (int)(TILE_HEIGHT * view.getZoom());
-        var x = screenWidth / 2 - (mapWidth * TW / 2) + offsetX;
-        var y = screenHeight / 2 - (mapHeight * TH / 2) + offsetY;
+        var TW = TILE_WIDTH * view.getZoom();
+        var TH = TILE_HEIGHT * view.getZoom();
+        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX;
+        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY;
 
         var minX = -x / TW;
-        var minY = -y / TH;
+        var minY = Math.floor(-y / TH);
         var maxX = minX + screenWidth / TW + 2;
         var maxY = minY + screenHeight / TH + 2;
 
         var tilesets = loadTilesets(map.getTilesets());
         var tiles = map.getTiles();
         // ground tex
-        for (var tX = Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
+        for (var tX = (int)Math.max(0, minX); tX < Math.min(mapWidth, maxX); tX++)
             for (var tY = 0; tY < mapHeight; tY++) {
                 var tile = tiles[tX + tY * mapWidth];
 
@@ -183,7 +184,7 @@ public class SelectTileModule extends MapViewModule {
                         iY = (texID / tsWidth) * TILE_HEIGHT;
                     }
 
-                    g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                    g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                 }
                 // wall tex
                 for(var wall = 0; wall < wallHeight; wall++){
@@ -229,16 +230,16 @@ public class SelectTileModule extends MapViewModule {
                             iX = (wallIndex % tsWidth) * TILE_WIDTH;
                             iY = (wallIndex / tsWidth) * TILE_HEIGHT;
                         }
-                        g.drawImage(image, dX, dY, dX + TW, dY + TH, iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
+                        g.drawImage(image, (int)dX, (int)dY, (int)(dX + TW), (int)(dY + TH), iX, iY, iX + TILE_WIDTH, iY + TILE_HEIGHT, null);
                     }
                 }
             }
 
         if(window.isShowGrid()) {
             g.setColor(Color.BLACK);
-            for (var i = Math.max(0, minX); i < Math.min(mapWidth, maxX); i++)
-                for (var j = Math.max(0, minY); j < Math.min(mapHeight, maxY); j++)
-                    g.drawRect(x + TW * i, y + TH * j, TW, TH);
+            for (var i = (int)Math.max(0, minX); i < Math.min(mapWidth, maxX); i++)
+                for (var j = (int)Math.max(0, minY); j < Math.min(mapHeight, maxY); j++)
+                    g.drawRect((int)(x + TW * i), (int)(y + TH * j), (int)TW, (int)TH);
         }
 
         var selected = map.getSelectedTiles();
@@ -252,12 +253,12 @@ public class SelectTileModule extends MapViewModule {
         var wallHeight = tile.getWallHeight();
 
         g.setColor(Color.MAGENTA);
-        g.drawLine(x + TW * sX, y + TH * sY, x + TW * sX + TW * sW, y + TH * sY);
-        g.drawRect(x + TW * sX, y + TH * (sY - wallHeight), TW * sW, TH * (sH + wallHeight));
-        g.drawRect(x + TW * sX, y + TH * (sY - wallHeight), TW * sW, TH * sH);
+        g.drawLine((int)(x + TW * sX), (int)(y + TH * sY), (int)(x + TW * sX + TW * sW), (int)(y + TH * sY));
+        g.drawRect((int)(x + TW * sX), (int)(y + TH * (sY - wallHeight)), (int)(TW * sW), (int)(TH * (sH + wallHeight)));
+        g.drawRect((int)(x + TW * sX), (int)(y + TH * (sY - wallHeight)), (int)(TW * sW), (int)(TH * sH));
 
         g.setColor(tile.getSlopeDirection() != SLOPE_DIRECTION_NONE ? Color.GREEN : Color.YELLOW);
-        g.drawRect(x + TW * sX, y + TH * (sY - groundY), TW * sW, TH * sH);
+        g.drawRect((int)(x + TW * sX), (int)(y + TH * (sY - groundY)), (int)(TW * sW), (int)(TH * sH));
     }
 
     @Override
@@ -305,16 +306,23 @@ public class SelectTileModule extends MapViewModule {
                 var cSH = sTiles[3];
                 if(cSX < 0 || cSX >= map.getWidth() || cSY < 0 || cSY >= map.getHeight())
                     return;
+                var width = Math.max(0, Math.min(sW, map.getWidth() - cSX));
+                var height = Math.max(0, Math.min(sH, map.getHeight() - cSY));
+
+                var preTiles = new Tile[width * height];
+                var postTiles = new Tile[preTiles.length];
+
                 var mTiles = map.getTiles();
-                for(var x = 0; x < sW; x++)
-                    for(var y = 0; y < sH; y++){
+                for(var x = 0; x < width; x++)
+                    for(var y = 0; y < height; y++){
                         var tile = tiles[x + y * sW];
                         var tX = cSX + x;
                         var tY = cSY + y;
-                        if(tX >= map.getWidth() || tY >= map.getHeight())
-                            continue;
+                        preTiles[x + y * width] = mTiles[tX + tY * map.getWidth()].clone();
+                        postTiles[x + y * width] = tile.clone();
                         mTiles[tX + tY * map.getWidth()] = tile.clone();
                     }
+                new UndoableTilePasteEdit(window, view, map, preTiles, postTiles, cSX, cSY, width);
                 view.repaint();
                 window.setProjectChanged();
             }

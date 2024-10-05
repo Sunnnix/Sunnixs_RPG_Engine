@@ -2,6 +2,8 @@ package de.sunnix.srpge.editor.window;
 
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.MapData;
+import de.sunnix.srpge.editor.data.Parallax;
+import de.sunnix.srpge.editor.util.DialogUtils;
 import de.sunnix.srpge.editor.window.resource.Resources;
 
 import javax.swing.*;
@@ -71,6 +73,7 @@ public class MapListView extends JScrollPane {
             popup.add(createMenuItem(getString("view.map_list.popup.set_title"), this::setMapTitle));
             popup.add(createMenuItem(getString("view.map_list.popup.set_size"), this::setMapSize));
             popup.add(createMenuItem(getString("view.map_list.popup.set_bgm"), this::setMapBGM));
+            popup.add(createMenuItem(getString("Edit Parallax"), this::editParallax));
             popup.add(createMenuItem(getString("name.delete"), this::deleteMap));
         }
         popup.show(mapList, x, y);
@@ -186,6 +189,52 @@ public class MapListView extends JScrollPane {
             return;
         map.setBackgroundMusic(newBGM);
         window.setProjectChanged();
+    }
+
+    private void editParallax(ActionEvent e) {
+        var map = window.getSingleton(GameData.class).getMap(Integer.parseInt(mapList.getSelectedValue().substring(0, 4)));
+        if(map == null)
+            return;
+        new JDialog(DialogUtils.getWindowForComponent(this), "Edit Parallax", Dialog.ModalityType.APPLICATION_MODAL){
+            {
+                setLayout(new BorderLayout());
+                var content = new JPanel();
+                var parallax = map.getParallax();
+                var create = parallax == null;
+                if(create)
+                    parallax = new Parallax();
+                var onConfirm = parallax.showView(window, content);
+                add(content, BorderLayout.CENTER);
+                var btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+                var applyBtn = new JButton(getString("button.apply"));
+                var tmp = parallax;
+                applyBtn.addActionListener(l -> {
+                    onConfirm.run();
+                    if(create)
+                        map.setParallax(tmp);
+                    dispose();
+                    window.setProjectChanged();
+                });
+                btnPanel.add(applyBtn);
+                var deleteBtn = new JButton("Delete");
+                deleteBtn.addActionListener(l -> {
+                    map.setParallax(null);
+                    dispose();
+                    window.setProjectChanged();
+                });
+                btnPanel.add(deleteBtn);
+                var cancelBtn = new JButton(getString("button.cancel"));
+                cancelBtn.addActionListener(l -> dispose());
+                btnPanel.add(cancelBtn);
+                if(create)
+                    deleteBtn.setEnabled(false);
+                add(btnPanel, BorderLayout.SOUTH);
+                setResizable(false);
+                pack();
+                setLocationRelativeTo(window);
+                setVisible(true);
+            }
+        };
     }
 
     private void deleteMap(ActionEvent e) {

@@ -50,6 +50,10 @@ public class MapData {
     @Setter
     private int selectedObject = -1;
 
+    @Getter
+    @Setter
+    private Parallax parallax;
+
     public MapData(int id, int width, int height){
         this.ID = id;
         this.width = Math.max(width, MINIMUM_WIDTH);
@@ -107,6 +111,7 @@ public class MapData {
         }).toList());
         dso.putString("bgm", backgroundMusic);
         dso.putList("objects", objects.stream().map(go -> go.save(new DataSaveObject())).toList());
+        dso.putObject("parallax", parallax == null ? null : parallax.save(new DataSaveObject()));
     }
 
     private void loadMap(DataSaveObject dso, int[] version) {
@@ -122,9 +127,14 @@ public class MapData {
         }
         backgroundMusic = dso.getString("bgm", null);
         objects.addAll(dso.<DataSaveObject>getList("objects").stream().map(o -> new GameObject(o, version)).toList());
+        var pDSO = dso.getObject("parallax");
+        if(pDSO != null) {
+            parallax = new Parallax();
+            parallax.load(pDSO);
+        }
     }
 
-    public void drawObjects(Window window, Graphics2D g, float zoom, int offsetX, int offsetY){
+    public void drawObjects(Window window, Graphics2D g, float zoom, float offsetX, float offsetY){
         objects.forEach(o -> o.draw(window, g, zoom, offsetX, offsetY, o.ID == selectedObject));
     }
 
@@ -187,5 +197,12 @@ public class MapData {
         if(x < 0 || x >= width || y < 0 || y >= height)
             return null;
         return tiles[x + y * width];
+    }
+
+    public void replaceTiles(int x, int y, int width, Tile[] tiles) {
+        var height = tiles.length / width;
+        for(var iX = 0; iX < width && iX + x < this.width; iX++)
+            for(var iY = 0; iY < height && iY + y < this.height; iY++)
+                this.tiles[(iX + x) + (iY + y) * this.width] = tiles[iX + iY * width].clone();
     }
 }

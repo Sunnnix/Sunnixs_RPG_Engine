@@ -89,7 +89,7 @@ public class MapView extends JPanel {
             return;
         }
 
-        window.getCurrentMapModule().onDraw((Graphics2D) g, MapView.this, mapData, getWidth(), getHeight(), (int)offsetX, (int)offsetY, animTime);
+        window.getCurrentMapModule().onDraw((Graphics2D) g, MapView.this, mapData, getWidth(), getHeight(), offsetX, offsetY, animTime);
     }
 
     public void setSelectedTilesetTile(int tileset, int index, int width, int height) {
