@@ -4,7 +4,7 @@ This game engine was developed to create and play role-playing games with jump-n
 The engine is currently still at an early stage, which means that essential functions may still be missing.
 A rough overview of the available features can be found in the table below.
 
-To download and try out the editor/engine, you can download it from this [repo](https://github.com/Sunnnix/Sunnixs_RPG_Engine/releases/tag/V0.6) or from this website: [Download](https://sunnix.de/downloads).
+To download and try out the editor/engine, you can download it from this [Releases](https://github.com/Sunnnix/Sunnixs_RPG_Engine/releases/tag/V0.7) or from this website: [Download](https://sunnix.de/downloads).
 
 > [!NOTE]
 > The engine does not contain any graphics, music, or sounds; you have to add them yourself!
