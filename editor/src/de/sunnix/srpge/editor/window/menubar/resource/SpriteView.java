@@ -80,11 +80,19 @@ public class SpriteView extends JPanel implements IResourceView{
 
     private JPanel genTexturePanel(){
         return new JPanel(null){
+
+            int cX, cY;
+
             {
                 setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-                addMouseListener(new MouseAdapter() {
+                var ml = new MouseAdapter() {
+                    int preX, preY;
                     @Override
                     public void mousePressed(MouseEvent e) {
+                        preX = e.getX();
+                        preY = e.getY();
+                        if(e.isControlDown())
+                            return;
                         var sprite = getCurrentSprite();
                         if(sprite == null)
                             return;
@@ -97,8 +105,8 @@ public class SpriteView extends JPanel implements IResourceView{
                         if(image == null)
                             return;
 
-                        var x = getWidth() / 2 - image.getWidth() / 2;
-                        var y = getHeight() / 2 - image.getHeight() / 2;
+                        var x = getWidth() / 2 - image.getWidth() / 2 - cX;
+                        var y = getHeight() / 2 - image.getHeight() / 2 - cY;
 
                         var mX = e.getX();
                         var mY = e.getY();
@@ -118,7 +126,20 @@ public class SpriteView extends JPanel implements IResourceView{
                         window.setProjectChanged();
                         direction.setSelectedIndex(direction.getSelectedIndex()); // reload list
                     }
-                });
+
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        if(!e.isControlDown())
+                            return;
+                        cX += preX - e.getX();
+                        cY += preY - e.getY();
+                        preX = e.getX();
+                        preY = e.getY();
+                        repaint();
+                    }
+                };
+                addMouseListener(ml);
+                addMouseMotionListener(ml);
             }
 
             @Override
@@ -132,8 +153,8 @@ public class SpriteView extends JPanel implements IResourceView{
                 var image = texture.getImage();
                 if(image == null)
                     return;
-                var x = getWidth() / 2 - image.getWidth() / 2;
-                var y = getHeight() / 2 - image.getHeight() / 2;
+                var x = getWidth() / 2 - image.getWidth() / 2 - cX;
+                var y = getHeight() / 2 - image.getHeight() / 2 - cY;
                 g.drawImage(image, x, y, null);
 
                 var spriteWidth = image.getWidth() / texture.getWidth();

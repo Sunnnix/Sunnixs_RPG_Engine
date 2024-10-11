@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.awt.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -48,27 +49,24 @@ public class GameObject {
         this.ID = load(dso, version);
     }
 
-    private static final Color OBJECT_TOP_COLOR = new Color(.2f, .6f, .8f, .65f);
-    private static final Color OBJECT_TOP_COLOR_S = new Color(.8f, .8f, 0f, .65f);
-    private static final Color OBJECT_SIDE_COLOR = new Color(.0f, .5f, 1f, .65f);
-    private static final Color OBJECT_SIDE_COLOR_S = new Color(.6f, .6f, 0f, .65f);
-    private static final Color OBJECT_TOP_COLOR_DISABLED = new Color(.8f, .8f, .8f, .65f);
-    private static final Color OBJECT_TOP_COLOR_DISABLED_S = new Color(1f, 1f, 1f, .65f);
-    private static final Color OBJECT_SIDE_COLOR_DISABLED = new Color(.5f, .5f, .5f, .65f);
-    private static final Color OBJECT_SIDE_COLOR_DISABLED_S = new Color(.75f, .75f, .75f, .65f);
-    private static final Color PLAYER_OBJECT_TOP_COLOR = new Color(.6f, 1f, 1f, .65f);
-    private static final Color PLAYER_OBJECT_SIDE_COLOR = new Color(.4f, .75f, .75f, .65f);
+    public static final Color OBJECT_TOP_COLOR = new Color(.2f, .6f, .8f, .65f);
+    public static final Color OBJECT_TOP_COLOR_S = new Color(.8f, .8f, 0f, .65f);
+    public static final Color OBJECT_SIDE_COLOR = new Color(.0f, .5f, 1f, .65f);
+    public static final Color OBJECT_SIDE_COLOR_S = new Color(.6f, .6f, 0f, .65f);
+    public static final Color OBJECT_TOP_COLOR_DISABLED = new Color(.8f, .8f, .8f, .65f);
+    public static final Color OBJECT_TOP_COLOR_DISABLED_S = new Color(1f, 1f, 1f, .65f);
+    public static final Color OBJECT_SIDE_COLOR_DISABLED = new Color(.5f, .5f, .5f, .65f);
+    public static final Color OBJECT_SIDE_COLOR_DISABLED_S = new Color(.75f, .75f, .75f, .65f);
+    public static final Color PLAYER_OBJECT_TOP_COLOR = new Color(.6f, 1f, 1f, .65f);
+    public static final Color PLAYER_OBJECT_SIDE_COLOR = new Color(.4f, .75f, .75f, .65f);
 
     public void draw(Window window, Graphics2D g, float zoom, float offsetX, float offsetY, boolean selected){
-        var TW = TILE_WIDTH * zoom;
-        var TH = TILE_HEIGHT * zoom;
-        var x = this.x * TW + offsetX;
-        var y = (this.z - this.y) * TH + offsetY;
-        var w = this.width * TW;
-        var h = this.height * TH;
-        var d = this.width * TH;
-        components.forEach(comp -> comp.onDraw(window, this, g, zoom, x, y, w, h, d, selected));
-        drawHitbox(g, zoom, offsetX, offsetY, selected);
+        var drawDefaultHitbox = true;
+        for(var comp: components.stream().sorted(Comparator.comparing(Component::getRenderPriority)).toList())
+            if(!comp.onDraw(window, this, g, zoom, offsetX, offsetY, selected))
+                drawDefaultHitbox = false;
+        if(drawDefaultHitbox)
+            drawHitbox(g, zoom, offsetX, offsetY, selected);
     }
 
     private void drawHitbox(Graphics2D g, float zoom, float offsetX, float offsetY, boolean selected){
@@ -79,15 +77,34 @@ public class GameObject {
         var w = this.width * TW;
         var h = this.height * TH;
         var d = this.width * TH;
-        g.setColor(selected ? (enabled ? OBJECT_SIDE_COLOR_S : OBJECT_SIDE_COLOR_DISABLED_S) : getID() == 999 ? PLAYER_OBJECT_SIDE_COLOR : (enabled ? OBJECT_SIDE_COLOR : OBJECT_SIDE_COLOR_DISABLED));
-        g.fillRect((int)x, (int)y, (int)w, (int)h);
-        y -= d;
-        g.setColor(selected ? (enabled ? OBJECT_TOP_COLOR_S : OBJECT_TOP_COLOR_DISABLED_S) : getID() == 999 ? PLAYER_OBJECT_TOP_COLOR : (enabled ? OBJECT_TOP_COLOR : OBJECT_TOP_COLOR_DISABLED));
-        g.fillRect((int)x, (int)y, (int)w, (int)d);
+
+        var g2d = (Graphics2D) g.create();
+
+        var rectX = (int)(x - w / 2);
+        var rectY = (int)(y + (d / 2) - h);
+        var rectW = (int)w;
+        var rectH = (int)h;
+
+        int stripeWidth = 5;
+
+        g2d.setColor(selected ? (enabled ? OBJECT_SIDE_COLOR_S : OBJECT_SIDE_COLOR_DISABLED_S) : getID() == 999 ? PLAYER_OBJECT_SIDE_COLOR : (enabled ? OBJECT_SIDE_COLOR : OBJECT_SIDE_COLOR_DISABLED));
+        g2d.setClip(rectX, rectY, rectW + 1, rectH + 1);
+        g2d.drawRect(rectX, rectY, rectW, rectH);
+        for (int i = rectX - rectH; i < rectX + rectW; i += stripeWidth)
+            g2d.drawLine(i, rectY, i + rectH, rectY + rectH);
+        rectY = (int)(y - (d / 2) - h);
+        rectH = (int)d;
+        stripeWidth = 3;
+        g2d.setColor(selected ? (enabled ? OBJECT_TOP_COLOR_S : OBJECT_TOP_COLOR_DISABLED_S) : getID() == 999 ? PLAYER_OBJECT_TOP_COLOR : (enabled ? OBJECT_TOP_COLOR : OBJECT_TOP_COLOR_DISABLED));
+        g2d.setClip(rectX, rectY, rectW + 1, rectH + 1);
+        g2d.drawRect(rectX, rectY, rectW, rectH);
+        for (int i = rectX - rectH; i < rectX + rectW; i += stripeWidth)
+            g2d.drawLine(i, rectY, i + rectH, rectY + rectH);
+        g2d.dispose();
     }
 
     public boolean intersects(float x, float y) {
-        return !(x < this.x) && !(x >= this.x + this.width) && !(y < this.z - this.y - height) && !(y >= this.z - this.y + width);
+        return components.stream().anyMatch(comp -> comp.intersects(x, y, this)) || !(x < this.x - width / 2) && !(x >= this.x + this.width / 2) && !(y < this.z - this.y - width / 2 - height) && !(y >= this.z - this.y + width / 2);
     }
 
     public boolean hasComponent(String id) {

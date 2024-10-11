@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-public class FunctionUtils {
+public class FunctionUtils extends de.sunnix.srpge.engine.util.FunctionUtils {
 
     public static JMenuItem createMenuItem(String name, ActionListener al){
         var mi = new JMenuItem(name);

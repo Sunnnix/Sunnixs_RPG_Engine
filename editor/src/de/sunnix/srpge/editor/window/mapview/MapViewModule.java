@@ -108,4 +108,11 @@ public abstract class MapViewModule {
         return null;
     }
 
+    public boolean onKeyPressed(MapView view, MapData map, KeyEvent e) {
+        return false;
+    }
+
+    public boolean onKeyReleased(MapView view, MapData map, KeyEvent e) {
+        return false;
+    }
 }

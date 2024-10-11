@@ -39,16 +39,16 @@ public class ObjectModule extends MapViewModule {
         if(button == MouseEvent.BUTTON1) {
             preX = mapX;
             preY = mapY;
-            var obj = map.getObjectAt(x, y);
+            var obj = map.getObjectAt(x, y, map.getObject(map.getSelectedObject()), me.isShiftDown());
             map.setSelectedObject(obj != null ? obj.ID : -1);
-            if(me.getClickCount() == 2)
+            if(!me.isShiftDown() && me.getClickCount() == 2)
                 if(obj == null) {
                     obj = createNewObject(map, mapX / TW, mapY / TH);
                     map.setSelectedObject(obj.getID());
                 } else
                     openObjectEditor(map, obj);
         } else {
-            var obj = map.getObjectAt(x, y);
+            var obj = map.getObjectAt(x, y, map.getObject(map.getSelectedObject()));
             map.setSelectedObject(obj != null ? obj.ID : -1);
             showPopUp(view, map, obj, me.getX(), me.getY(), mapX / TW, mapY / TH);
         }
@@ -103,8 +103,9 @@ public class ObjectModule extends MapViewModule {
         var mapHeight = map.getHeight();
         var TW = TILE_WIDTH * view.getZoom();
         var TH = TILE_HEIGHT * view.getZoom();
-        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX;
-        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY;
+        // shift position by half a tile because (0, 0) is the center of a tile
+        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX - TW / 2;
+        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY - TH / 2;
 
         var minX = -x / TW;
         var minY = Math.floor(-y / TH);
@@ -225,11 +226,10 @@ public class ObjectModule extends MapViewModule {
                     g.drawRect((int)(x + TW * i), (int)(y + TH * j), (int)TW, (int)TH);
         }
 
+        // shift back position by half a tile, because tiles shift themselves of their width
+        x += TW / 2;
+        y += TH / 2;
         map.drawObjects(window, g, view.getZoom(), x, y);
-        if(window.getStartMap() == map.getID()){
-            var playerPos = window.getStartMapPosition();
-            window.getPlayer().draw(window, g, view.getZoom(), (int)(x + playerPos[0] * TILE_WIDTH * view.getZoom()), (int)(y + (playerPos[2] - playerPos[1]) * TILE_HEIGHT * view.getZoom()), false);
-        }
     }
 
     @Override

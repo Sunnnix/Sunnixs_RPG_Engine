@@ -185,8 +185,9 @@ public class TopDrawModule extends MapViewModule {
         var mapHeight = map.getHeight();
         var TW = TILE_WIDTH * view.getZoom();
         var TH = TILE_HEIGHT * view.getZoom();
-        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX;
-        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY;
+        // shift position by half a tile because (0, 0) is the center of a tile
+        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX - TW / 2;
+        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY - TH / 2;
 
         var minX = -x / TW;
         var minY = Math.floor(-y / TH);

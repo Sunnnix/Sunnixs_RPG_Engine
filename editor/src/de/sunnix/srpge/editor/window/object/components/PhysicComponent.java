@@ -3,15 +3,20 @@ package de.sunnix.srpge.editor.window.object.components;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.window.Window;
+import lombok.Getter;
 
 import javax.swing.*;
 
 import java.awt.*;
 
+import static de.sunnix.srpge.editor.data.GameObject.*;
 import static de.sunnix.srpge.editor.lang.Language.getString;
+import static de.sunnix.srpge.editor.window.Window.TILE_HEIGHT;
+import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
 
 public class PhysicComponent extends Component{
 
+    @Getter
     private float width = 1, height = 1;
     private float weight = .85f, jumpSpeed = .25f;
     private boolean collision = true;
@@ -123,4 +128,40 @@ public class PhysicComponent extends Component{
         return null;
     }
 
+    @Override
+    public boolean onDraw(Window window, GameObject parent, Graphics2D g, float zoom, float offsetX, float offsetY, boolean selected) {
+        var TW = TILE_WIDTH * zoom;
+        var TH = TILE_HEIGHT * zoom;
+        var x = parent.getX() * TW + offsetX;
+        var y = (parent.getZ() - parent.getY()) * TH + offsetY;
+        var w = this.width * TW;
+        var h = this.height * TH;
+        var d = this.width * TH;
+
+        var rectX = (int)(x - w / 2);
+        var rectY = (int)(y + (d / 2) - h);
+        var rectW = (int)w;
+        var rectH = (int)h;
+
+        g.setColor(selected ? (parent.isEnabled() ? OBJECT_SIDE_COLOR_S : OBJECT_SIDE_COLOR_DISABLED_S) : parent.getID() == 999 ? PLAYER_OBJECT_SIDE_COLOR : (parent.isEnabled() ? OBJECT_SIDE_COLOR : OBJECT_SIDE_COLOR_DISABLED));
+        g.fillRect(rectX, rectY, rectW, rectH);
+        rectY = (int)(y - (d / 2) - h);
+        rectH = (int)d;
+        g.setColor(selected ? (parent.isEnabled() ? OBJECT_TOP_COLOR_S : OBJECT_TOP_COLOR_DISABLED_S) : parent.getID() == 999 ? PLAYER_OBJECT_TOP_COLOR : (parent.isEnabled() ? OBJECT_TOP_COLOR : OBJECT_TOP_COLOR_DISABLED));
+        g.fillRect(rectX, rectY, rectW, rectH);
+        return false;
+    }
+
+    @Override
+    public int getRenderPriority() {
+        return 5;
+    }
+
+    @Override
+    public boolean intersects(float x, float y, GameObject parent) {
+        var pX = parent.getX();
+        var pY = parent.getY();
+        var pZ = parent.getZ();
+        return !(x < pX - width / 2) && !(x >= pX + this.width / 2) && !(y < pZ - pY - width / 2 - height) && !(y >= pZ - pY + width / 2);
+    }
 }

@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs.systems.physics;
 
+import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.graphics.*;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -51,7 +52,9 @@ public class DebugRenderObject {
     public void render(Vector3f pos, Vector2f size) {
         if(!mesh.isValid())
             return;
-        var model = new Matrix4f().translate(pos.x * 24, (-pos.z + pos.y - size.x) * 16, 0).scale(size.x * 24, (size.y + size.x) * 16, 1);
+        var TW = Core.TILE_WIDTH;
+        var TH = Core.TILE_HEIGHT;
+        var model = new Matrix4f().translate(pos.x * TW, (-pos.z + pos.y - size.x / 2) * TH, 0).scale(size.x * TW, (size.y + size.x) * TH, 1);
         var view = Camera.getView();
         var proj = Camera.getProjection();
         var mat = proj.mul(view, new Matrix4f());

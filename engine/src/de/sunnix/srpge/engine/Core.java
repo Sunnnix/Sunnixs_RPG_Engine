@@ -3,10 +3,7 @@ package de.sunnix.srpge.engine;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.OpenALContext;
 import de.sunnix.srpge.engine.ecs.event.*;
-import de.sunnix.srpge.engine.evaluation.EvaluationRegistry;
-import de.sunnix.srpge.engine.evaluation.NumberCondition;
-import de.sunnix.srpge.engine.evaluation.NumberVariableProvider;
-import de.sunnix.srpge.engine.evaluation.ObjectVariableProvider;
+import de.sunnix.srpge.engine.evaluation.*;
 import de.sunnix.srpge.engine.memory.ContextQueue;
 import de.sunnix.srpge.engine.memory.MemoryHandler;
 import de.sunnix.srpge.engine.debug.FPSGenerator;
@@ -379,6 +376,7 @@ public class Core {
         EvaluationRegistry.registerCondition("number", NumberCondition::new);
         EvaluationRegistry.registerProvider("num_var", NumberVariableProvider::new);
         EvaluationRegistry.registerProvider("loc_var", ObjectVariableProvider::new);
+        EvaluationRegistry.registerProvider("object_num", ObjectNumberProvider::new);
     }
 
     /**

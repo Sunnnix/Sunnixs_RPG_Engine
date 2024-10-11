@@ -54,13 +54,6 @@ public class RenderSystem {
         return hb1.intersects(hb2);
     }
 
-    private static <T> T findFirst(Collection<T> list, Function<T, Boolean> filter){
-        for(var o : list)
-            if(filter.apply(o))
-                return o;
-        return null;
-    }
-
     public static void update(){
         final var camSize = Camera.getSize().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1.5f);
         final var camPos = Camera.getPos().div(Core.TILE_WIDTH, Core.TILE_HEIGHT, new Vector2f()).mul(1, -1).sub(camSize.div(2, new Vector2f()));
@@ -78,7 +71,7 @@ public class RenderSystem {
         if(objects.isEmpty())
            return;
         objects.removeIf(go -> !go.isEnabled());
-        objects.forEach(go -> go.setZ_pos(go.getPosition().z + go.size.x));
+        objects.forEach(go -> go.setZ_pos(go.getPosition().z + go.size.x / 2));
 
         var colliding = new ArrayList<Set<GameObject>>();
 
@@ -88,7 +81,7 @@ public class RenderSystem {
                 var go2 = objects.get(j);
                 if(go.equals(go2) || !collidingPlane(go, go2))
                     continue;
-                var list = findFirst(colliding, o -> o.contains(go) || o.contains(go2));
+                var list = firstOrNull(colliding, o -> o.contains(go) || o.contains(go2));
                 if(list == null){
                     list = new HashSet<>();
                     list.add(go);

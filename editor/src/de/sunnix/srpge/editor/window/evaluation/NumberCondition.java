@@ -29,6 +29,11 @@ public class NumberCondition extends de.sunnix.srpge.engine.evaluation.NumberCon
     }
 
     @Override
+    public EvaluationRegistry.Type getProviderType() {
+        return EvaluationRegistry.Type.NUMBER;
+    }
+
+    @Override
     public void load(DataSaveObject dso) {
         super.load(dso);
         var pDSO = dso.getObject("provider");
@@ -87,8 +92,7 @@ public class NumberCondition extends de.sunnix.srpge.engine.evaluation.NumberCon
             public void mousePressed(MouseEvent e) {
                 if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2)
                     if(tmpProvider == null) {
-                        var selector = new JComboBox<>(new String[]{ "Global", "Local" });
-                        selector.setSelectedIndex(0);
+                        var selector = EvaluationRegistry.getTypeProvidersCombo(getProviderType(), null);
                         if(!DialogUtils.showMultiInputDialog(content, "Add Provider", null, new String[]{"Provider:"}, new JComponent[]{selector}))
                             return;
                         tmpProvider = createProvider(window, content, map, object, selector.getSelectedIndex() == 0 ? new NumberVariableProvider() : new ObjectVariableProvider());

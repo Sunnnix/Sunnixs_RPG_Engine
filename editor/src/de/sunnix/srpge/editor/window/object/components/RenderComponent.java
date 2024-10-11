@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
+import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
 import static de.sunnix.srpge.engine.Core.TILE_HEIGHT;
 
 public class RenderComponent extends Component{
@@ -131,17 +132,36 @@ public class RenderComponent extends Component{
     }
 
     @Override
-    public void onDraw(Window window, GameObject parent, Graphics2D g, float zoom, float x, float y, float w, float h, float d, boolean selected) {
+    public boolean onDraw(Window window, GameObject parent, Graphics2D g, float zoom, float offsetX, float offsetY, boolean selected) {
         var sprite = window.getSingleton(Resources.class).sprites.getData(this.defaultSprite);
         if(sprite == null)
-            return;
+            return true;
         var imageRes = sprite.getImage(window);
         if(imageRes == null)
-            return;
+            return true;
         var image = imageRes.getImage();
         if(image == null)
-            return;
-        sprite.drawSprite(window, g, 0, 0, zoom, (int)(x + image.getWidth() / imageRes.getWidth() / 2 * zoom), (int)(y + parent.getWidth() * TILE_HEIGHT));
+            return true;
+
+        var TW = TILE_WIDTH * zoom;
+        var TH = TILE_HEIGHT * zoom;
+        var x = parent.getX() * TW + offsetX;
+        var y = (parent.getZ() - parent.getY()) * TH + offsetY;
+        var sW = image.getWidth() / imageRes.getWidth();
+        var sH = image.getHeight() / imageRes.getHeight();
+        var w = sW * zoom;
+        var h = sH * zoom;
+        x -= w / 2;
+        y -= h - ((parent.hasComponent(PhysicComponent.class) ? parent.getComponent(PhysicComponent.class).getWidth() / 2 : parent.getWidth() / 2) * TH);
+
+        g.drawImage(image, (int)x, (int)y, (int)(x + w), (int)(y + h), 0, 0, sW, sH, null);
+
+        return true;
+    }
+
+    @Override
+    public int getRenderPriority() {
+        return 1;
     }
 
     private static class StateSpriteEditDialog extends JDialog {

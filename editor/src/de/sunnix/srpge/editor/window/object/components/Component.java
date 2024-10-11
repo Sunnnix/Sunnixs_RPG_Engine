@@ -56,6 +56,30 @@ public abstract class Component implements Cloneable{
         return new String[0];
     }
 
-    public void onDraw(Window window, GameObject parent, Graphics2D g, float zoom, float x, float y, float w, float h, float d, boolean selected) {}
+    /**
+     * @return should draw default hb
+     */
+    public boolean onDraw(Window window, GameObject parent, Graphics2D g, float zoom, float offsetX, float offsetY, boolean selected) {
+        return true;
+    }
+
+    /**
+     * Determines the drawing priority<br>
+     * Higher values will be drawn later
+     */
+    public int getRenderPriority(){
+        return 0;
+    }
+
+    /**
+     * Does the position matches the parent object of this component
+     * @param x position X of map
+     * @param y position Y of map
+     * @param parent parent component
+     * @return if the coords match the parent
+     */
+    public boolean intersects(float x, float y, GameObject parent) {
+        return false;
+    }
 
 }

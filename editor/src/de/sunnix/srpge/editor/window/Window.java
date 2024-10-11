@@ -212,8 +212,8 @@ public class Window extends JFrame {
 
     private void registerEvaluation(){
         EvaluationRegistry.registerCondition("number", NumberCondition::new);
-        EvaluationRegistry.registerProvider("num_var", NumberVariableProvider::new);
-        EvaluationRegistry.registerProvider("loc_var", ObjectVariableProvider::new);
+        EvaluationRegistry.registerProvider("num_var", "Global Variable", EvaluationRegistry.Type.NUMBER, NumberVariableProvider::new);
+        EvaluationRegistry.registerProvider("loc_var", "Local Variable", EvaluationRegistry.Type.NUMBER, ObjectVariableProvider::new);
     }
 
     private void setupViews(){
@@ -688,6 +688,9 @@ public class Window extends JFrame {
         startMapPosition[0] = x;
         startMapPosition[1] = y;
         startMapPosition[2] = z;
+        player.setX(x);
+        player.setY(y);
+        player.setZ(z);
         mapListView.repaint();
         setProjectChanged();
     }

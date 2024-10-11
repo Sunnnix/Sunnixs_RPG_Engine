@@ -16,6 +16,8 @@ public interface ICondition extends Cloneable{
         return dso;
     }
 
+    EvaluationRegistry.Type getProviderType();
+
     String getID();
 
     Object clone();

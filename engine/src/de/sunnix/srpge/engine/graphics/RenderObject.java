@@ -34,7 +34,7 @@ public abstract class RenderObject extends MemoryHolder {
         else
             texture.bind(0);
         mesh.bind();
-        var model = new Matrix4f().translate(pos.x * 24, (-pos.z - pos.y - object_width) * 16, z_Buffer).scale(size.x, size.y, 1);
+        var model = new Matrix4f().translate(pos.x * Core.TILE_WIDTH, (-pos.z - pos.y - object_width / 2) * Core.TILE_HEIGHT, z_Buffer).scale(size.x, size.y, 1);
         var view = Camera.getView();
         var proj = Camera.getProjection();
         var mat = proj.mul(view, new Matrix4f());

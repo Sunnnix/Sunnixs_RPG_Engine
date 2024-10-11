@@ -13,6 +13,7 @@ import de.sunnix.srpge.engine.util.Tuple;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
@@ -109,6 +110,7 @@ public class SelectTileModule extends MapViewModule {
         sTiles[1] = Math.min(preY, tileY);
         sTiles[2] = Math.max(Math.abs(preX - tileX) + 1, 1);
         sTiles[3] = Math.max(Math.abs(preY - tileY) + 1, 1);
+        window.getPropertiesView().loadSelectedTileData();
         return true;
     }
 
@@ -118,8 +120,9 @@ public class SelectTileModule extends MapViewModule {
         var mapHeight = map.getHeight();
         var TW = TILE_WIDTH * view.getZoom();
         var TH = TILE_HEIGHT * view.getZoom();
-        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX;
-        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY;
+        // shift position by half a tile because (0, 0) is the center of a tile
+        var x = screenWidth / 2f - (mapWidth * TW / 2) + offsetX - TW / 2;
+        var y = screenHeight / 2f - (mapHeight * TH / 2) + offsetY - TH / 2;
 
         var minX = -x / TW;
         var minY = Math.floor(-y / TH);
@@ -326,6 +329,72 @@ public class SelectTileModule extends MapViewModule {
                 view.repaint();
                 window.setProjectChanged();
             }
+        };
+    }
+
+    @Override
+    public boolean onKeyPressed(MapView view, MapData map, KeyEvent e) {
+        var sTiles = map.getSelectedTiles();
+        var x = sTiles[0];
+        var y = sTiles[1];
+        var w = sTiles[2];
+        var h = sTiles[3];
+        var mW = map.getWidth();
+        var mH = map.getHeight();
+        return switch (e.getKeyCode()){
+            case KeyEvent.VK_DOWN -> {
+                if(e.isShiftDown())
+                    h++;
+                else
+                    y++;
+                if(y < 0 || y + h > mH)
+                    yield false;
+                sTiles[1] = y;
+                sTiles[3] = h;
+                view.repaint();
+                window.getPropertiesView().loadSelectedTileData();
+                yield true;
+            }
+            case KeyEvent.VK_UP -> {
+                if(e.isShiftDown())
+                    h--;
+                else
+                    y--;
+                if(y < 0 || h < 1)
+                    yield false;
+                sTiles[1] = y;
+                sTiles[3] = h;
+                view.repaint();
+                window.getPropertiesView().loadSelectedTileData();
+                yield true;
+            }
+            case KeyEvent.VK_RIGHT -> {
+                if(e.isShiftDown())
+                    w++;
+                else
+                    x++;
+                if(x < 0 || x + w > mW)
+                    yield false;
+                sTiles[0] = x;
+                sTiles[2] = w;
+                view.repaint();
+                window.getPropertiesView().loadSelectedTileData();
+                yield true;
+            }
+            case KeyEvent.VK_LEFT -> {
+                if(e.isShiftDown())
+                    w--;
+                else
+                    x--;
+                if(x < 0 || w < 1)
+                    yield false;
+                sTiles[0] = x;
+                sTiles[2] = w;
+                view.repaint();
+                window.getPropertiesView().loadSelectedTileData();
+                yield true;
+            }
+            default -> false;
         };
     }
 

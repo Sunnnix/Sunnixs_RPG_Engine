@@ -4,17 +4,17 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.window.Config;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.copyobjects.ICopyObject;
+import de.sunnix.srpge.engine.Core;
 import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.event.*;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
+import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 
 public class MapView extends JPanel {
 
@@ -37,6 +37,7 @@ public class MapView extends JPanel {
         addMouseListener(ml);
         addMouseMotionListener(ml);
         addMouseWheelListener(ml);
+        addKeyListener(genKeyListener());
 
         addAncestorListener(new AncestorListener() {
             @Override
@@ -244,7 +245,35 @@ public class MapView extends JPanel {
             }
 
             private int[] transMapCoordToTileCoord(int x, int y){
-                return new int[]{ (int)Math.floor(x / (float) Window.TILE_WIDTH / zoom), (int)Math.floor(y / (float) Window.TILE_HEIGHT / zoom)};
+                return new int[]{ (int)Math.floor((x / (float) Core.TILE_WIDTH + .5f) / zoom), (int)Math.floor((y / (float) Core.TILE_HEIGHT + .5f) / zoom)};
+            }
+        };
+    }
+
+    private KeyListener genKeyListener() {
+        return new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(bitcheck(e.getModifiersEx(), KeyEvent.CTRL_DOWN_MASK) && e.getKeyCode() == KeyEvent.VK_SPACE){
+                    offsetX = 0;
+                    offsetY = 0;
+                    repaint();
+                    return;
+                }
+                var mapData = window.getSingleton(GameData.class).getMap(mapID);
+                if(mapData == null)
+                    return;
+                if(!window.getCurrentMapModule().onKeyPressed(MapView.this, mapData, e))
+                    window.dispatchEvent(e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                var mapData = window.getSingleton(GameData.class).getMap(mapID);
+                if(mapData == null)
+                    return;
+                if(!window.getCurrentMapModule().onKeyReleased(MapView.this, mapData, e))
+                    window.dispatchEvent(e);
             }
         };
     }

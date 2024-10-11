@@ -132,16 +132,16 @@ public class TileMap {
             return;
         if(tileset == null)
             return;
-        var size = new Vector2f(24, 16);
+        var TW = Core.TILE_WIDTH;
+        var TH = Core.TILE_HEIGHT;
         shader.bind();
         shader.uniform4f("globalColoring", Core.getGlobalColoring());
-//        texture.bind(0);
         var tsTex = Resources.get().getTilesetTex(tileset);
         if(tsTex == null)
             return;
         tsTex.bind(0);
         bind();
-        var model = new Matrix4f().scale(size.x, size.y, 1);
+        var model = new Matrix4f().scale(TW, TH, 1).translate(0, .5f, 0);
         var view = Camera.getView();
         var proj = Camera.getProjection();
         var mat = proj.mul(view, new Matrix4f());

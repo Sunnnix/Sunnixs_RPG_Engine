@@ -118,9 +118,16 @@ public class PhysicComponent extends Component {
     public void jump(){
         if(jumped || fallingTime > noobHelpTime && (falling || flying))
             return;
+        parent.addState(States.JUMPING.id());
         jumped = true;
         fallSpeed = jumpSpeed;
         setFalling(true);
+    }
+
+    public void setFallSpeed(float fallSpeed){
+        this.fallSpeed = fallSpeed;
+        if(fallSpeed <= 0)
+            parent.removeState(States.JUMPING.id());
     }
 
     @Override

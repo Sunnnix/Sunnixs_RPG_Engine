@@ -8,6 +8,11 @@ import javax.swing.*;
 
 public class NULLCondition extends de.sunnix.srpge.engine.evaluation.NULLCondition implements ICondition {
     @Override
+    public EvaluationRegistry.Type getProviderType() {
+        return null;
+    }
+
+    @Override
     public Object clone() {
         try {
             return super.clone();

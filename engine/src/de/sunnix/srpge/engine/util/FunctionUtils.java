@@ -101,6 +101,22 @@ public class FunctionUtils {
     }
 
     /**
+     * Returns the index of the first found object with a true expression
+     * @param collection the collection to check
+     * @param expression the expression that checks for the value
+     * @return The first index of the matching expression or -1
+     */
+    public static <T> int indexOf(Collection<T> collection, Function<T, Boolean> expression){
+        var index = 0;
+        for(var item: collection) {
+            if(expression.apply(item))
+                return index;
+            index++;
+        }
+        return -1;
+    }
+
+    /**
      * Converts a List of shorts to a short array
      * @param list List of shorts
      * @return converted short array

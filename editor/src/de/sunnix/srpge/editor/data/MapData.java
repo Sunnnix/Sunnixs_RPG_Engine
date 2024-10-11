@@ -8,9 +8,8 @@ import lombok.Setter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-
-import static de.sunnix.srpge.editor.lang.Language.getString;
 
 public class MapData {
 
@@ -135,7 +134,9 @@ public class MapData {
     }
 
     public void drawObjects(Window window, Graphics2D g, float zoom, float offsetX, float offsetY){
-        objects.forEach(o -> o.draw(window, g, zoom, offsetX, offsetY, o.ID == selectedObject));
+        objects.stream().sorted(Comparator.comparing(GameObject::getZ)).forEach(o -> o.draw(window, g, zoom, offsetX, offsetY, o.ID == selectedObject));
+        if(window.getStartMap() == ID)
+            window.getPlayer().draw(window, g, zoom, offsetX, offsetY, false);
     }
 
     public GameObject createNewObject(float x, float y) {
@@ -160,12 +161,46 @@ public class MapData {
             return nextID;
     }
 
-    public GameObject getObjectAt(float x, float y) {
-        for(var o : objects){
-            if(o.intersects(x, y))
-                return o;
+    /**
+     * Returns a {@link GameObject} that intersects the specified (x, y) coordinates.<br>
+     * <br>
+     * This method can either return the currently selected object if it intersects
+     * the coordinates, or it can return the next object in the list that intersects
+     * the coordinates, depending on the {@code goNext} parameter.
+     *
+     * @param x the x-coordinate to check for intersections
+     * @param y the y-coordinate to check for intersections
+     * @param selected the currently selected {@link GameObject}, used to determine
+     *                 whether to return it or search for the next object or null
+     * @param goNext if {@code true}, the method will return the next object that
+     *               intersects the coordinates after the selected object is found.
+     *               If {@code false}, the method will return the selected object if
+     *               it intersects the coordinates and if not another object that intersects.
+     *
+     * @return the {@link GameObject} that intersects the (x, y) coordinates, or
+     *         the next one if {@code goNext} is true. Returns {@code null} if no
+     *         intersecting object is found.
+     */
+    public GameObject getObjectAt(float x, float y, GameObject selected, boolean goNext) {
+        if(!goNext && selected != null && selected.intersects(x, y))
+            return selected;
+        GameObject first = null;
+        var foundSelected = false;
+        for(var o : objects.stream().sorted(Comparator.comparing(GameObject::getZ).reversed()).toList()){
+            if(o.intersects(x, y)) {
+                if(!goNext || foundSelected)
+                    return o;
+                if(first == null)
+                    first = o;
+                if(o.equals(selected))
+                    foundSelected = true;
+            }
         }
-        return null;
+        return first;
+    }
+
+    public GameObject getObjectAt(float x, float y, GameObject selected) {
+        return getObjectAt(x, y, selected, false);
     }
 
     public GameObject getObject(int id) {
