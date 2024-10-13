@@ -12,13 +12,11 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
-
 /**
  * The EventList class manages a list of {@link Event} objects for a
  * {@link GameObject} in the game. Events in the list can be run sequentially,
  * and can optionally block certain game processes (like user input or updates).
- * The list provides functionality to {@link #reset() reset}, {@link #run(World) run}, and manage event states.
+ * The list provides functionality to {@link #reset(World) reset}, {@link #run(World) run}, and manage event states.
  */
 @Getter
 @Setter
@@ -98,9 +96,13 @@ public class EventList{
     }
 
     /**
-     * Runs the current event in the list. If the current event is finished, it moves
-     * to the next event and executes it. If all events are finished, it resets or deactivates
-     * the event list as necessary.
+     * Executes the current event list. If the current event is finished,
+     * it moves to the next event and prepares or executes it as needed. If all
+     * events are finished, the list resets or deactivates itself as necessary.<br>
+     * <br>
+     * This method ensures that parallel and instant events are handled appropriately,
+     * running them immediately or adding them to the list of parallel events. The
+     * event list will block the game if the event type requires it.
      *
      * @param world the {@link World} in which the events are running.
      */
@@ -110,46 +112,91 @@ public class EventList{
             reset = !reset;
             return;
         }
-        Event event = null;
-        boolean finished = currentIndex == -1 || (event = events.get(currentIndex)).isFinished(world);
-        if(finished){
-            if(event != null) {
-                event.finish(world);
-                if(reset){
-                    reset();
-                    return;
-                }
-            }
-            do {
-                currentIndex++;
-                if(currentIndex >= events.size()) {
-                    reset();
-                    return;
-                }
-                event = events.get(currentIndex);
-                event.prepare(world);
-                if(event.isParallel())
-                    parallelEvents.add(event);
-            } while (event.isParallel());
-            if(getCurrentEventBlockType().ordinal() >= BlockType.UPDATE.ordinal())
-                world.addBlockingEvent(this);
-        }
+
+        // Run parallel events and remove finished ones
         parallelEvents.removeIf(e -> {
-           e.run(world);
-           if(e.isFinished(world)) {
-               e.finish(world);
-               return true;
-           }
-           return false;
+            e.run(world);
+            if (e.isFinished(world)) {
+                e.finish(world);
+                return true;
+            }
+            return false;
         });
+
+        // Start the next event if no event is currently active
+        if(currentIndex == -1)
+            nextEvent(world);
+        if(!active)
+            return;
+
+        // Run the current event
+        var event = events.get(currentIndex);
         event.run(world);
+
+        // Check if the current event is finished, and move to the next
+        if(event.isFinished(world)){
+            event.finish(world);
+            nextEvent(world);
+        }
+    }
+
+    /**
+     * Moves to the next event in the list and prepares it for execution. If the
+     * next event is of a type that requires blocking (e.g., an update event),
+     * the event list is added as a blocking event to the world.
+     *
+     * @param world the {@link World} in which the events are running.
+     */
+    private void nextEvent(World world){
+        prepareNextEvent(world);
+        if (active && getCurrentEventBlockType().ordinal() >= BlockType.UPDATE.ordinal())
+            world.addBlockingEvent(this);
+    }
+
+    /**
+     * Prepares the next event in the list. If the event is instant or parallel, it
+     * either executes the instant event immediately or adds parallel events to the
+     * list of parallel events. If there are no more events to run, the event list
+     * will be reset.
+     *
+     * @param world the {@link World} in which the events are running.
+     */
+    private void prepareNextEvent(World world){
+        if(++currentIndex >= events.size()){
+            reset(world);
+            return;
+        }
+        var event = events.get(currentIndex);
+        event.prepare(world);
+
+        // Handle instant and parallel events
+        if(event.isInstant(world) || event.isParallel()){
+            if(event.isInstant(world)) {
+                // Completely run instant events immediately
+                do
+                    event.run(world);
+                while (!event.isFinished(world));
+                event.finish(world);
+            } else {
+                parallelEvents.add(event);
+                event.run(world);
+            }
+            if(currentIndex + 1 >= events.size()){
+                reset(world);
+                return;
+            }
+            // If it's not a normal event recursively prepare the next event until a normal event is found,
+            // or no more events are present
+            prepareNextEvent(world);
+        }
     }
 
     /** Resets the event list to its initial state, making it ready to run again. */
-    public void reset(){
+    public void reset(World world){
         currentIndex = -1;
         active = false;
         reset = false;
+        parallelEvents.forEach(e -> e.finish(world));
         parallelEvents.clear();
     }
 

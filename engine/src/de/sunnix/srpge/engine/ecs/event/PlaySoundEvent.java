@@ -51,7 +51,7 @@ public class PlaySoundEvent extends Event{
     }
 
     @Override
-    public void finish(World world) {
-
+    public boolean isInstant(World world) {
+        return !waitForEnd;
     }
 }

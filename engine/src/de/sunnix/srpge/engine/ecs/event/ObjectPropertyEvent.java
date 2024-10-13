@@ -40,4 +40,9 @@ public class ObjectPropertyEvent extends Event {
     public boolean isFinished(World world) {
         return true;
     }
+
+    @Override
+    public boolean isInstant(World world) {
+        return true;
+    }
 }

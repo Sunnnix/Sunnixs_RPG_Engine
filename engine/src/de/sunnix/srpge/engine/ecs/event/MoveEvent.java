@@ -74,6 +74,7 @@ public class MoveEvent extends Event{
             rMovZ = 0;
             return;
         }
+        go.addState(States.MOVING.id());
         rMovX = movX;
         rMovY = movY;
         rMovZ = movZ;

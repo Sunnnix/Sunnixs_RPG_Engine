@@ -239,4 +239,8 @@ public class TeleportEvent extends Event{
             customTransitionEvent.finish(world);
     }
 
+    @Override
+    public boolean isInstant(World world) {
+        return cancel || transitionType == TransitionType.NONE && map == -1;
+    }
 }

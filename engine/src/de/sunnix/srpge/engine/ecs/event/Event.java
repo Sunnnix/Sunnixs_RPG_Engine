@@ -72,6 +72,19 @@ public abstract class Event implements Cloneable {
     public void finish(World world){}
 
     /**
+     * Determines if this object should be processed as an instant event.<br>
+     * Instant events are executed and completed within the same frame, meaning
+     * they do not delay or pause the {@link EventList event list}.
+     *
+     * @param world the game world in which the event was executed
+     * @return {@code true} if the event runs and finishes within the same frame;
+     *         {@code false} otherwise.
+     */
+    public boolean isInstant(World world){
+        return false;
+    }
+
+    /**
      * Creates a clone of this event.
      *
      * @return a cloned instance of this event
