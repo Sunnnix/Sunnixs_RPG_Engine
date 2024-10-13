@@ -25,6 +25,9 @@ public class PhysicComponent extends Component{
     private boolean canClimb;
     private boolean hasShadow = true;
 
+    @Getter
+    private float baseMoveSpeed = .35f;
+
     public PhysicComponent() {
         super("physic");
     }
@@ -45,6 +48,7 @@ public class PhysicComponent extends Component{
         platform = dso.getBool("platform", false);
         canClimb = dso.getBool("can_climb", false);
         hasShadow = dso.getBool("has_shadow", true);
+        baseMoveSpeed = dso.getFloat("base_ms", .35f);
         return dso;
     }
 
@@ -59,6 +63,7 @@ public class PhysicComponent extends Component{
         dso.putBool("platform", platform);
         dso.putBool("can_climb", canClimb);
         dso.putBool("has_shadow", hasShadow);
+        dso.putFloat("base_ms", baseMoveSpeed);
         return dso;
     }
 
@@ -72,6 +77,8 @@ public class PhysicComponent extends Component{
         weight.addChangeListener(l -> this.weight = ((Number)weight.getValue()).floatValue());
         var jumpSpeed = new JSpinner(new SpinnerNumberModel(this.jumpSpeed, 0, 10, .05));
         jumpSpeed.addChangeListener(l -> this.jumpSpeed = ((Number)jumpSpeed.getValue()).floatValue());
+        var baseMoveSpeed = new JSpinner(new SpinnerNumberModel(this.baseMoveSpeed, 0.005, 1, .005));
+        baseMoveSpeed.addChangeListener(l -> this.baseMoveSpeed = ((Number)baseMoveSpeed.getValue()).floatValue());
         var collision = new JCheckBox("Collision", this.collision);
         collision.addActionListener(l -> this.collision = collision.isSelected());
         var flying = new JCheckBox("Flying", this.flying);
@@ -87,9 +94,11 @@ public class PhysicComponent extends Component{
         var label4 = new JLabel("Height:");
         var label1 = new JLabel("Weight:");
         var label2 = new JLabel("Jump speed:");
-        label1.setPreferredSize(label2.getPreferredSize());
-        label3.setPreferredSize(label2.getPreferredSize());
-        label4.setPreferredSize(label2.getPreferredSize());
+        var label5 = new JLabel("Base move speed:");
+        label1.setPreferredSize(label5.getPreferredSize());
+        label2.setPreferredSize(label5.getPreferredSize());
+        label3.setPreferredSize(label5.getPreferredSize());
+        label4.setPreferredSize(label5.getPreferredSize());
 
         addView(parent, new JPanel() {
             {
@@ -117,6 +126,13 @@ public class PhysicComponent extends Component{
                 setLayout(new BorderLayout(5,0));
                 add(label2, BorderLayout.WEST);
                 add(jumpSpeed, BorderLayout.CENTER);
+            }
+        });
+        addView(parent, new JPanel(){
+            {
+                setLayout(new BorderLayout(5,0));
+                add(label5, BorderLayout.WEST);
+                add(baseMoveSpeed, BorderLayout.CENTER);
             }
         });
         addView(parent, collision);

@@ -6,6 +6,8 @@ import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
+import de.sunnix.srpge.engine.util.FunctionUtils.ObjChain;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,6 +39,11 @@ import static de.sunnix.srpge.engine.ecs.event.MoveEvent.MoveEventHandle.*;
  */
 public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implements IEvent {
 
+    public MoveEvent(){
+        super();
+        speed = 0;
+    }
+
     @Override
     public DataSaveObject save(DataSaveObject dso) {
         dso.putInt("object", object);
@@ -51,12 +58,16 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
             dso.putByte("handle", (byte) onBlockHandle.ordinal());
         if(parallel)
             dso.putBool("parallel", true);
+        if(jump)
+            dso.putBool("jump", true);
         return dso;
     }
 
     @Override
     public String getGUIText(Window window, MapData map) {
         var txt = Language.getString("event.move.info", map.getObject(object), movX, movY, movZ, speed, Math.max(Math.abs(movX), Math.abs(movZ)) / speed / 60);
+        if(jump)
+            txt += getVarColoring(" jump");
         txt = switch (onBlockHandle){
             case CANCEL_MOVEMENT -> txt + " " + getVarColoring("cancel");
             case WAIT_FOR_COMPLETION -> txt + " " + getVarColoring("wait");
@@ -90,7 +101,11 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         tf_y = new JSpinner(new SpinnerNumberModel(movY, -1000, 10000, .1f));
         tf_z = new JSpinner(new SpinnerNumberModel(movZ, -10000, 10000, .1f));
 
-        tf_speed = new JSpinner(new SpinnerNumberModel(speed < .005 ? .005 : speed, .005, 1, .005));
+        var spd = speed;
+        if(spd == 0)
+            spd = getSpeedOfObject((GameObject) objects.getSelectedItem());
+
+        tf_speed = new JSpinner(new SpinnerNumberModel(spd < .005 ? .005 : spd, .005, 1, .005));
 
         content.setLayout(new GridBagLayout());
         var gbc = new GridBagConstraints();
@@ -150,9 +165,28 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         gbc.gridx = 0;
         gbc.gridy++;
 
-        gbc.gridwidth = 3;
+        gbc.gridwidth = 2;
+        var jumpCheck = new JCheckBox("Jump", jump);
+        if(new ObjChain<>((GameObject)objects.getSelectedItem()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
+            jumpCheck.setSelected(false);
+            jumpCheck.setEnabled(false);
+        } else
+            jumpCheck.setEnabled(true);
+        content.add(jumpCheck, gbc);
+
+        gbc.gridx += 2;
+        gbc.gridwidth = 1;
         var runParallelCheck = new JCheckBox("Run parallel", parallel);
         content.add(runParallelCheck, gbc);
+
+        objects.addActionListener(l -> {
+            tf_speed.setValue(getSpeedOfObject((GameObject) objects.getSelectedItem()));
+            if(new ObjChain<>((GameObject)objects.getSelectedItem()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
+                jumpCheck.setSelected(false);
+                jumpCheck.setEnabled(false);
+            } else
+                jumpCheck.setEnabled(true);
+        });
 
         return () -> {
             object = objects.getSelectedIndex() == -1 ? -1 : ((GameObject)objects.getSelectedItem()).getID();
@@ -161,7 +195,16 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
             movZ = ((Number) tf_z.getValue()).floatValue();
             speed = ((Number) tf_speed.getValue()).floatValue();
             onBlockHandle = handleNoneBtn.isSelected() ? NONE : handleCancelMovementBtn.isSelected() ? CANCEL_MOVEMENT : WAIT_FOR_COMPLETION;
+            jump = jumpCheck.isSelected();
             parallel = runParallelCheck.isSelected();
         };
     }
+
+    private float getSpeedOfObject(GameObject obj){
+        return new ObjChain<>(obj)
+                .next(o -> o.getComponent(PhysicComponent.class))
+                .next(PhysicComponent::getBaseMoveSpeed)
+                .orElse(.35f);
+    }
+
 }

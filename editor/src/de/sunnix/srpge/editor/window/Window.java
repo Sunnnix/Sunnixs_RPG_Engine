@@ -123,9 +123,7 @@ public class Window extends JFrame {
         }
 
         initSingletons();
-        registerEvents();
-        registerComponents();
-        registerEvaluation();
+
         var config = getSingleton(Config.class);
 
         var lang = config.get("language", Locale.getDefault().getCountry().toLowerCase());
@@ -133,6 +131,10 @@ public class Window extends JFrame {
         Language.setupConfig(config);
         Language.setLanguage(Arrays.asList(Language.getLanguages()).contains(lang) ? lang : "en");
         Language.setUseEnglishForMissing(config.get("en_fallback", true));
+
+        registerEvents();
+        registerComponents();
+        registerEvaluation();
 
         setLayout(new BorderLayout());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -189,20 +191,20 @@ public class Window extends JFrame {
     }
 
     private void registerEvents(){
-        EventRegistry.registerEvent("move", getString("event.move.name"), MoveEvent::new);
-        EventRegistry.registerEvent("wait", getString("event.wait.name"), WaitEvent::new);
-        EventRegistry.registerEvent("message", getString("event.msg.name"), MessageEvent::new);
-        EventRegistry.registerEvent("playsound", getString("event.play_sound.name"), PlaySoundEvent::new);
-        EventRegistry.registerEvent("script-lua", "Lua Script (Experimental)", LuaScriptEvent::new);
-        EventRegistry.registerEvent("global_color_tint", "Global Color Tint", GlobalColorTintEvent::new);
-        EventRegistry.registerEvent("teleport", "Teleport", TeleportEvent::new);
-        EventRegistry.registerEvent("look", "Look at", LookEvent::new);
-        EventRegistry.registerEvent("camera", "Camera", CameraEvent::new);
-        EventRegistry.registerEvent("change_state", "Change State", ChangeStateEvent::new);
-        EventRegistry.registerEvent("change_var", "Change Variable", ChangeVariableEvent::new);
-        EventRegistry.registerEvent("change_tile", "Change Tile", ChangeTileEvent::new);
-        EventRegistry.registerEvent("change_local_var", "Change Object Variable", ChangeObjectVariableEvent::new);
-        EventRegistry.registerEvent("obj_prop", "Change Object Properties", ObjectPropertyEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_MOVE, "move", getString("event.move.name"), MoveEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "wait", getString("event.wait.name"), WaitEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "message", getString("event.msg.name"), MessageEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "playsound", getString("event.play_sound.name"), PlaySoundEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SCRIPT, "script-lua", "Lua Script (Experimental)", LuaScriptEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "global_color_tint", "Global Color Tint", GlobalColorTintEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_MOVE, "teleport", "Teleport", TeleportEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_OBJECT, "look", "Look at", LookEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "camera", "Camera", CameraEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_OBJECT, "change_state", "Change State", ChangeStateEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "change_var", "Change Variable", ChangeVariableEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_SYSTEM, "change_tile", "Change Tile", ChangeTileEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_OBJECT, "change_local_var", "Change Object Variable", ChangeObjectVariableEvent::new);
+        EventRegistry.registerEvent(EventRegistry.GROUP_OBJECT, "obj_prop", "Change Object Properties", ObjectPropertyEvent::new);
     }
 
     private void registerComponents(){

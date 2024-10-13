@@ -35,14 +35,15 @@ public class TeleportEvent extends Event{
         NONE, BLACK, WHITE, CUSTOM
     }
 
-    /**
-     * Map ID to teleport to. If map is -1, no map switch occurs, and only position will be updated.
-     */
+    /** Map ID to teleport to. If map is -1, no map switch occurs, and only position will be updated. */
     protected int map = -1;
-    /**
-     * The ID of the object (e.g., player) that will be teleported.
-     */
+    /** The ID of the object (e.g., player) that will be teleported. */
     protected int objectID;
+    /** The other object id if {@link #toObject} is true */
+    protected int otherID;
+    /** Should this object teleport to {@link #otherID another object}<br>If so, the coords ({@link #x}, {@link #y}, {@link #z}) would be used relative to the object */
+    protected boolean toObject;
+    /** Static position if {@link #toObject} is false, otherwise relative to {@link #otherID other Object} */
     protected float x, y, z;
     /**
      * Type of transition to apply during teleportation.
@@ -62,7 +63,7 @@ public class TeleportEvent extends Event{
     protected Direction facing;
 
     // Internal attributes used during the teleportation process
-    private GameObject object;
+    private GameObject object, otherObject;
     private int startTime, endTime;
     private int processedTime;
     private Vector4f initialColor;
@@ -95,6 +96,8 @@ public class TeleportEvent extends Event{
         fadeIn = dso.getBool("fade_in", true);
         var fID = dso.getByte("facing", (byte) -1);
         facing = fID == -1 ? null : Direction.values()[fID];
+        otherID = dso.getInt("other", -1);
+        toObject = dso.getBool("to_other", false);
     }
 
     /**
@@ -106,7 +109,9 @@ public class TeleportEvent extends Event{
     @Override
     public void prepare(World world) {
         object = world.getGameObject(objectID);
-        if(object == null || (map != -1 && map != world.ID && object.getID() != 999)) {
+        if(toObject)
+            otherObject = world.getGameObject(otherID);
+        if(object == null || toObject && otherObject == null || (map != -1 && map != world.ID && object.getID() != 999)) {
             cancel = true;
             return;
         }
@@ -203,7 +208,11 @@ public class TeleportEvent extends Event{
             GameLogger.logException("Teleport Event", ex);
             throw ex;
         }
-        object.setPosition(x, y, z);
+        if(toObject){
+            var oPos = otherObject.getPosition();
+            object.setPosition(oPos.x + x, Math.max(0, oPos.y + y), oPos.z + z);
+        } else
+            object.setPosition(x, y, z);
         object.setFacing(facing == null ? curFacing : facing);
         if(object.getID() == 999 && Camera.getAttachedObject() != null && Camera.getAttachedObject().getID() == 999)
             Camera.setAttachedObject(object, true);

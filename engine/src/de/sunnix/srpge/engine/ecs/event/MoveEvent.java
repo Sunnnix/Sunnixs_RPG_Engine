@@ -31,6 +31,8 @@ public class MoveEvent extends Event{
     protected int object = -1;
     /** The amount to move along an axis. */
     protected float movX, movY, movZ;
+    /** Should the Object jump */
+    protected boolean jump;
     /** The speed of the movement. */
     protected float speed = .035f;
     /** Specifies how to handle movement when the object encounters a blockage. */
@@ -57,6 +59,7 @@ public class MoveEvent extends Event{
         speed = dso.getFloat("s", .035f);
         onBlockHandle = MoveEventHandle.values()[dso.getByte("handle", (byte) MoveEventHandle.NONE.ordinal())];
         parallel = dso.getBool("parallel", false);
+        jump = dso.getBool("jump", false);
     }
 
     /**
@@ -78,6 +81,11 @@ public class MoveEvent extends Event{
         cPosX = pos.x;
         cPosY = pos.y;
         cPosZ = pos.z;
+        if(jump){
+            var comp = go.getComponent(PhysicComponent.class);
+            if(comp != null)
+                comp.jump();
+        }
     }
 
     /**
