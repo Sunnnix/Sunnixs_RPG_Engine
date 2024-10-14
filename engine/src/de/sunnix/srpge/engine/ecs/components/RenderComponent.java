@@ -6,26 +6,30 @@ import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.graphics.TextureRenderObject;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.resources.Sprite;
-import lombok.Setter;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Objects;
 
-import static de.sunnix.srpge.engine.ecs.Direction.SOUTH;
-
 public class RenderComponent extends Component{
 
     private Sprite currentSprite;
     private Sprite sprite;
-    private HashMap<String, Sprite> stateSprites = new HashMap<>();
+    private HashMap<String, Sprite> stateSprites;
 
     private long animTimer;
-    private int animPos = -1;
+    private int animPos;
 
     private TextureRenderObject renderObject;
 
     public RenderComponent(DataSaveObject dso){
+        super(dso);
+    }
+
+    @Override
+    protected void load(DataSaveObject dso) {
+        stateSprites = new HashMap<>();
+        animPos = -1;
         sprite = Resources.get().getSprite(dso.getString("sprite", null));
         currentSprite = sprite;
         dso.<DataSaveObject>getList("state-sprites")
@@ -40,10 +44,9 @@ public class RenderComponent extends Component{
         var tex = sprite.getTexture();
         renderObject = new TextureRenderObject(tex);
         renderObject.getSize().set((float) tex.getWidth() / tex.getTileWidth(), (float) tex.getHeight() / tex.getTileHeight());
-        RenderSystem.addGO(parent);
+        RenderSystem.add(parent);
         parent.addPositionSubscriber(RenderSystem::relocateGridObject);
         parent.addMarkDirtySubscriber(RenderSystem::markDirty);
-        RenderSystem.relocateGridObject(parent.getPosition(), parent.getPosition(), parent);
     }
 
     public void update(GameObject go){
@@ -109,6 +112,7 @@ public class RenderComponent extends Component{
     @Override
     protected void free() {
         super.free();
+        RenderSystem.remove(parent);
         renderObject.freeMemory();
     }
 }

@@ -10,19 +10,18 @@ import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
+import de.sunnix.srpge.engine.ecs.systems.physics.CombatSystem;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.stage.GameplayState;
 import de.sunnix.srpge.engine.util.FunctionUtils;
+import de.sunnix.srpge.engine.util.FunctionUtils.ObjChain;
 import lombok.Getter;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static de.sunnix.srpge.engine.ecs.Direction.*;
 
@@ -36,6 +35,7 @@ public class World {
 
     private Map<Long, GameObject> gameObjects = new HashMap<>();
     private List<GameObject> gameObjectsToAdd = new ArrayList<>();
+    private Set<Long> gameObjectsToRemove = new HashSet<>();
 
     @Getter
     private TileMap map;
@@ -85,6 +85,7 @@ public class World {
 
         RenderSystem.init(map.width, map.height);
         PhysicSystem.init(map.width, map.height);
+        CombatSystem.init(map.width, map.height);
 
         gameObjectsToAdd.forEach(go -> {
             go.init(this);
@@ -113,19 +114,17 @@ public class World {
         gameObjectsToAdd.add(entity);
     }
 
-    public void removeEntity(long entity, boolean destroy) {
-        var e = gameObjects.remove(entity);
-        if(destroy && e != null)
-            e.freeMemory();
+    public void removeEntity(long entity) {
+        gameObjectsToRemove.add(entity);
     }
 
-    public void removeEntity(GameObject entity, boolean destroy) {
-        removeEntity(entity.getID(), destroy);
+    public void removeEntity(GameObject entity) {
+        removeEntity(entity.getID());
     }
 
     public void movePlayer(float x, boolean y, float z){
         var player = getPlayer();
-        if(gameState.isPlayerInputBlock() || gameState.isUpdateBlock() || gameState.isRenderBlock()) {
+        if(player.hasState(States.HURT) || player.hasState(States.DEAD) || gameState.isPlayerInputBlock() || gameState.isUpdateBlock() || gameState.isRenderBlock()) {
             player.removeState(States.MOVING.id());
             return;
         }
@@ -178,6 +177,7 @@ public class World {
         ticks++;
         map.update();
         PhysicSystem.update(this);
+        CombatSystem.update(this);
         gameObjects.values().forEach(go -> go.update(this));
     }
 
@@ -204,7 +204,7 @@ public class World {
     public void postUpdate(){
         gameObjectsToAdd.forEach(o -> gameObjects.put(o.getID(), o));
         gameObjectsToAdd.clear();
-        gameObjects.values().stream().filter(GameObject::isToDelete).forEach(o -> gameObjects.remove(o.getID()));
+        gameObjectsToRemove.forEach(id -> new ObjChain<>(gameObjects.remove(id)).ifPresent(GameObject::free));
     }
 
     public GameObject getGameObject(long id){

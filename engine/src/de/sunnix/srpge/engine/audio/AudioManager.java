@@ -72,6 +72,8 @@ public class AudioManager {
         var speaker = sounds[soundPointer++];
         if(soundPointer >= soundBuffer)
             soundPointer = 0;
+        if(audio == null)
+            return speaker;
         speaker.stop();
         speaker.setAudio(audio);
         if(use3DSound)

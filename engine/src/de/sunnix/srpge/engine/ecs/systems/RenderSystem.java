@@ -9,7 +9,6 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.*;
-import java.util.function.Function;
 
 import static de.sunnix.srpge.engine.util.FunctionUtils.*;
 
@@ -38,8 +37,14 @@ public class RenderSystem {
         }
     }
 
-    public static void addGO(GameObject go) {
+    public static void add(GameObject go) {
         objects.add(go);
+        mapGrid.initObject(go);
+    }
+
+    public static void remove(GameObject go) {
+        objects.remove(go);
+        mapGrid.removeObject(go);
     }
 
     private static boolean collidingPlane(GameObject o1, GameObject o2){

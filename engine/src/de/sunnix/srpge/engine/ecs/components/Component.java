@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs.components;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.ComponentManager;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
@@ -9,6 +10,12 @@ import de.sunnix.srpge.engine.memory.MemoryHolder;
 public abstract class Component extends MemoryHolder {
 
     protected GameObject parent;
+
+    public Component(DataSaveObject dso){
+        load(dso);
+    }
+
+    protected void load(DataSaveObject dso){}
 
     public void init(World world, GameObject parent){
         this.parent = parent;

@@ -5,7 +5,9 @@ import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.GameObject;
+import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
+import de.sunnix.srpge.engine.ecs.components.CombatComponent;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.event.EventList;
 import de.sunnix.srpge.engine.ecs.systems.RenderSystem;
@@ -17,6 +19,7 @@ import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.util.BetterJSONObject;
 import de.sunnix.srpge.engine.util.FunctionUtils;
 import lombok.Getter;
+import org.joml.Vector4f;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -115,8 +118,26 @@ public class GameplayState implements IState {
             }
     }
 
+    int deadTimer = 0;
+    Vector4f deadColor = new Vector4f(0, -1, -1, .5f);
+    Vector4f initColor;
+
+    long time = 0;
+
     @Override
     public void update() {
+        if(player.hasState(States.DEAD)){
+            if(time == 0)
+                time = System.currentTimeMillis();
+            if(initColor == null)
+                initColor = Core.getGlobalColoring().get(new Vector4f());
+            float progress = Math.min(++deadTimer / 300f, 1.0f);
+
+            var mixed = FunctionUtils.mix(initColor, deadColor, progress);
+
+            Core.getGlobalColoring().set(mixed);
+            return;
+        }
         renderBlock = activeEventLists.stream().anyMatch(e -> e.getCurrentEventBlockType() == EventList.BlockType.UPDATE_GRAPHIC);
         updateBlock = renderBlock || !blockingEventQueue.isEmpty() || activeEventLists.stream().anyMatch(e -> e.getCurrentEventBlockType() == EventList.BlockType.UPDATE);
         playerInputBlock = updateBlock || activeEventLists.stream().anyMatch(e -> e.getCurrentEventBlockType() == EventList.BlockType.USER_INPUT);
@@ -154,6 +175,8 @@ public class GameplayState implements IState {
         AudioManager.get().setLocation(pPos.x, pPos.y, pPos.z);
         RenderSystem.prepareRender();
         FunctionUtils.checkForOpenGLErrors("GameplayState - Post update");
+
+        world.postUpdate();
     }
 
     @Override
@@ -244,11 +267,22 @@ public class GameplayState implements IState {
      */
     private GameObject createPlayer(){
         var player = new GameObject(world, playerData);
-        var comp = new PhysicComponent(new DataSaveObject());
-        comp.setWidth(.78f);
-        comp.setHeight(1.8f);
-        comp.setCanClimb(true);
-        player.addComponent(comp);
+        {
+            var comp = new PhysicComponent(new DataSaveObject());
+            comp.setWidth(.78f);
+            comp.setHeight(1.8f);
+            comp.setCanClimb(true);
+            player.addComponent(comp);
+        }
+        {
+            var comp = new CombatComponent(new DataSaveObject());
+            comp.setWidth(.78f);
+            comp.setHeight(1.8f);
+            comp.setMaxHealth(10);
+            comp.setHealth(comp.getMaxHealth());
+            comp.setMaxInvTime(30);
+            player.addComponent(comp);
+        }
         FunctionUtils.checkForOpenGLErrors("GameplayState - Create Player");
         return player;
     }

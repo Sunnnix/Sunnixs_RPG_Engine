@@ -7,6 +7,7 @@ import de.sunnix.srpge.engine.debug.profiler.Profiler;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
+import de.sunnix.srpge.engine.ecs.components.CombatComponent;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.evaluation.Variables;
 import de.sunnix.srpge.engine.graphics.gui.text.Font;
@@ -50,6 +51,10 @@ public class Main {
             var pPos = player.getPosition();
             return String.format("Position: (%.2f, %.2f, %.2f) Z: %.5f", pPos.x, pPos.y, pPos.z, player.getZ_pos());
         }));
+        createDebugText((world, player) -> {
+            var comp = player.getComponent(CombatComponent.class);
+            return String.format("HP: %.0f / %.0f", comp.getHealth(), comp.getMaxHealth());
+        });
         createDebugText(((world, player) -> {
             var vel = player.getVelocity();
             return String.format("Velocity: (%.2f, %.2f, %.2f)", vel.x, vel.y, vel.z);
@@ -121,7 +126,7 @@ public class Main {
     }
 
     private static void createDebugText(BiFunction<World, GameObject, String> onUpdate){
-        var text = new Text(" ");
+        var text = new Text(" ", tc -> tc.setFont(Font.CASCADIA_CODE));
         if(!debugTexts.isEmpty()){
             var latestDebugText = debugTexts.get(debugTexts.size() - 1).t1();
             text.setPos(0, latestDebugText.getPos().y + latestDebugText.getHeight());

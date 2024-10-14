@@ -4,7 +4,7 @@ public final class NULLComponent extends Component{
 
     private static NULLComponent INSTANCE;
 
-    private NULLComponent(){};
+    private NULLComponent(){super(null);};
 
     public static NULLComponent getNULL(){
         if(INSTANCE == null)

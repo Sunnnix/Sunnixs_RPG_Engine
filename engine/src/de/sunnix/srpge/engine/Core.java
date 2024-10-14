@@ -2,6 +2,10 @@ package de.sunnix.srpge.engine;
 
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.OpenALContext;
+import de.sunnix.srpge.engine.ecs.components.CombatComponent;
+import de.sunnix.srpge.engine.ecs.components.ComponentRegistry;
+import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
+import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.ecs.event.*;
 import de.sunnix.srpge.engine.evaluation.*;
 import de.sunnix.srpge.engine.memory.ContextQueue;
@@ -87,7 +91,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class Core {
 
     public static final int MAJOR_VERSION = 0;
-    public static final int MINOR_VERSION = 7;
+    public static final int MINOR_VERSION = 8;
     public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
 
     public enum CoreStage {
@@ -239,6 +243,7 @@ public class Core {
         OpenALContext.setUp();
 
         registerEvents();
+        registerComponents();
         registerEvaluation();
 
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
@@ -370,6 +375,12 @@ public class Core {
         EventRegistry.registerEvent("change_tile", ChangeTileEvent::new);
         EventRegistry.registerEvent("change_local_var", ChangeObjectVariableEvent::new);
         EventRegistry.registerEvent("obj_prop", ObjectPropertyEvent::new);
+    }
+
+    private static void registerComponents(){
+        ComponentRegistry.add("render", RenderComponent::new);
+        ComponentRegistry.add("physic", PhysicComponent::new);
+        ComponentRegistry.add("combat", CombatComponent::new);
     }
 
     private static void registerEvaluation(){

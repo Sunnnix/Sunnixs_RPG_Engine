@@ -52,11 +52,6 @@ public class GameObject extends MemoryHolder {
 
     @Getter
     private boolean inited;
-    /**
-     * If marked as deleted, this component will be removed at the end of the loop
-     */
-    @Getter
-    private boolean toDelete = false;
 
     @Getter
     private List<EventList> eventLists = new ArrayList<>();
@@ -166,10 +161,6 @@ public class GameObject extends MemoryHolder {
             statesChanged = true;
             markDirty();
         }
-    }
-
-    public void setToDelete() {
-        this.toDelete = true;
     }
 
     public void setPosition(float x, float y, float z){

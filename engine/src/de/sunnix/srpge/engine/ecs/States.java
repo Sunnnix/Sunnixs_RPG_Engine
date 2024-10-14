@@ -15,6 +15,7 @@ public class States {
     public static final State CLIMB = new State("climb", 1);
     public static final State CLIMBING_UP = new State("climbing_up", 2);
     public static final State CLIMBING_DOWN = new State("climbing_down", 2);
+    public static final State DEAD = new State("dead", 99);
 
     protected static final Map<String, State> states = new HashMap<>();
 

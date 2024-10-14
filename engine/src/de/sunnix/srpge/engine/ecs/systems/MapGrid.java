@@ -80,6 +80,18 @@ public class MapGrid {
     }
 
     /**
+     * Adds the object to the map grid at the map grid position
+     * @param object the object to add
+     */
+    public void initObject(GameObject object) {
+        var pos = object.getPosition();
+        var gX = Math.min(mapWidth / MAP_GRID_SIZE - 1, Math.max(0, (int) pos.x / MAP_GRID_SIZE));
+        var gZ = Math.min(mapHeight / MAP_GRID_SIZE - 1,Math.max(0, (int) pos.z / MAP_GRID_SIZE));
+        mapGrid[gX + gZ * mapWidth / MAP_GRID_SIZE].add(object);
+        markDirty(gX, gZ);
+    }
+
+    /**
      * Relocates a game object from one grid cell to another based on its previous
      * and new positions. Marks both the old and new cells as dirty.
      *
@@ -97,6 +109,13 @@ public class MapGrid {
         var newZ = Math.min(mapHeight / MAP_GRID_SIZE - 1,Math.max(0, (int) newPos.z / MAP_GRID_SIZE));
         mapGrid[newX + newZ * mapWidth / MAP_GRID_SIZE].add(object);
         markDirty(newX, newZ);
+    }
+
+    public void removeObject(GameObject object){
+        var pos = object.getPosition();
+        var gX = Math.min(mapWidth / MAP_GRID_SIZE - 1, Math.max(0, (int) pos.x / MAP_GRID_SIZE));
+        var gZ = Math.min(mapHeight / MAP_GRID_SIZE - 1,Math.max(0, (int) pos.z / MAP_GRID_SIZE));
+        mapGrid[gX + gZ * mapWidth / MAP_GRID_SIZE].remove(object);
     }
 
     /**
@@ -177,4 +196,5 @@ public class MapGrid {
 
         return list;
     }
+
 }

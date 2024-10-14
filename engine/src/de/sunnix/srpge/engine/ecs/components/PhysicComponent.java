@@ -56,6 +56,11 @@ public class PhysicComponent extends Component {
     private boolean hasShadow;
 
     public PhysicComponent(DataSaveObject dso) {
+        super(dso);
+    }
+
+    @Override
+    protected void load(DataSaveObject dso) {
         width = dso.getFloat("width", 1);
         height = dso.getFloat("height", 1);
         weight = dso.getFloat("weight", .85f);
@@ -78,7 +83,6 @@ public class PhysicComponent extends Component {
             reloadHitbox();
             PhysicSystem.markDirty(obj);
         });
-        PhysicSystem.relocateGridObject(go.getPosition(), go.getPosition(), go);
         if(Core.isDebug())
             dro = new DebugRenderObject(hitbox.getWidth(), hitbox.getHeight());
         if(hasShadow && go.getComponent(RenderComponent.class) != null){

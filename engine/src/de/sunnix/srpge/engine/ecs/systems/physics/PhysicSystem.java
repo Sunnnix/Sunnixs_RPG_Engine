@@ -46,6 +46,12 @@ public class PhysicSystem {
 
     public static void add(GameObject go){
         objects.add(go);
+        mapGrid.initObject(go);
+    }
+
+    public static void remove(GameObject go){
+        objects.remove(go);
+        mapGrid.removeObject(go);
     }
 
     public static void update(World world) {

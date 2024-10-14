@@ -137,7 +137,6 @@ public class TeleportEvent extends Event{
             mapLoader.start();
         }
         initialColor = Core.getGlobalColoring().get(new Vector4f());
-        GameLogger.logI("Teleport Event", "Start transition to " + this.map);
     }
 
     /**

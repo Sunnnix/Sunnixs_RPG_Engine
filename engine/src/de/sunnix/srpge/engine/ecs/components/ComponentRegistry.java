@@ -10,11 +10,6 @@ public class ComponentRegistry {
 
     private static Map<String, Function<DataSaveObject, Component>> components = new HashMap<>();
 
-    static {
-        add("render", RenderComponent::new);
-        add("physic", PhysicComponent::new);
-    }
-
     public static void add(String id, Function<DataSaveObject, Component> componentBuilder){
         components.put(id, componentBuilder);
     }

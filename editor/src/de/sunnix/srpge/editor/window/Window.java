@@ -13,6 +13,7 @@ import de.sunnix.srpge.editor.window.evaluation.NumberVariableProvider;
 import de.sunnix.srpge.editor.window.evaluation.ObjectVariableProvider;
 import de.sunnix.srpge.editor.window.mapview.*;
 import de.sunnix.srpge.editor.window.menubar.MenuBar;
+import de.sunnix.srpge.editor.window.object.components.CombatComponent;
 import de.sunnix.srpge.editor.window.object.components.ComponentRegistry;
 import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
 import de.sunnix.srpge.editor.window.object.components.RenderComponent;
@@ -210,6 +211,7 @@ public class Window extends JFrame {
     private void registerComponents(){
         ComponentRegistry.registerComponent("render", "Renderer", RenderComponent::new);
         ComponentRegistry.registerComponent("physic", "Physic", PhysicComponent::new);
+        ComponentRegistry.registerComponent("combat", "Combat", CombatComponent::new);
     }
 
     private void registerEvaluation(){
