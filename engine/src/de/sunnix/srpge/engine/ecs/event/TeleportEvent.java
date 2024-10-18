@@ -2,7 +2,6 @@ package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
-import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.Direction;
 import de.sunnix.srpge.engine.ecs.GameObject;
@@ -38,9 +37,9 @@ public class TeleportEvent extends Event{
     /** Map ID to teleport to. If map is -1, no map switch occurs, and only position will be updated. */
     protected int map = -1;
     /** The ID of the object (e.g., player) that will be teleported. */
-    protected int objectID;
+    private ObjectValue objectID;
     /** The other object id if {@link #toObject} is true */
-    protected int otherID;
+    private ObjectValue otherID;
     /** Should this object teleport to {@link #otherID another object}<br>If so, the coords ({@link #x}, {@link #y}, {@link #z}) would be used relative to the object */
     protected boolean toObject;
     /** Static position if {@link #toObject} is false, otherwise relative to {@link #otherID other Object} */
@@ -81,7 +80,7 @@ public class TeleportEvent extends Event{
     @Override
     public void load(DataSaveObject dso) {
         map = dso.getInt("map", -1);
-        objectID = dso.getInt("object", 0);
+        objectID = new ObjectValue(dso.getObject("obj"));
         var pos = dso.getFloatArray("pos", 3);
         x = pos[0];
         y = pos[1];
@@ -96,7 +95,7 @@ public class TeleportEvent extends Event{
         fadeIn = dso.getBool("fade_in", true);
         var fID = dso.getByte("facing", (byte) -1);
         facing = fID == -1 ? null : Direction.values()[fID];
-        otherID = dso.getInt("other", -1);
+        otherID = new ObjectValue(dso.getObject("other"));
         toObject = dso.getBool("to_other", false);
     }
 
@@ -104,13 +103,14 @@ public class TeleportEvent extends Event{
      * Prepares the teleportation event by retrieving the game object to teleport and setting up the transition effect.<br>
      * If the target map does not exist or if the object cannot be teleported to another map (e.g., not the player), the event is canceled.
      *
-     * @param world the current game world.
+     * @param world  the current game world.
+     * @param parent
      */
     @Override
-    public void prepare(World world) {
-        object = world.getGameObject(objectID);
+    public void prepare(World world, GameObject parent) {
+        object = objectID.getObject(world, parent);
         if(toObject)
-            otherObject = world.getGameObject(otherID);
+            otherObject = otherID.getObject(world, parent);
         if(object == null || toObject && otherObject == null || (map != -1 && map != world.ID && object.getID() != 999)) {
             cancel = true;
             return;

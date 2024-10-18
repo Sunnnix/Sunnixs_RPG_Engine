@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.debug;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 import java.util.logging.*;
 
 public final class GameLogger{
@@ -11,9 +12,11 @@ public final class GameLogger{
     private static Logger createLogger(){
         var log = Logger.getLogger(GameLogger.class.getPackageName());
         log.setUseParentHandlers(false);
+        log.setLevel(Level.FINE);
 
         var cHandler = new ConsoleHandler();
         cHandler.setFormatter(new Formatter(true));
+        cHandler.setLevel(Level.FINE);
         log.addHandler(cHandler);
 
         try{
@@ -31,29 +34,33 @@ public final class GameLogger{
         return log;
     }
 
-    public static void logI(String caller, String msg){
-        logger.log(new CustomLogRecord(caller, Level.INFO, msg));
+    public static void logI(String caller, Object msg){
+        logger.log(new CustomLogRecord(caller, Level.INFO, Objects.toString(msg)));
     }
 
     public static void logI(String caller, String msg, Object... args){
         logI(caller, String.format(msg, args));
     }
 
-    public static void logW(String caller, String msg){
-        logger.log(new CustomLogRecord(caller, Level.WARNING, msg));
+    public static void logW(String caller, Object msg){
+        logger.log(new CustomLogRecord(caller, Level.WARNING, Objects.toString(msg)));
     }
 
     public static void logW(String caller, String msg, Object... args){
         logW(caller, String.format(msg, args));
     }
 
-    public static void logE(String caller, String msg){
-        logger.log(new CustomLogRecord(caller, Level.SEVERE, msg));
+    public static void logE(String caller, Object msg){
+        logger.log(new CustomLogRecord(caller, Level.SEVERE, Objects.toString(msg)));
     }
 
     public static void logE(String caller, String msg, Object... args){
         logE(caller, String.format(msg, args));
     }
+
+    public static void logD(String caller, Object msg){logger.log(new CustomLogRecord(caller, Level.FINE, Objects.toString(msg)));}
+
+    public static void logD(String caller, String msg, Object... args){logD(caller, String.format(msg, args));}
 
     public static void logException(String caller, Throwable throwable){
         var record = new CustomLogRecord(caller, Level.SEVERE, "");
@@ -69,9 +76,11 @@ public final class GameLogger{
 
     private static class Formatter extends SimpleFormatter {
 
+        // ASCII-Escape Colors
         private static final String COLOR_GREEN = "\u001B[32m";
         private static final String COLOR_YELLOW = "\u001B[33m";
         private static final String COLOR_RED = "\u001B[31m";
+        private static final String COLOR_BLUE = "\u001B[34m";
         private static final String COLOR_RESET = "\u001B[0m";
 
         private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss.SSS");
@@ -98,6 +107,8 @@ public final class GameLogger{
                     color = COLOR_YELLOW;
                 else if(record.getLevel().equals(Level.SEVERE))
                     color = COLOR_RED;
+                else if(record.getLevel().equals(Level.FINE))
+                    color = COLOR_BLUE;
                 formatted = color + formatted + COLOR_RESET;
             }
             return formatted + "\n";

@@ -1,10 +1,12 @@
 package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.evaluation.Condition;
 import de.sunnix.srpge.engine.evaluation.EvaluationRegistry;
+import de.sunnix.srpge.engine.util.ObjChain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +22,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class EventList{
+public class EventList implements Cloneable{
 
     /**
      * {@code BlockType} defines how events can block game processes during execution.
@@ -48,10 +50,10 @@ public class EventList{
 
     /** List of events managed by this EventList. */
     @Getter(AccessLevel.NONE)
-    private final List<Event> events = new ArrayList<>();
+    private List<Event> events = new ArrayList<>();
     /** List of events that will update parallel to other events. */
     @Getter(AccessLevel.NONE)
-    private final List<Event> parallelEvents = new ArrayList<>();
+    private List<Event> parallelEvents = new ArrayList<>();
     /** The name of this event list. */
     protected String name;
     /** The type of blocking this event list enforces. */
@@ -64,6 +66,7 @@ public class EventList{
     @Setter(AccessLevel.NONE)
     private int currentIndex = -1;
     /** Indicates whether the event list has been started and is active. */
+    @Setter(AccessLevel.NONE)
     private boolean active;
     /** Flag to determine if the event list should reset after the current event finishes. */
     @Getter(AccessLevel.NONE)
@@ -71,6 +74,8 @@ public class EventList{
     private boolean reset;
 
     private List<Condition<?>> conditions = new ArrayList<>();
+
+    private GameObject owner;
 
     public EventList(DataSaveObject dso){
         load(dso);
@@ -92,7 +97,7 @@ public class EventList{
      * @return is this event list ready to start
      */
     public boolean canStart(World world){
-        return !isActive() && conditions.stream().allMatch(c -> c.evaluate(world));
+        return !isActive() && !events.isEmpty() && conditions.stream().allMatch(c -> c.evaluate(world));
     }
 
     /**
@@ -125,7 +130,7 @@ public class EventList{
 
         // Start the next event if no event is currently active
         if(currentIndex == -1)
-            nextEvent(world);
+            nextEvent(world, owner);
         if(!active)
             return;
 
@@ -136,7 +141,7 @@ public class EventList{
         // Check if the current event is finished, and move to the next
         if(event.isFinished(world)){
             event.finish(world);
-            nextEvent(world);
+            nextEvent(world, owner);
         }
     }
 
@@ -145,10 +150,11 @@ public class EventList{
      * next event is of a type that requires blocking (e.g., an update event),
      * the event list is added as a blocking event to the world.
      *
-     * @param world the {@link World} in which the events are running.
+     * @param world  the {@link World} in which the events are running.
+     * @param parent The parent object of this event list. Can be null if run elsewhere!
      */
-    private void nextEvent(World world){
-        prepareNextEvent(world);
+    private void nextEvent(World world, GameObject parent){
+        prepareNextEvent(world, parent);
         if (active && getCurrentEventBlockType().ordinal() >= BlockType.UPDATE.ordinal())
             world.addBlockingEvent(this);
     }
@@ -159,15 +165,16 @@ public class EventList{
      * list of parallel events. If there are no more events to run, the event list
      * will be reset.
      *
-     * @param world the {@link World} in which the events are running.
+     * @param world  the {@link World} in which the events are running.
+     * @param parent The parent object of this event list. Can be null if run elsewhere!
      */
-    private void prepareNextEvent(World world){
+    private void prepareNextEvent(World world, GameObject parent){
         if(++currentIndex >= events.size()){
             reset(world);
             return;
         }
         var event = events.get(currentIndex);
-        event.prepare(world);
+        event.prepare(world, parent);
 
         // Handle instant and parallel events
         if(event.isInstant(world) || event.isParallel()){
@@ -187,7 +194,7 @@ public class EventList{
             }
             // If it's not a normal event recursively prepare the next event until a normal event is found,
             // or no more events are present
-            prepareNextEvent(world);
+            prepareNextEvent(world, parent);
         }
     }
 
@@ -218,6 +225,33 @@ public class EventList{
             return BlockType.NONE;
         var event = events.get(currentIndex);
         return blockType.ordinal() > event.getBlockingType().ordinal() ? blockType : event.blockingType;
+    }
+
+    /**
+     * Prepares the event list, sets a parent and set {@link #active} to true.
+     * @param parent The parent object of this event list. Can be null if run elsewhere!
+     */
+    public void start(GameObject parent){
+        GameLogger.logD("EventList","Start event list %s for object %s", name, new ObjChain<>(parent).next(p -> String.format("[%s] %s", p.getID(), p.getName())).get());
+        owner = parent;
+        active = true;
+    }
+
+    @Override
+    public EventList clone() {
+        try {
+            var clone = (EventList) super.clone();
+            clone.events = new ArrayList<>();
+            clone.parallelEvents = new ArrayList<>();
+            events.forEach(e -> clone.events.add((Event) e.clone()));
+            clone.currentIndex = -1;
+            clone.active = false;
+            clone.reset = false;
+            return clone;
+        } catch (CloneNotSupportedException e){
+            // should never happen
+            throw new RuntimeException(e);
+        }
     }
 
     /**

@@ -11,7 +11,7 @@ import de.sunnix.srpge.engine.ecs.event.EventList.BlockType;
  * Each GameObject can have a list of events that are executed in sequence.
  * Every game tick, the current event's {@link #run(World)} method is called.
  * Once the event signals completion via the {@link #isFinished(World)} method,
- * the next event in the list will be selected and {@link #prepare(World)} is executed.<br>
+ * the next event in the list will be selected and {@link #prepare(World, GameObject)} is executed.<br>
  * <br>
  * Events can have various behaviors and interact with different game systems,
  * making them a flexible tool for creating complex in-game scenarios.
@@ -25,6 +25,9 @@ public abstract class Event implements Cloneable {
     protected BlockType blockingType = BlockType.NONE;
     /** Will other events wait for this event to finish */
     protected boolean parallel;
+
+    /** owner of this event. Set on prepare */
+    protected GameObject owner;
 
     /**
      * Constructs a new event with the specified ID.
@@ -45,9 +48,12 @@ public abstract class Event implements Cloneable {
     /**
      * Prepares the event for execution within the given world.
      *
-     * @param world the game world where the event will be executed
+     * @param world  the game world where the event will be executed
+     * @param parent The parent object of this event. Can be null if run elsewhere!
      */
-    public abstract void prepare(World world);
+    public void prepare(World world, GameObject parent){
+        this.owner = parent;
+    }
 
     /**
      * Executes the event's logic. This method is called each game tick while the event is active.

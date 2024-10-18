@@ -6,21 +6,31 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.util.FunctionUtils;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class ObjectPropertyEvent extends de.sunnix.srpge.engine.ecs.event.ObjectPropertyEvent implements IEvent {
+
+    private ObjectValue objectID = new ObjectValue();
+
+    @Override
+    public void load(DataSaveObject dso) {
+        super.load(dso);
+        objectID = new ObjectValue(dso.getObject("obj"));
+    }
+
     @Override
     public DataSaveObject save(DataSaveObject dso) {
-        dso.putInt("object", objectID);
+        dso.putObject("obj", objectID.save());
         dso.putBool("enabled", enabled);
         return dso;
     }
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        return " set " + getVarColoring(map.getObject(objectID)) + " " + getVarColoring(enabled ? "enabled" : "disabled");
+        return " set " + getVarColoring(objectID.getText(window, map)) + " " + getVarColoring(enabled ? "enabled" : "disabled");
     }
 
     @Override
@@ -38,7 +48,7 @@ public class ObjectPropertyEvent extends de.sunnix.srpge.engine.ecs.event.Object
         content.setLayout(new GridBagLayout());
         var gbc = FunctionUtils.genDefaultGBC();
 
-        var objectsSelect = new JComboBox<>(map.getObjects().toArray(GameObject[]::new));
+        var objectsSelect = new ObjectPicker(window, map, false, currentObject, objectID);
         content.add(objectsSelect, gbc);
         gbc.gridy++;
 
@@ -54,16 +64,11 @@ public class ObjectPropertyEvent extends de.sunnix.srpge.engine.ecs.event.Object
         content.add(enabledBox, gbc);
 
         // Set values
-        if(objectID == -1)
-            objectsSelect.setSelectedItem(currentObject);
-        else
-            objectsSelect.setSelectedItem(map.getObject(objectID));
-
         enabledRadio.setSelected(enabled);
         disabledRadio.setSelected(!enabled);
 
         return () -> {
-            objectID = objectsSelect.getSelectedIndex() == -1 ? -1 : ((GameObject)objectsSelect.getSelectedItem()).ID;
+            objectID = objectsSelect.getNewValue();
             enabled = enabledRadio.isSelected();
         };
     }

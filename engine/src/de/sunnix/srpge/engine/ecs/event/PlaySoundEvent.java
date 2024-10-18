@@ -3,6 +3,7 @@ package de.sunnix.srpge.engine.ecs.event;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.audio.AudioManager;
 import de.sunnix.srpge.engine.audio.AudioSpeaker;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.resources.Resources;
 
@@ -32,7 +33,7 @@ public class PlaySoundEvent extends Event{
     }
 
     @Override
-    public void prepare(World world) {
+    public void prepare(World world, GameObject parent) {
         var res = Resources.get().getAudio(sound);
         if(res == null)
             return;

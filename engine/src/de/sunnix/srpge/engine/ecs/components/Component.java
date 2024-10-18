@@ -7,7 +7,7 @@ import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
 
-public abstract class Component extends MemoryHolder {
+public abstract class Component extends MemoryHolder implements Cloneable{
 
     protected GameObject parent;
 
@@ -39,4 +39,13 @@ public abstract class Component extends MemoryHolder {
 
     @Override
     protected void free() {}
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -1,12 +1,14 @@
 package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
+import de.sunnix.srpge.engine.util.ObjChain;
 
 public class ObjectPropertyEvent extends Event {
 
-    protected int objectID = -1;
+    private ObjectValue objectID;
     protected boolean enabled;
 
     private GameObject object;
@@ -20,13 +22,13 @@ public class ObjectPropertyEvent extends Event {
 
     @Override
     public void load(DataSaveObject dso) {
-        objectID = dso.getInt("object", -1);
+        objectID = new ObjectValue(dso.getObject("obj"));
         enabled = dso.getBool("enabled", true);
     }
 
     @Override
-    public void prepare(World world) {
-        object = world.getGameObject(objectID);
+    public void prepare(World world, GameObject parent) {
+        object = objectID.getObject(world, parent);
     }
 
     @Override

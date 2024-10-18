@@ -3,6 +3,7 @@ package de.sunnix.srpge.game;
 import com.formdev.flatlaf.FlatDarkLaf;
 import de.sunnix.srpge.engine.Core;
 import de.sunnix.srpge.engine.InputManager;
+import de.sunnix.srpge.engine.debug.GameLogger;
 import de.sunnix.srpge.engine.debug.profiler.Profiler;
 import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
@@ -30,6 +31,8 @@ public class Main {
     private static InputManager.Key DEBUG = new InputManager.Key(GLFW_KEY_F3);
 
     public static void main(String[] args) {
+
+        GameLogger.logD("Main", "Starting...");
 
         Registry.addRegistry(new test.Registry());
 
@@ -64,6 +67,7 @@ public class Main {
         createDebugText((world, player) -> String.format("Global Event running: %s", world.getGameState().isGlobalEventRunning()));
         createDebugText((world, player) -> String.format("Fall speed: %.2f", world.getPlayer().getComponent(PhysicComponent.class).getFallSpeed()));
         createDebugText((world, player) -> String.format("Int var 0: %s", Variables.getInt(0)));
+        createDebugText((world, player) -> String.format("Int var 9: %s", Variables.getInt(9)));
         createDebugText((world, player) -> {
             var memoryList = MemoryHandler.getSizesWithCategories();
             var sb = new StringBuilder("Memory usage:\n");

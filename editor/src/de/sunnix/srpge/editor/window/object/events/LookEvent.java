@@ -5,6 +5,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 import de.sunnix.srpge.engine.ecs.Direction;
 
 import javax.swing.*;
@@ -12,17 +13,23 @@ import java.awt.*;
 
 public class LookEvent extends de.sunnix.srpge.engine.ecs.event.LookEvent implements IEvent {
 
-    public LookEvent(){
-        objectID = -1;
-        lookAtObjID = -1;
+    private ObjectValue objectID = new ObjectValue();
+    private ObjectValue lookAtObjID = new ObjectValue();
+
+    @Override
+    public void load(DataSaveObject dso) {
+        super.load(dso);
+        objectID.load(dso.getObject("obj"));
+        if(!staticLook)
+            lookAtObjID.load(dso.getObject("look_at_obj"));
     }
 
     @Override
     public DataSaveObject save(DataSaveObject dso) {
         dso.putBool("static_look", staticLook);
-        dso.putInt("object", objectID);
+        dso.putObject("obj", objectID.save());
         if(!staticLook)
-            dso.putInt("look_at_obj", lookAtObjID);
+            dso.putObject("look_at_obj", lookAtObjID.save());
         else
             dso.putByte("dir", (byte) direction.ordinal());
         return dso;
@@ -34,8 +41,8 @@ public class LookEvent extends de.sunnix.srpge.engine.ecs.event.LookEvent implem
         if(staticLook)
             sb.append(getVarColoring(direction));
         else
-            sb.append(getVarColoring(lookAtObjID == 999 ? window.getPlayer() : map.getObject(lookAtObjID)));
-        sb.append(" with ").append(getVarColoring(objectID == 999 ? window.getPlayer() : map.getObject(objectID)));
+            sb.append(getVarColoring(lookAtObjID.getText(window, map)));
+        sb.append(" with ").append(getVarColoring(objectID.getText(window, map)));
         return sb.toString();
     }
 
@@ -58,14 +65,11 @@ public class LookEvent extends de.sunnix.srpge.engine.ecs.event.LookEvent implem
         gbc.insets.set(3, 3, 0, 0);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        var objList = map.getObjects();
-        objList.add(0, window.getPlayer());
-
         gbc.gridwidth = 2;
         content.add(new JLabel("Looking Object"), gbc);
         gbc.gridy++;
-        var objCombo = new JComboBox<>(objList.toArray(GameObject[]::new));
-        content.add(objCombo, gbc);
+        var objSelect = new ObjectPicker(window, map, true, currentObject, objectID.clone());
+        content.add(objSelect, gbc);
         gbc.gridwidth = 1;
         gbc.gridy++;
 
@@ -87,22 +91,20 @@ public class LookEvent extends de.sunnix.srpge.engine.ecs.event.LookEvent implem
         gbc.gridy++;
         var dirCombo = new JComboBox<>(Direction.values());
         dirCombo.setEnabled(false);
-        var lookCombo = new JComboBox<>(objList.toArray(GameObject[]::new));
-        lookCombo.setEnabled(false);
+        var lookObjSelect = new ObjectPicker(window, map, true, currentObject, lookAtObjID.clone());
+        lookObjSelect.setEnabled(false);
         content.add(dirCombo, gbc);
         gbc.gridx++;
-        content.add(lookCombo, gbc);
+        content.add(lookObjSelect, gbc);
         gbc.gridx--;
         gbc.gridy++;
 
         // Listeners
         staticCheck.addChangeListener(l -> dirCombo.setEnabled(staticCheck.isSelected()));
-        objectCheck.addChangeListener(l -> lookCombo.setEnabled(objectCheck.isSelected()));
+        objectCheck.addChangeListener(l -> lookObjSelect.setEnabled(objectCheck.isSelected()));
 
         // Set values
-        objCombo.setSelectedItem(objectID == -1 ? currentObject : map.getObject(objectID));
         dirCombo.setSelectedItem(direction);
-        lookCombo.setSelectedItem(map.getObject(lookAtObjID));
         if(staticLook)
             staticCheck.setSelected(true);
         else
@@ -110,9 +112,9 @@ public class LookEvent extends de.sunnix.srpge.engine.ecs.event.LookEvent implem
 
         return () -> {
             staticLook = staticCheck.isSelected();
-            objectID = objCombo.getSelectedIndex() == -1 ? -1 : ((GameObject)objCombo.getSelectedItem()).ID;
+            objectID = objSelect.getNewValue();
             direction = (Direction) dirCombo.getSelectedItem();
-            lookAtObjID = lookCombo.getSelectedIndex() == -1 ? -1 : ((GameObject)lookCombo.getSelectedItem()).ID;
+            lookAtObjID = lookObjSelect.getNewValue();
         };
     }
 }

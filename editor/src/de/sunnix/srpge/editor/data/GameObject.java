@@ -139,9 +139,24 @@ public class GameObject {
         if(version[1] < 7) {
             var eventDSO = dso.getObject("events");
             eventLists.add(new EventList(eventDSO == null ? new DataSaveObject() : new DataSaveObject().putList("events", eventDSO.getList("list"))));
-        } else
+        } else if(version[1] < 8)
+            eventLists.addAll(dso.<DataSaveObject>getList("event_lists").stream().map(elDSO -> {
+                // change old object id's to new object select system
+                elDSO.<DataSaveObject>getList("events").forEach(data -> {
+                    var objID = data.getInt("object", Integer.MIN_VALUE);
+                    if(objID != Integer.MIN_VALUE)
+                        data.putObject("obj", new DataSaveObject().putInt("o", objID));
+                    objID = data.getInt("look_at_obj", Integer.MIN_VALUE);
+                    if(objID != Integer.MIN_VALUE)
+                        data.putObject("look_at_obj", new DataSaveObject().putInt("o", objID));
+                    objID = data.getInt("other", Integer.MIN_VALUE);
+                    if(objID != Integer.MIN_VALUE)
+                        data.putObject("other", new DataSaveObject().putInt("o", objID));
+                });
+                return new EventList(elDSO);
+            }).toList());
+        else
             eventLists.addAll(dso.<DataSaveObject>getList("event_lists").stream().map(EventList::new).toList());
-
         components.clear();
         components.addAll(dso.<DataSaveObject>getList("components").stream().map(x ->
             ComponentRegistry.loadComponent(x.getString("id", null), x)

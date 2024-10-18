@@ -1,6 +1,7 @@
 package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.Tile;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.util.Tuple.Tuple3;
@@ -42,7 +43,7 @@ public class ChangeTileEvent extends Event {
     }
 
     @Override
-    public void prepare(World world) {
+    public void prepare(World world, GameObject parent) {
         tile = world.getTile(x, y);
     }
 

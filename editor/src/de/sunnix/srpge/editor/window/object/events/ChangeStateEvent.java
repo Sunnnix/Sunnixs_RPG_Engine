@@ -5,6 +5,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 import de.sunnix.srpge.editor.window.object.States;
 import de.sunnix.srpge.engine.ecs.State;
 
@@ -12,9 +13,18 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ChangeStateEvent extends de.sunnix.srpge.engine.ecs.event.ChangeStateEvent implements IEvent {
+
+    private ObjectValue objectID = new ObjectValue();
+
+    @Override
+    public void load(DataSaveObject dso) {
+        super.load(dso);
+        objectID.load(dso.getObject("obj"));
+    }
+
     @Override
     public DataSaveObject save(DataSaveObject dso) {
-        dso.putInt("object", objectID);
+        dso.putObject("obj", objectID.save());
         dso.putString("state", state);
         if(add)
             dso.putBool("add", true);
@@ -24,7 +34,7 @@ public class ChangeStateEvent extends de.sunnix.srpge.engine.ecs.event.ChangeSta
     @Override
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder(" of ");
-        sb.append(getVarColoring(objectID == 999 ? window.getPlayer() : map.getObject(objectID)));
+        sb.append(getVarColoring(objectID.getText(window, map)));
         if(add)
             sb.append(" add ");
         else
@@ -55,9 +65,7 @@ public class ChangeStateEvent extends de.sunnix.srpge.engine.ecs.event.ChangeSta
 
         content.add(new JLabel("Object:"), gbc);
         gbc.gridx++;
-        var objects = map.getObjects();
-        objects.add(0, window.getPlayer());
-        var selectObject = new JComboBox<>(objects.toArray(GameObject[]::new));
+        var selectObject = new ObjectPicker(window, map, true, currentObject, objectID);
         content.add(selectObject, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
@@ -85,11 +93,6 @@ public class ChangeStateEvent extends de.sunnix.srpge.engine.ecs.event.ChangeSta
         content.add(removeRB, gbc);
 
         // Values
-        if(objectID == -1)
-            selectObject.setSelectedItem(map.getObject(currentObject.getID()));
-        else
-            selectObject.setSelectedItem(objectID == 999 ? window.getPlayer() : map.getObject(objectID));
-
         selectState.setSelectedItem(States.getState(state));
 
         if(add)
@@ -98,7 +101,7 @@ public class ChangeStateEvent extends de.sunnix.srpge.engine.ecs.event.ChangeSta
             removeRB.setSelected(true);
 
         return () -> {
-            objectID = selectObject.getSelectedIndex() == -1 ? -1 : ((GameObject)selectObject.getSelectedItem()).ID;
+            objectID = selectObject.getNewValue();
             state = selectState.getSelectedIndex() == -1 ? null : ((State)selectState.getSelectedItem()).id();
             add = addRB.isSelected();
         };

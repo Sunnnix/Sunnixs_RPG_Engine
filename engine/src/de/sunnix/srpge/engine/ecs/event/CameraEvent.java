@@ -17,7 +17,7 @@ import de.sunnix.srpge.engine.graphics.Camera;
 public class CameraEvent extends Event{
 
     protected boolean attachObject;
-    protected int objectID;
+    protected ObjectValue objectID;
     protected boolean moveCamera;
     protected float x;
     protected float y;
@@ -34,7 +34,7 @@ public class CameraEvent extends Event{
     @Override
     public void load(DataSaveObject dso) {
         attachObject = dso.getBool("attack_obj", false);
-        objectID = dso.getInt("object", 0);
+        objectID = new ObjectValue(dso.getObject("obj"));
         moveCamera = dso.getBool("move_cam", false);
         var pos = dso.getFloatArray("pos", 3);
         x = pos[0];
@@ -44,9 +44,9 @@ public class CameraEvent extends Event{
     }
 
     @Override
-    public void prepare(World world) {
+    public void prepare(World world, GameObject parent) {
         if(attachObject)
-            object = world.getGameObject(objectID);
+            object = objectID.getObject(world, parent);
     }
 
     @Override

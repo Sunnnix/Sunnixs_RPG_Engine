@@ -225,6 +225,7 @@ public class ObjectEditDialog extends JDialog {
             if(!component.isEmpty()) {
                 componentList.addAll(component);
                 loadComponentsView();
+                reloadELRuntimeCombo();
             }
         });
         addbtn.setAlignmentX(JButton.CENTER_ALIGNMENT);
@@ -251,6 +252,7 @@ public class ObjectEditDialog extends JDialog {
                     return;
                 removeComponent(object.getComponents(), componentList, component);
                 loadComponentsView();
+                reloadELRuntimeCombo();
             });
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             var loop = component.createView(window, object, panel);
@@ -260,6 +262,44 @@ public class ObjectEditDialog extends JDialog {
         }
         componentsView.revalidate();
         componentsView.repaint();
+    }
+
+    /**
+     * Reloads the JComboBox for each tab in the eventTabView with the appropriate EventList.RunType values
+     * based on the components in the componentList. The selected item is retained, if it still exists in the
+     * newly populated combo box.
+     */
+    private void reloadELRuntimeCombo(){
+        for(var j = 0; j < eventTabView.getTabCount(); j++) {
+            var combo = getRunTypeComponentFrom((JComponent) eventTabView.getComponentAt(j));
+            var sRT = (EventList.RunType) combo.getSelectedItem();
+            var newModel = new DefaultComboBoxModel<>(EventList.getReadableRunTypes().stream().filter(rt ->
+                    Arrays.stream(rt.requires()).allMatch(clazz -> componentList.stream().anyMatch(comp -> comp.getClass().equals(clazz))
+                    )
+            ).toArray(EventList.RunType[]::new));
+            combo.setModel(newModel);
+            combo.setSelectedIndex(Math.max(0, newModel.getIndexOf(sRT)));
+        }
+    }
+
+    /**
+     * Recursively searches the given JComponent and its children to find a JComboBox with the name "runtype_select".
+     * If found, the JComboBox is returned. Otherwise, the method returns null.
+     *
+     * @param component the root component to start the search from.
+     * @return the JComboBox with the name "runtype_select", or null if not found.
+     */
+    private static JComboBox<EventList.RunType> getRunTypeComponentFrom(JComponent component){
+        for(var child: component.getComponents()){
+            if("runtype_select".equals(child.getName()))
+                return (JComboBox<EventList.RunType>) child;
+            if(child instanceof JComponent jChild) {
+                var combo = getRunTypeComponentFrom(jChild);
+                if(combo != null)
+                    return combo;
+            }
+        }
+        return null;
     }
 
     private void removeComponent(List<Component> objectComponents, List<Component> viewComponents, Component toRemove){

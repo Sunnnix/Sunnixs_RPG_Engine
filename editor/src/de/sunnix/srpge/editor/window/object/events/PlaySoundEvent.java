@@ -132,7 +132,9 @@ public class PlaySoundEvent extends de.sunnix.srpge.engine.ecs.event.PlaySoundEv
                 cbUseLocation.setSelected(false);
                 cbUseLocation.setEnabled(false);
             } else
-                cbUseLocation.setEnabled(true);;
+                ;
+            // TODO WIP 3D sounds
+            // cbUseLocation.setEnabled(true);
 
             cbUseLocation.getActionListeners()[0].actionPerformed(l);
         });

@@ -6,15 +6,13 @@ import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.customswing.DefaultValueComboboxModel;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 import de.sunnix.srpge.engine.ecs.Direction;
-import de.sunnix.srpge.engine.util.FunctionUtils.ObjChain;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static de.sunnix.srpge.engine.util.FunctionUtils.firstOrElse;
 
 /**
  * The TeleportEvent class represents an event that teleports a game object to a specific location
@@ -27,19 +25,20 @@ import static de.sunnix.srpge.engine.util.FunctionUtils.firstOrElse;
  */
 public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEvent implements IEvent {
 
+    private ObjectValue object = new ObjectValue(), other = new ObjectValue();
+
     /**
      * Constructs a new TeleportEvent with default values.
      */
     public TeleportEvent(){
         transitionType = TransitionType.NONE;
         transitionTime = 0;
-        objectID = -1;
     }
 
     @Override
     public DataSaveObject save(DataSaveObject dso) {
         dso.putInt("map", map);
-        dso.putInt("object", objectID == -1 ? 999 : objectID);
+        dso.putObject("obj", object.save());
         dso.putArray("pos", new float[]{ x, y, z });
         dso.putByte("transition_type", (byte) transitionType.ordinal());
         dso.putInt("transition_time", transitionTime);
@@ -50,7 +49,7 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
         if(facing != null)
             dso.putByte("facing", (byte) facing.ordinal());
         if(toObject){
-            dso.putInt("other", otherID);
+            dso.putObject("other", other.save());
             dso.putBool("to_other", true);
         }
         return dso;
@@ -59,6 +58,9 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
     @Override
     public void load(DataSaveObject dso) {
         super.load(dso);
+        object = new ObjectValue(dso.getObject("obj"));
+        if(toObject)
+            other = new ObjectValue(dso.getObject("other"));
         var obj = dso.getObject("custom_transition_event");
         if(obj != null) {
             customTransitionEvent = new GlobalColorTintEvent();
@@ -69,12 +71,12 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
     @Override
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder();
-        sb.append("object ").append(getVarColoring(objectID == 999 ? window.getPlayer() : map.getObject(objectID)));
+        sb.append("object ").append(getVarColoring(object.getText(window, map)));
         if(this.map != -1 && this.map != map.getID())
             sb.append(" to map ").append(getVarColoring(window.getSingleton(GameData.class).getMap(this.map)));
         sb.append(" to ");
         if(toObject)
-            sb.append(getVarColoring(objectID == 999 ? window.getPlayer() : map.getObject(otherID))).append(" + ");
+            sb.append(getVarColoring(other.getText(window, map))).append(" + ");
         sb.append(getVarColoring(String.format("(%.2f, %.2f, %.2f)", x, y, z)));
         sb.append(". Transition: ").append(getVarColoring(transitionType));
         if(transitionTime > 0)
@@ -110,9 +112,7 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
         );
         selectMap.setPreferredSize(new Dimension(0, 25));
 
-        var objects = map.getObjects();
-        objects.add(0, window.getPlayer());
-        var selectObj = createNamedComponent(content, gbc, "Object", new JComboBox<>(objects.toArray(GameObject[]::new)), false);
+        var selectObj = createNamedComponent(content, gbc, "Object", new ObjectPicker(window, map, true, go, object), false);
         selectObj.setPreferredSize(new Dimension(0, 25));
 
         gbc.gridwidth = 2;
@@ -121,7 +121,7 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
         gbc.gridy++;
         gbc.gridwidth = 1;
 
-        var selectOObj = createNamedComponent(content, gbc, "Other object", new JComboBox<>(objects.toArray(GameObject[]::new)), false);
+        var selectOObj = createNamedComponent(content, gbc, "Other object", new ObjectPicker(window, map, true, go, other), false);
         selectOObj.setPreferredSize(new Dimension(0, 25));
         selectOObj.setEnabled(false);
 
@@ -152,17 +152,6 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
             } else
                 toOtherCheck.setEnabled(true);
         });
-        var defRenderer = selectObj.getRenderer();
-        selectObj.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
-            var c = defRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if(index == 0) {
-                c.setFont(c.getFont().deriveFont(Font.BOLD));
-                c.setForeground(Color.CYAN);
-            } else
-                c.setFont(c.getFont().deriveFont(Font.PLAIN));
-            return c;
-        });
-        selectObj.addActionListener(l -> updateObjectSelectionStyle(selectObj, selectMap));
         toOtherCheck.addActionListener(l -> {
             selectOObj.setEnabled(toOtherCheck.isSelected());
             if(toOtherCheck.isSelected())
@@ -188,23 +177,11 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
         } else
             selectMap.setSelectedIndex(0);
 
-        GameObject sObj;
-        if(objectID == -1)
-            sObj = go;
-        else
-            sObj = firstOrElse(objects, o -> o.ID == objectID, window.getPlayer());
-        selectObj.setSelectedItem(sObj);
-        if(otherID == -1)
-            sObj = objects.get(0);
-        else
-            sObj = firstOrElse(objects, o -> o.ID == otherID, window.getPlayer());
-        selectOObj.setSelectedItem(sObj);
-
         return () -> {
             this.map = selectMap.getSelectedIndex() == 0 ? -1 : Integer.parseInt(((String)selectMap.getSelectedItem()).substring(0, 4));
-            this.objectID = new ObjChain<>((GameObject)selectObj.getSelectedItem()).next(GameObject::getID).orElse(-1);
+            this.object = selectObj.getNewValue();
             this.toObject = toOtherCheck.isSelected();
-            this.otherID = new ObjChain<>((GameObject)selectOObj.getSelectedItem()).next(GameObject::getID).orElse(-1);
+            this.other = selectOObj.getNewValue();
             this.facing = facing.getSelectedIndex() == 0 ? null : Direction.values()[facing.getSelectedIndex() - 1];
             this.x = ((Number)fX.getValue()).floatValue();
             this.y = ((Number)fY.getValue()).floatValue();

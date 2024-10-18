@@ -4,7 +4,7 @@ import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.CombatComponent;
 import de.sunnix.srpge.engine.ecs.systems.MapGrid;
-import de.sunnix.srpge.engine.util.FunctionUtils;
+import de.sunnix.srpge.engine.util.ObjChain;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class CombatSystem {
     }
 
     public static List<GameObject> getCollidingObjects(GameObject go){
-        var hb = new FunctionUtils.ObjChain<>(go.getComponent(CombatComponent.class)).next(CombatComponent::getHitbox).orElse(new AABB(0, 0, 0, 0, 0));
+        var hb = new ObjChain<>(go.getComponent(CombatComponent.class)).next(CombatComponent::getHitbox).orElse(new AABB(0, 0, 0, 0, 0));
         var objects = mapGrid.getMatchingMapGridObjets(go);
         return objects.stream().filter(o -> o.getComponent(CombatComponent.class).getHitbox().intersects(hb)).toList();
     }

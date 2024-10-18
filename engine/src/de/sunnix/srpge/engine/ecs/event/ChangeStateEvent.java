@@ -6,7 +6,7 @@ import de.sunnix.srpge.engine.ecs.World;
 
 public class ChangeStateEvent extends Event{
 
-    protected int objectID = -1;
+    protected ObjectValue objectID;
     protected String state;
     protected boolean add;
 
@@ -21,14 +21,14 @@ public class ChangeStateEvent extends Event{
 
     @Override
     public void load(DataSaveObject dso) {
-        objectID = dso.getInt("object", -1);
+        objectID = new ObjectValue(dso.getObject("obj"));
         state = dso.getString("state", null);
         add = dso.getBool("add", false);
     }
 
     @Override
-    public void prepare(World world) {
-        object = world.getGameObject(objectID);
+    public void prepare(World world, GameObject parent) {
+        object = objectID.getObject(world, parent);
     }
 
     @Override

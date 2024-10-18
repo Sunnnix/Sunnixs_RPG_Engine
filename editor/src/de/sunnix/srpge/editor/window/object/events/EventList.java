@@ -9,6 +9,7 @@ import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.evaluation.EvaluationRegistry;
 import de.sunnix.srpge.editor.window.evaluation.ICondition;
 import de.sunnix.srpge.editor.window.object.ObjectEditDialog;
+import de.sunnix.srpge.editor.window.object.components.CombatComponent;
 import de.sunnix.srpge.editor.window.object.components.Component;
 import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
 
@@ -23,6 +24,8 @@ import java.util.*;
 
 import static de.sunnix.srpge.editor.lang.Language.getString;
 import static de.sunnix.srpge.editor.util.StringToHTMLConverter.convertToHTML;
+import static de.sunnix.srpge.editor.window.object.components.CombatComponent.RUN_TYPE_DAMAGED;
+import static de.sunnix.srpge.editor.window.object.components.CombatComponent.RUN_TYPE_DIE;
 import static de.sunnix.srpge.engine.ecs.components.PhysicComponent.*;
 
 /**
@@ -34,7 +37,7 @@ import static de.sunnix.srpge.engine.ecs.components.PhysicComponent.*;
  * @see GameObject
  * @see ObjectEditDialog
  */
-public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implements Cloneable{
+public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList{
 
     /** Map of readable run types for user-friendly display in the GUI. */
     private static final Map<Byte, RunType> readableRunTypes = new HashMap<>();
@@ -44,24 +47,27 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
      *
      * @param type     the run type byte identifier.
      * @param name     the readable name of the run type.
+     * @param single   only one event list with that run type can exist for an object
      * @param requires the required components for this run type to display in the GUI.
      */
     @SafeVarargs
-    public static void addRunTypeName(byte type, String name, Class<? extends Component>... requires){
-        readableRunTypes.put(type, new RunType(type, name, requires));
+    public static void addRunTypeName(byte type, String name, boolean single, Class<? extends Component>... requires){
+        readableRunTypes.put(type, new RunType(type, name, single, requires));
     }
 
     static {
-        addRunTypeName(RUN_TYPE_AUTO, "Auto");
-        addRunTypeName(RUN_TYPE_INIT, "<html><span style='color: #ff8888; font-weight: bold;'>Init</span></html>");
-        addRunTypeName(RUN_TYPE_PLAYER_CONSULT, "Player consult", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH, "Touch", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_TOP, "Step on", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_BOTTOM, "Touch bottom", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_SOUTH, "Touch south", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_EAST, "Touch east", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_WEST, "Touch west", PhysicComponent.class);
-        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_NORTH, "Touch north", PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_AUTO, "Auto", false);
+        addRunTypeName(RUN_TYPE_INIT, "<html><span style='color: #ff8888; font-weight: bold;'>Init</span></html>", true);
+        addRunTypeName(RUN_TYPE_PLAYER_CONSULT, "Player consult", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH, "Touch", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_TOP, "Step on", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_BOTTOM, "Touch bottom", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_SOUTH, "Touch south", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_EAST, "Touch east", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_WEST, "Touch west", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_PLAYER_TOUCH_NORTH, "Touch north", false, PhysicComponent.class);
+        addRunTypeName(RUN_TYPE_DAMAGED, "On damaged", true, CombatComponent.class);
+        addRunTypeName(RUN_TYPE_DIE, "On die", true, CombatComponent.class);
     }
 
     /** List of events managed by this EventList. */
@@ -163,6 +169,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
 
         // Run type dropdown
         var selectRunType = new JComboBox<>(readableRunTypes.values().stream().filter(rt -> Arrays.stream(rt.requires).allMatch(object::hasComponent)).toArray(RunType[]::new));
+        selectRunType.setName("runtype_select");
         eventPropsPanel.add(selectRunType, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
@@ -447,6 +454,10 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
         return label;
     }
 
+    public static Collection<RunType> getReadableRunTypes(){
+        return readableRunTypes.values();
+    }
+
     @Override
     public EventList clone() {
         try {
@@ -454,7 +465,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
             clone.events = new ArrayList<>(this.events.stream().map(e -> (IEvent) e.clone()).toList());
             clone.conditions = new ArrayList<>(this.conditions.stream().map(c -> (ICondition) c.clone()).toList());
             return clone;
-        } catch (CloneNotSupportedException e){
+        } catch (Exception e){
             // should never happen
             throw new RuntimeException(e);
         }
@@ -463,7 +474,7 @@ public class EventList extends de.sunnix.srpge.engine.ecs.event.EventList implem
     /**
      * Utility class for storing information about event run types.
      */
-    private record RunType(byte id, String name, Class<? extends Component>[] requires){
+    public record RunType(byte id, String name, boolean single, Class<? extends Component>[] requires){
 
         @Override
         public String toString() {

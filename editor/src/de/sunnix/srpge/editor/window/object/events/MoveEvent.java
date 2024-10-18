@@ -6,8 +6,9 @@ import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
-import de.sunnix.srpge.engine.util.FunctionUtils.ObjChain;
+import de.sunnix.srpge.engine.util.ObjChain;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,14 +40,22 @@ import static de.sunnix.srpge.engine.ecs.event.MoveEvent.MoveEventHandle.*;
  */
 public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implements IEvent {
 
+    private ObjectValue object = new ObjectValue();
+
     public MoveEvent(){
         super();
         speed = 0;
     }
 
     @Override
+    public void load(DataSaveObject dso) {
+        super.load(dso);
+        object.load(dso.getObject("obj"));
+    }
+
+    @Override
     public DataSaveObject save(DataSaveObject dso) {
-        dso.putInt("object", object);
+        dso.putObject("obj", object.save());
         if(movX != 0)
             dso.putFloat("x", movX);
         if(movY != 0)
@@ -65,7 +74,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        var txt = Language.getString("event.move.info", map.getObject(object), movX, movY, movZ, speed, Math.max(Math.abs(movX), Math.abs(movZ)) / speed / 60);
+        var txt = Language.getString("event.move.info", object.getText(window, map), movX, movY, movZ, speed, Math.max(Math.abs(movX), Math.abs(movZ)) / speed / 60);
         if(jump)
             txt += getVarColoring(" jump");
         txt = switch (onBlockHandle){
@@ -88,14 +97,12 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
     @Override
     public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel content) {
-        JComboBox<GameObject> objects;
         JSpinner tf_x, tf_y, tf_z, tf_speed;
 
         var oList = new ArrayList<>(map.getObjects());
         oList.add(0, window.getPlayer());
 
-        objects = new JComboBox<>(oList.toArray(GameObject[]::new));
-        objects.setSelectedItem(object == -1 ? currentObject : object == 999 ? window.getPlayer() : map.getObject(object));
+        var objects = new ObjectPicker(window, map, true, currentObject, object);
 
         tf_x = new JSpinner(new SpinnerNumberModel(movX, -10000, 10000, .1f));
         tf_y = new JSpinner(new SpinnerNumberModel(movY, -1000, 10000, .1f));
@@ -103,7 +110,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
         var spd = speed;
         if(spd == 0)
-            spd = getSpeedOfObject((GameObject) objects.getSelectedItem());
+            spd = getSpeedOfObject(objects.getGameObject());
 
         tf_speed = new JSpinner(new SpinnerNumberModel(spd < .005 ? .005 : spd, .005, 1, .005));
 
@@ -167,7 +174,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
         gbc.gridwidth = 2;
         var jumpCheck = new JCheckBox("Jump", jump);
-        if(new ObjChain<>((GameObject)objects.getSelectedItem()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
+        if(new ObjChain<>(objects.getGameObject()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
             jumpCheck.setSelected(false);
             jumpCheck.setEnabled(false);
         } else
@@ -179,9 +186,9 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         var runParallelCheck = new JCheckBox("Run parallel", parallel);
         content.add(runParallelCheck, gbc);
 
-        objects.addActionListener(l -> {
-            tf_speed.setValue(getSpeedOfObject((GameObject) objects.getSelectedItem()));
-            if(new ObjChain<>((GameObject)objects.getSelectedItem()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
+        objects.addChangeListener(l -> {
+            tf_speed.setValue(getSpeedOfObject(objects.getGameObject()));
+            if(new ObjChain<>(objects.getGameObject()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
                 jumpCheck.setSelected(false);
                 jumpCheck.setEnabled(false);
             } else
@@ -189,7 +196,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
         });
 
         return () -> {
-            object = objects.getSelectedIndex() == -1 ? -1 : ((GameObject)objects.getSelectedItem()).getID();
+            object = objects.getNewValue();
             movX = ((Number) tf_x.getValue()).floatValue();
             movY = ((Number) tf_y.getValue()).floatValue();
             movZ = ((Number) tf_z.getValue()).floatValue();

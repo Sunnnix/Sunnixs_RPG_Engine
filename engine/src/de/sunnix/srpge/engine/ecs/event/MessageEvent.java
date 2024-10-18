@@ -1,6 +1,7 @@
 package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.graphics.gui.GUIManager;
 import de.sunnix.srpge.engine.graphics.gui.SpeechBox;
@@ -36,14 +37,15 @@ public class MessageEvent extends Event{
     }
 
     @Override
-    public void prepare(World world) {
+    public void prepare(World world, GameObject parent) {
+        super.prepare(world, parent);
         selectedOption = -1;
         messageID = GUIManager.showSpeechBox(name, message, soundType, yesNoOption ? b -> {
             selectedOption = b ? 0 : 1;
             if (b)
-                onYes.setActive(true);
+                onYes.start(owner);
             else
-                onNo.setActive(true);
+                onNo.start(owner);
         } : null);
     }
 

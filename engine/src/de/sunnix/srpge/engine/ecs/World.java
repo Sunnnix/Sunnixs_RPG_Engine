@@ -15,7 +15,7 @@ import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.stage.GameplayState;
 import de.sunnix.srpge.engine.util.FunctionUtils;
-import de.sunnix.srpge.engine.util.FunctionUtils.ObjChain;
+import de.sunnix.srpge.engine.util.ObjChain;
 import lombok.Getter;
 import org.lwjgl.opengl.GL11;
 
@@ -202,7 +202,10 @@ public class World {
     }
 
     public void postUpdate(){
-        gameObjectsToAdd.forEach(o -> gameObjects.put(o.getID(), o));
+        gameObjectsToAdd.forEach(o -> {
+            gameObjects.put(o.getID(), o);
+            o.init(this);
+        });
         gameObjectsToAdd.clear();
         gameObjectsToRemove.forEach(id -> new ObjChain<>(gameObjects.remove(id)).ifPresent(GameObject::free));
     }

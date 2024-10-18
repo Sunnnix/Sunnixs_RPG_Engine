@@ -14,6 +14,9 @@ import static de.sunnix.srpge.editor.window.Window.TILE_WIDTH;
 
 public class CombatComponent extends Component {
 
+    public static final byte RUN_TYPE_DAMAGED = 110;
+    public static final byte RUN_TYPE_DIE = 111;
+
     private float width = 1, height = 1;
     private float maxHealth = 10;
     private float maxMana;
@@ -74,7 +77,7 @@ public class CombatComponent extends Component {
         labels.add(createNameValView(parent, "Max mana:", maxMana, 0, Integer.MAX_VALUE, 1, value -> maxMana = value.floatValue()));
         labels.add(createNameValView(parent, "Damage:", damage, 0, Integer.MAX_VALUE, 1, value -> damage = value.floatValue()));
         labels.add(createNameValView(parent, "Armor:", armorFlat, 0, Integer.MAX_VALUE, 1, value -> armorFlat = value.floatValue()));
-        labels.add(createNameValView(parent, "Dmg. res.:", (int)(damageReist * 100), 0, 100, 1, value -> damageReist = value.intValue() / 100f));
+        labels.add(createNameValView(parent, "Damage resistance:", (int)(damageReist * 100), 0, 100, 1, value -> damageReist = value.intValue() / 100f));
         labels.add(createNameValView(parent, "Critical chance:", (int)(crit * 100), 0, 100, 1, value -> crit = value.intValue() / 100f));
         labels.add(createNameValView(parent, "Critical multiplier:", (int)(critDmg * 100), 0, Integer.MAX_VALUE, 1, value -> critDmg = value.intValue() / 100f));
         labels.add(createNameValView(parent, "Knock back resistance:", (int)(knockBackResist * 100), 0, 100, 1, value -> knockBackResist = value.intValue() / 100f));
@@ -94,6 +97,8 @@ public class CombatComponent extends Component {
         var label = new JLabel(name);
         var _value = (Number) Math.max(min.doubleValue(), Math.min(max.doubleValue(), value.doubleValue()));
         var spinner = new JSpinner(new SpinnerNumberModel(_value, min.doubleValue(), max.doubleValue(), step));
+        if(value instanceof Integer)
+            spinner.setEditor(new JSpinner.NumberEditor(spinner, "#"));
         spinner.setPreferredSize(new Dimension(0, 25));
         spinner.addChangeListener(l -> onChange.accept((Number) spinner.getValue()));
         addView(parent, new JPanel(){

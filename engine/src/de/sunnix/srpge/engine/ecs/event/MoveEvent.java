@@ -2,10 +2,12 @@ package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.ecs.Direction;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.States;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.components.PhysicComponent;
 import de.sunnix.srpge.engine.ecs.components.RenderComponent;
+import de.sunnix.srpge.engine.util.ObjChain;
 
 import static de.sunnix.srpge.engine.ecs.Direction.*;
 import static de.sunnix.srpge.engine.util.FunctionUtils.EPSILON;
@@ -28,7 +30,7 @@ public class MoveEvent extends Event{
     }
 
     /** The object ID of the object that is being moved. */
-    protected int object = -1;
+    protected ObjectValue object;
     /** The amount to move along an axis. */
     protected float movX, movY, movZ;
     /** Should the Object jump */
@@ -45,6 +47,7 @@ public class MoveEvent extends Event{
     private float cPosX, cPosY, cPosZ;
     /** The remaining distance that needs to be moved along each axis. */
     private float rMovX, rMovY, rMovZ;
+    private GameObject obj;
 
     public MoveEvent() {
         super("move");
@@ -52,7 +55,7 @@ public class MoveEvent extends Event{
 
     @Override
     public void load(DataSaveObject dso) {
-        object = dso.getInt("object", -1);
+        object = new ObjectValue(dso.getObject("obj"));
         movX = dso.getFloat("x", 0);
         movY = dso.getFloat("y", 0);
         movZ = dso.getFloat("z", 0);
@@ -66,24 +69,24 @@ public class MoveEvent extends Event{
      * Prepares the {@link MoveEvent} by setting up the initial positions and remaining movement distances.
      */
     @Override
-    public void prepare(World world) {
-        var go = world.getGameObject(object);
-        if(go == null) {
+    public void prepare(World world, GameObject parent) {
+        obj = object.getObject(world, parent);
+        if(obj == null) {
             rMovX = 0;
             rMovY = 0;
             rMovZ = 0;
             return;
         }
-        go.addState(States.MOVING.id());
+        obj.addState(States.MOVING.id());
         rMovX = movX;
         rMovY = movY;
         rMovZ = movZ;
-        var pos = go.getPosition();
+        var pos = obj.getPosition();
         cPosX = pos.x;
         cPosY = pos.y;
         cPosZ = pos.z;
         if(jump){
-            var comp = go.getComponent(PhysicComponent.class);
+            var comp = obj.getComponent(PhysicComponent.class);
             if(comp != null)
                 comp.jump();
         }
@@ -95,19 +98,18 @@ public class MoveEvent extends Event{
      */
     @Override
     public void run(World world) {
+        if (obj == null)
+            return;
+
         float xFactor, zFactor;
         zFactor = Math.min(1, rMovX == 0 ? 1 : Math.abs(rMovZ) / Math.abs(rMovX));
         xFactor = Math.min(1, rMovZ == 0 ? 1 : Math.abs(rMovX) / Math.abs(rMovZ));
-
-        var go = world.getGameObject(object);
-        if (go == null)
-            return;
 
         var pPosX = cPosX;
         var pPosY = cPosY;
         var pPosZ = cPosZ;
 
-        var pos = go.getPosition();
+        var pos = obj.getPosition();
         cPosX = pos.x;
         cPosY = pos.y;
         cPosZ = pos.z;
@@ -132,14 +134,10 @@ public class MoveEvent extends Event{
         float[] velocities = calculateVelocity(rMovX, rMovY, rMovZ, speed, xFactor, zFactor);
         float velX = velocities[0], velY = velocities[1], velZ = velocities[2];
 
-        go.getVelocity().add(velX, velY, velZ);
-        go.addState(States.MOVING.id());
+        obj.getVelocity().add(velX, velY, velZ);
+        obj.addState(States.MOVING.id());
 
-        var render = go.getComponent(RenderComponent.class);
-        if (render != null) {
-            // Set the object's facing direction based on velocity
-            go.setFacing(determineDirection(velX, velZ));
-        }
+        new ObjChain<>(obj.getComponent(RenderComponent.class)).ifPresent(r -> obj.setFacing(determineDirection(velX, velZ)));
 
         // Update remaining distances if not waiting for completion
         if(onBlockHandle != MoveEventHandle.WAIT_FOR_COMPLETION) {
@@ -148,9 +146,9 @@ public class MoveEvent extends Event{
             rMovZ = updateRemainingPosition(rMovZ, speed * zFactor);
         }
 
-        if(go.getComponent(PhysicComponent.class) == null){
-            go.getVelocity().sub(velX, velY, velZ);
-            go.addPosition(velX, velY, velZ);
+        if(obj.getComponent(PhysicComponent.class) == null){
+            obj.getVelocity().sub(velX, velY, velZ);
+            obj.addPosition(velX, velY, velZ);
         }
     }
 
@@ -207,10 +205,9 @@ public class MoveEvent extends Event{
 
     @Override
     public void finish(World world) {
-        var go = world.getGameObject(object);
-        if(go == null)
+        if(obj == null)
             return;
-        go.removeState(States.MOVING.id());
+        obj.removeState(States.MOVING.id());
     }
 
 }

@@ -288,13 +288,13 @@ public class GameplayState implements IState {
     }
 
     /**
-     * Marks the event list as {@link EventList#setActive(boolean) active} and adds it to the {@link #activeEventLists}
+     * Marks the event list as {@link EventList#start(GameObject) active} and adds it to the {@link #activeEventLists}
      * to run every update until the event list is finished.
      * @param eventList the event list to add.
      * @see EventList
      */
-    public void startEventList(EventList eventList){
-        eventList.setActive(true);
+    public void startEventList(EventList eventList, GameObject parent){
+        eventList.start(parent);
         activeEventLists.add(eventList);
     }
 

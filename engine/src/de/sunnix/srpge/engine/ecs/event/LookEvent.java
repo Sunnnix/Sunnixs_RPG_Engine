@@ -16,9 +16,9 @@ public class LookEvent extends Event {
     /** The direction the object should face if staticLook is true. */
     protected Direction direction = Direction.SOUTH;
     /** The ID of the object that will change its facing direction. */
-    protected int objectID;
+    protected ObjectValue objectID;
     /** The ID of the target object that this object will face if staticLook is false. */
-    protected int lookAtObjID = -1;
+    protected ObjectValue lookAtObjID;
 
     private GameObject obj, lookAt;
 
@@ -29,18 +29,18 @@ public class LookEvent extends Event {
     @Override
     public void load(DataSaveObject dso) {
         staticLook = dso.getBool("static_look", true);
-        objectID = dso.getInt("object", -1);
+        objectID = new ObjectValue(dso.getObject("obj"));
         if(!staticLook)
-            lookAtObjID = dso.getInt("look_at_obj", -1);
+            lookAtObjID = new ObjectValue(dso.getObject("look_at_obj"));
         else
             direction = Direction.values()[dso.getByte("dir", (byte) Direction.SOUTH.ordinal())];
     }
 
     @Override
-    public void prepare(World world) {
-        obj = world.getGameObject(objectID);
+    public void prepare(World world, GameObject parent) {
+        obj = objectID.getObject(world, parent);
         if(!staticLook)
-            lookAt = world.getGameObject(lookAtObjID);
+            lookAt = lookAtObjID.getObject(world, parent);
     }
 
     /**

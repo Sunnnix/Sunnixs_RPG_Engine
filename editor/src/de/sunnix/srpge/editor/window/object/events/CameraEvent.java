@@ -5,15 +5,25 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent implements IEvent {
+
+    private ObjectValue objectID = new ObjectValue();
+
+    @Override
+    public void load(DataSaveObject dso) {
+        super.load(dso);
+        objectID = new ObjectValue(dso.getObject("obj"));
+    }
+
     @Override
     public DataSaveObject save(DataSaveObject dso) {
         dso.putBool("attack_obj", attachObject);
-        dso.putInt("object", objectID);
+        dso.putObject("obj", objectID.save());
         dso.putBool("move_cam", moveCamera);
         dso.putArray("pos", new float[]{ x, y, z });
         dso.putBool("instant", instant);
@@ -24,7 +34,7 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder();
         if(attachObject)
-            sb.append("attach to ").append(getVarColoring(objectID == 999 ? window.getPlayer() : map.getObject(objectID)));
+            sb.append("attach to ").append(getVarColoring(objectID.getText(window, map)));
         else
             sb.append("don't attach to object");
         if(moveCamera)
@@ -55,10 +65,8 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
         var attachObjectCheck = new JCheckBox("Attach to object");
         content.add(attachObjectCheck, gbc);
         gbc.gridy++;
-        var objects = map.getObjects();
-        objects.add(0, window.getPlayer());
-        var objectsCombo = new JComboBox<>(objects.toArray(GameObject[]::new));
-        content.add(objectsCombo, gbc);
+        var objectSelect = new ObjectPicker(window, map, true, currentObject, objectID);
+        content.add(objectSelect, gbc);
         gbc.gridy++;
 
         content.add(new JSeparator(JSeparator.HORIZONTAL), gbc);
@@ -88,9 +96,11 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
         gbc.gridy++;
         gbc.gridwidth = 2;
         var setToObjectBtn = new JButton("Set to object");
+        setToObjectBtn.setEnabled(map != null);
         content.add(setToObjectBtn, gbc);
         gbc.gridy++;
-        var setPosObjectsCombo = new JComboBox<>(objects.toArray(GameObject[]::new));
+        var setPosObjectsCombo = new ObjectPicker(window, map, true, currentObject, objectID, false);
+        setPosObjectsCombo.setEnabled(map != null);
         content.add(setPosObjectsCombo, gbc);
         gbc.gridy++;
         var moveInstantCheck = new JCheckBox("Move instant", instant);
@@ -98,7 +108,7 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
         gbc.gridy++;
 
         // Listeners
-        attachObjectCheck.addChangeListener(l -> objectsCombo.setEnabled(attachObjectCheck.isSelected()));
+        attachObjectCheck.addChangeListener(l -> objectSelect.setEnabled(attachObjectCheck.isSelected()));
         moveCameraCheck.addChangeListener(l -> {
             xSpinner.setEnabled(moveCameraCheck.isSelected());
             ySpinner.setEnabled(moveCameraCheck.isSelected());
@@ -107,7 +117,10 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
             setPosObjectsCombo.setEnabled(moveCameraCheck.isSelected());
         });
         setToObjectBtn.addActionListener(l -> {
-            var obj = (GameObject)setPosObjectsCombo.getSelectedItem();
+            var index = setPosObjectsCombo.getNewValue().object;
+            var obj = index == -1 ? currentObject : index == 999 ? window.getPlayer() : map.getObject(index);
+            if(obj == null)
+                return;
             xSpinner.setValue(obj.getX());
             ySpinner.setValue(obj.getY());
             zSpinner.setValue(obj.getZ());
@@ -117,12 +130,11 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
         attachObjectCheck.setSelected(true);
         moveCameraCheck.setSelected(true);
         attachObjectCheck.setSelected(attachObject);
-        objectsCombo.setSelectedItem(objectID == 999 ? window.getPlayer() : map.getObject(objectID));
         moveCameraCheck.setSelected(moveCamera);
 
         return () -> {
             attachObject = attachObjectCheck.isSelected();
-            objectID = ((GameObject)objectsCombo.getSelectedItem()).ID;
+            objectID = objectSelect.getNewValue();
             moveCamera = moveCameraCheck.isSelected();
             x = ((Number)xSpinner.getValue()).floatValue();
             y = ((Number)ySpinner.getValue()).floatValue();

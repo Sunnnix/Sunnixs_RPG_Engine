@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.resources.Resources;
 import de.sunnix.srpge.engine.resources.ScriptList;
@@ -31,7 +32,7 @@ public class LuaScriptEvent extends Event{
     }
 
     @Override
-    public void prepare(World world) {
+    public void prepare(World world, GameObject parent) {
         var rawScript = Resources.get().scripts.getScript(ScriptList.ScriptType.Event, script);
         if(rawScript != null)
             chunk = globals.load(rawScript);

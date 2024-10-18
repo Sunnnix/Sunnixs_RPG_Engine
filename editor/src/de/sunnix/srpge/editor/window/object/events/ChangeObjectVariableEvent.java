@@ -5,15 +5,24 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.window.Window;
+import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.ChangeObjectVariableEvent implements IEvent {
 
+    private ObjectValue objectID = new ObjectValue();
+
+    @Override
+    public void load(DataSaveObject dso) {
+        super.load(dso);
+        objectID = new ObjectValue(dso.getObject("obj"));
+    }
+
     @Override
     public DataSaveObject save(DataSaveObject dso) {
-        dso.putInt("object", objectID);
+        dso.putObject("obj", objectID.save());
         dso.putInt("index", index);
         dso.putInt("value", value);
         dso.putByte("op", (byte) operation.ordinal());
@@ -25,7 +34,7 @@ public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.
         var sb = new StringBuilder();
         sb.append(getVarColoring(String.format("[%01d]", index)));
         sb.append(" of ");
-        sb.append(getVarColoring(map.getObject(objectID)));
+        sb.append(getVarColoring(objectID.getText(window, map)));
 
         switch (operation) {
             case SET -> sb.append(" to ");
@@ -60,7 +69,7 @@ public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.
         gbc.gridwidth = 2;
         content.add(new JLabel("Object:"), gbc);
         gbc.gridy++;
-        var objectSelect = new JComboBox<>(map.getObjects().toArray(GameObject[]::new));
+        var objectSelect = new ObjectPicker(window, map, false, currentObject, objectID);
         content.add(objectSelect, gbc);
         gbc.gridy++;
         gbc.gridwidth = 1;
@@ -99,7 +108,6 @@ public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.
         gbc.gridwidth = 1;
 
         // Set values
-        objectSelect.setSelectedItem(objectID == -1 ? currentObject : map.getObject(objectID));
         switch (operation){
             case SET -> opSet.setSelected(true);
             case INC -> opInc.setSelected(true);
@@ -107,7 +115,7 @@ public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.
         }
 
         return () -> {
-            objectID = objectSelect.getSelectedIndex() == -1 ? -1 : ((GameObject)objectSelect.getSelectedItem()).ID;
+            objectID = objectSelect.getNewValue();
             index = ((Number)indexSpinner.getValue()).intValue();
             value = ((Number)valueSpinner.getValue()).intValue();
             operation = opSet.isSelected() ? Operation.SET : opInc.isSelected() ? Operation.INC : Operation.DEC;

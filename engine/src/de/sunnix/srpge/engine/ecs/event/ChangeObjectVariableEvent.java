@@ -10,7 +10,7 @@ public class ChangeObjectVariableEvent extends Event {
         SET, INC, DEC
     }
 
-    protected int objectID = -1;
+    protected ObjectValue objectID;
     protected int index;
     protected int value;
     protected Operation operation = Operation.SET;
@@ -26,15 +26,15 @@ public class ChangeObjectVariableEvent extends Event {
 
     @Override
     public void load(DataSaveObject dso) {
-        objectID = dso.getInt("object", -1);
+        objectID = new ObjectValue(dso.getObject("obj"));
         index = dso.getInt("index", 0);
         value = dso.getInt("value", 0);
         operation = Operation.values()[dso.getByte("op", (byte) Operation.SET.ordinal())];
     }
 
     @Override
-    public void prepare(World world) {
-        object = world.getGameObject(objectID);
+    public void prepare(World world, GameObject parent) {
+        object = objectID.getObject(world, parent);
     }
 
     @Override

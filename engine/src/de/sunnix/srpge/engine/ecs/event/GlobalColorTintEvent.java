@@ -2,6 +2,7 @@ package de.sunnix.srpge.engine.ecs.event;
 
 import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.engine.Core;
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import org.joml.Vector4f;
 
@@ -26,7 +27,7 @@ public class GlobalColorTintEvent extends Event {
     }
 
     @Override
-    public void prepare(World world) {
+    public void prepare(World world, GameObject parent) {
         delay = 0;
         initialColor = Core.getGlobalColoring().get(new Vector4f());
     }

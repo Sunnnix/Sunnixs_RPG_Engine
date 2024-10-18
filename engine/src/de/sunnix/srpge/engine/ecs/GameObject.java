@@ -21,13 +21,13 @@ import java.util.function.Consumer;
  * @see EventList
  * @see de.sunnix.srpge.engine.ecs.event.Event Event
  */
-public class GameObject extends MemoryHolder {
+public class GameObject extends MemoryHolder implements Cloneable{
 
     public static final int localVarCount = 4;
 
-    private final Map<Class<? extends Component>, Component> components = new HashMap<>();
+    private Map<Class<? extends Component>, Component> components = new HashMap<>();
 
-    private final HashSet<State> states = new HashSet<>();
+    private HashSet<State> states = new HashSet<>();
     @Getter
     private boolean statesChanged;
 
@@ -39,7 +39,7 @@ public class GameObject extends MemoryHolder {
     @Getter
     private Vector3f velocity = new Vector3f();
     @Getter
-    public final Vector2f size = new Vector2f();
+    public Vector2f size = new Vector2f();
     @Getter
     @Setter
     private String name;
@@ -133,7 +133,7 @@ public class GameObject extends MemoryHolder {
             return;
         for(var el: eventLists){
             if(el.canStart(world) && (el.getRunType() == EventList.RUN_TYPE_AUTO || startEvents.stream().anyMatch(rt -> rt == el.getRunType())))
-                world.getGameState().startEventList(el);
+                world.getGameState().startEventList(el, this);
         }
         startEvents.clear();
     }
@@ -223,7 +223,7 @@ public class GameObject extends MemoryHolder {
         for(var el: eventLists){
             if(el.getRunType() == EventList.RUN_TYPE_INIT)
                 if(el.canStart(world)) {
-                    el.setActive(true);
+                    el.start(this);
                     while (el.isActive())
                         el.run(world);
                 }
@@ -265,5 +265,40 @@ public class GameObject extends MemoryHolder {
     public void setFacing(Direction facing) {
         this.facing = facing;
         markDirty();
+    }
+
+    private static int copyID = 1000;
+
+    public final GameObject copy(){
+        var clone = clone();
+        try {
+            var id_field = getClass().getDeclaredField("ID");
+            id_field.setAccessible(true);
+            id_field.set(clone, copyID++);
+        } catch (Exception e){
+            throw new RuntimeException("Exception coping object!", e);
+        }
+        return clone;
+    }
+
+    @Override
+    protected GameObject clone() {
+        try {
+            var clone = (GameObject) super.clone();
+            clone.components = new HashMap<>();
+            components.forEach((k, v) -> clone.components.put(k, (Component) v.clone()));
+            clone.eventLists = new ArrayList<>();
+            eventLists.forEach(el -> clone.eventLists.add(el.clone()));
+            clone.position = new Vector3f(position);
+            clone.velocity = new Vector3f(velocity);
+            clone.size = new Vector2f(size);
+            clone.states = new HashSet<>(states);
+            positionSubscribers.clear();
+            markDirtySubscribers.clear();
+            clone.inited = false;
+            return clone;
+        } catch (Exception e){
+            throw new RuntimeException("Exception cloning object!", e);
+        }
     }
 }

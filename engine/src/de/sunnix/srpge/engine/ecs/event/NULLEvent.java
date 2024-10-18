@@ -1,5 +1,6 @@
 package de.sunnix.srpge.engine.ecs.event;
 
+import de.sunnix.srpge.engine.ecs.GameObject;
 import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.sdso.DataSaveObject;
 
@@ -13,7 +14,7 @@ public class NULLEvent extends Event {
     public void load(DataSaveObject dso) {}
 
     @Override
-    public void prepare(World world) {}
+    public void prepare(World world, GameObject parent) {}
 
     @Override
     public void run(World world) {}

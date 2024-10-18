@@ -189,10 +189,10 @@ Version 0.7 is out now and I've created a video preview of the gameplay!
 
 | Description                                                  | Planned | Progress | Priority |
 |--------------------------------------------------------------|---------|----------|----------|
-| Battle System                                                | 0.8     | 5%       | High     |
+| Battle System                                                | 0.8     | 25%      | High     |
 | Lua implementation for KI                                    | 0.8     | 0%       | Medium   |
 | Object templates                                             | 0.8     | 0%       | Medium   |
-| Copy Objects                                                 | 0.8     | 0%       | Medium   |
+| Copy Objects                                                 | 0.8     | 50%      | Medium   |
 | Graphic Effects via Shader                                   | n/a     | 10%      | Medium   |
 | Plugin system for editor and engine customization            | n/a     | 10%      | Low      |
 | Inventory                                                    | n/a     | 0%       | High     |
