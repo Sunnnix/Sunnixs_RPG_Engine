@@ -8,7 +8,9 @@ import de.sunnix.srpge.engine.ecs.World;
 import de.sunnix.srpge.engine.ecs.systems.physics.AABB;
 import de.sunnix.srpge.engine.ecs.systems.physics.DebugRenderObject;
 import de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem;
-import de.sunnix.srpge.engine.graphics.*;
+import de.sunnix.srpge.engine.graphics.RenderObject;
+import de.sunnix.srpge.engine.graphics.Texture;
+import de.sunnix.srpge.engine.graphics.TextureRenderObject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,6 +56,8 @@ public class PhysicComponent extends Component {
     private RenderObject shadow;
 
     private boolean hasShadow;
+
+    private boolean movementBlocked;
 
     public PhysicComponent(DataSaveObject dso) {
         super(dso);

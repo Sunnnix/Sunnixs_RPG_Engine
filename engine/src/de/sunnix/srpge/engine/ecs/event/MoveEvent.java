@@ -10,7 +10,6 @@ import de.sunnix.srpge.engine.ecs.components.RenderComponent;
 import de.sunnix.srpge.engine.util.ObjChain;
 
 import static de.sunnix.srpge.engine.ecs.Direction.*;
-import static de.sunnix.srpge.engine.util.FunctionUtils.EPSILON;
 
 /**
  * The MoveEvent class represents an event that moves a game object in a specified direction
@@ -48,6 +47,7 @@ public class MoveEvent extends Event{
     /** The remaining distance that needs to be moved along each axis. */
     private float rMovX, rMovY, rMovZ;
     private GameObject obj;
+    private boolean firstRun;
 
     public MoveEvent() {
         super("move");
@@ -85,11 +85,12 @@ public class MoveEvent extends Event{
         cPosX = pos.x;
         cPosY = pos.y;
         cPosZ = pos.z;
-        if(jump){
-            var comp = obj.getComponent(PhysicComponent.class);
-            if(comp != null)
+        var comp = obj.getComponent(PhysicComponent.class);
+        if(comp != null){
+            if(jump)
                 comp.jump();
         }
+        firstRun = true;
     }
 
     /**
@@ -114,7 +115,7 @@ public class MoveEvent extends Event{
         cPosY = pos.y;
         cPosZ = pos.z;
 
-        if (Math.abs(cPosX - pPosX) - EPSILON > 0 || Math.abs(cPosY - pPosY) - EPSILON > 0 || Math.abs(cPosZ - pPosZ) - EPSILON > 0) {
+        if(!firstRun && obj.getComponent(PhysicComponent.class).isMovementBlocked()) {
             if (onBlockHandle == MoveEventHandle.WAIT_FOR_COMPLETION) {
                 if(movX != 0)
                     rMovX += pPosX - cPosX;
@@ -122,13 +123,13 @@ public class MoveEvent extends Event{
                     rMovY += pPosY - cPosY;
                 if(movZ != 0)
                     rMovZ += pPosZ - cPosZ;
-            }
-        } else if(onBlockHandle == MoveEventHandle.CANCEL_MOVEMENT) {
+            } else if(onBlockHandle == MoveEventHandle.CANCEL_MOVEMENT) {
                 rMovX = 0;
                 rMovY = 0;
                 rMovZ = 0;
                 return;
             }
+        }
 
         // Calculate the velocities based on remaining distances and speed
         float[] velocities = calculateVelocity(rMovX, rMovY, rMovZ, speed, xFactor, zFactor);
@@ -150,6 +151,8 @@ public class MoveEvent extends Event{
             obj.getVelocity().sub(velX, velY, velZ);
             obj.addPosition(velX, velY, velZ);
         }
+
+        firstRun = false;
     }
 
     /**

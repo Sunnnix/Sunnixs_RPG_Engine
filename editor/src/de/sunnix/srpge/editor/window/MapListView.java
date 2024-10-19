@@ -199,6 +199,7 @@ public class MapListView extends JScrollPane {
             {
                 setLayout(new BorderLayout());
                 var content = new JPanel();
+                content.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
                 var parallax = map.getParallax();
                 var create = parallax == null;
                 if(create)

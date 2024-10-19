@@ -43,17 +43,24 @@ public class AABB {
         return new AABB(x, y, z, w, h);
     }
 
-    public boolean intersects(AABB other) {
+    public boolean intersectsPlain(AABB other) {
+        return this.getMaxX() > other.getMinX() + EPSILON &&
+                this.getMinX() < other.getMaxX() - EPSILON &&
+                this.getMaxZ() > other.getMinZ() + EPSILON &&
+                this.getMinZ() < other.getMaxZ() - EPSILON;
+    }
+
+    public boolean intersectsHeight(AABB other){
         if(other instanceof TileAABB tile)
             tile.prepare(this);
         if(this instanceof TileAABB tile)
             tile.prepare(other);
-        return this.getMaxX() > other.getMinX() + EPSILON &&
-                this.getMinX() < other.getMaxX() - EPSILON &&
-                this.getMaxY() >= other.getMinY() + EPSILON &&
-                this.getMinY() < other.getMaxY()  - EPSILON &&
-                this.getMaxZ() > other.getMinZ() + EPSILON &&
-                this.getMinZ() < other.getMaxZ() - EPSILON;
+        return this.getMaxY() >= other.getMinY() + EPSILON &&
+                this.getMinY() < other.getMaxY()  - EPSILON;
+    }
+
+    public boolean intersects(AABB other) {
+        return intersectsPlain(other) && intersectsHeight(other);
     }
 
     @Override

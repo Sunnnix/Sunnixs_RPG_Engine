@@ -120,7 +120,7 @@ public class TopDrawModule extends MapViewModule {
             } else if(button == MouseEvent.BUTTON3 && !dragFillPrimaryMouse) {
                 for(var x = dragFillStartX; x < dragFillStartX + dragFillWidth; x++)
                     for(var y = dragFillStartY; y < dragFillStartY + dragFillHeight; y++)
-                        setTile(map, x, y, dragFillLayer, -1, -1, false);
+                        setTile(map, x, y, dragFillLayer, -1, 0, false);
                 if(!records.isEmpty())
                     createUndoEdit(view, "Drag fill Tiles");
                 window.setProjectChanged();
@@ -174,7 +174,7 @@ public class TopDrawModule extends MapViewModule {
                     dragFillStartY = Math.min(tileY, dragFillRootY);
                     dragFillLayer = layer;
                 }
-                case Window.DRAW_TOOL_SINGLE -> setTile(map, tileX, tileY, layer, -1, -1);
+                case Window.DRAW_TOOL_SINGLE -> setTile(map, tileX, tileY, layer, -1, 0);
             }
         return true;
     }

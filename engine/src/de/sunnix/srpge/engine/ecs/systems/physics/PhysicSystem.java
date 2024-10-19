@@ -18,6 +18,7 @@ import java.util.List;
 
 import static de.sunnix.srpge.engine.ecs.components.PhysicComponent.*;
 import static de.sunnix.srpge.engine.ecs.systems.physics.PhysicSystem.MoveDirection.*;
+import static de.sunnix.srpge.engine.util.FunctionUtils.EPSILON;
 import static de.sunnix.srpge.engine.util.FunctionUtils.bitcheck;
 
 public class PhysicSystem {
@@ -31,13 +32,13 @@ public class PhysicSystem {
 
     private static MapGrid mapGrid;
 
-    private static final int MOVE_EVENT_FLAG_HIT_SOUTH = 0b1;
-    private static final int MOVE_EVENT_FLAG_HIT_EAST = 0b10;
-    private static final int MOVE_EVENT_FLAG_HIT_WEST = 0b100;
-    private static final int MOVE_EVENT_FLAG_HIT_NORTH = 0b1000;
-    private static final int MOVE_EVENT_FLAG_HIT_TOP = 0b10000;
-    private static final int MOVE_EVENT_FLAG_HIT_BOTTOM = 0b100000;
-    private static final int MOVE_EVENT_FLAG_HIT_TILE = 0b1000000;
+    private static final byte MOVE_EVENT_FLAG_HIT_SOUTH = 0b1;
+    private static final byte MOVE_EVENT_FLAG_HIT_EAST = 0b10;
+    private static final byte MOVE_EVENT_FLAG_HIT_WEST = 0b100;
+    private static final byte MOVE_EVENT_FLAG_HIT_NORTH = 0b1000;
+    private static final byte MOVE_EVENT_FLAG_HIT_TOP = 0b10000;
+    private static final byte MOVE_EVENT_FLAG_HIT_BOTTOM = 0b100000;
+    private static final byte MOVE_EVENT_FLAG_HIT_TILE = 0b1000000;
 
     public static void init(int width, int height){
         objects = new ArrayList<>();
@@ -123,7 +124,7 @@ public class PhysicSystem {
         var newHB = world.getPlayer().getComponent(PhysicComponent.class).getHitbox();
         var objects = getCollidingObjects(newHB.getX(), newHB.getZ());
         for(var object: objects){
-            if(object.getID() == 999)
+            if(object.getID() == Core.PLAYER_ID)
                 continue;
             if(newHB.intersects(object.getComponent(PhysicComponent.class).getHitbox()))
                 object.startEvent(RUN_TYPE_PLAYER_TOUCH);
@@ -163,21 +164,18 @@ public class PhysicSystem {
 
     private static void move(World world, GameObject go, float dx, float dy, float dz) {
         var comp = go.getComponent(PhysicComponent.class);
-        if(!comp.isCollision()){
-            go.addPosition(dx, dy, dz);
-            comp.reloadHitbox();
-            return;
-        }
         var hitbox = comp.getHitbox();
         var moved = false;
 
-        var flag = 0;
+        var flag = (byte) 0;
+        var blocked = false;
 
         if(dx != 0){
             var tuple = moveHorizontal(world, go, hitbox, dx, dz == 0);
             moved = tuple.t1();
             hitbox = tuple.t2();
             flag |= tuple.t3();
+            blocked = tuple.t4();
         }
 
         if(dz != 0){
@@ -186,6 +184,8 @@ public class PhysicSystem {
                 moved = tuple.t1();
             hitbox = tuple.t2();
             flag |= tuple.t3();
+            if(tuple.t4())
+                blocked = true;
         }
 
         if(dy != 0){
@@ -206,7 +206,9 @@ public class PhysicSystem {
             comp.reloadHitbox();
         }
 
-        if(go.getID() == 999) { // player
+        comp.setMovementBlocked(blocked);
+
+        if(go.getID() == Core.PLAYER_ID) {
             var newHB = comp.getHitbox();
             var objects = getCollidingObjects(newHB.getX(), newHB.getZ());
             if (bitcheck(flag, MOVE_EVENT_FLAG_HIT_SOUTH)) {
@@ -254,7 +256,7 @@ public class PhysicSystem {
         }
     }
 
-    private static Tuple3<Boolean, AABB, Integer> moveHorizontal(World world, GameObject go, AABB hitbox, float speed, boolean correctMovement){
+    private static Tuple4<Boolean, AABB, Byte, Boolean> moveHorizontal(World world, GameObject go, AABB hitbox, float speed, boolean correctMovement){
         boolean moved;
 
         var nHB = hitbox.transform(speed, 0, 0);
@@ -267,7 +269,7 @@ public class PhysicSystem {
         var distanceMoved = tuple.t4();
         var comp = go.getComponent(PhysicComponent.class);
 
-        if(comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
+        if(comp.isCollision() && comp.isPlatform() && !comp.isFalling() && !distanceMoved.equals(0, 0, 0)){
             var objects = getObjectsOnTop(go, hitbox);
             for(var obj: objects)
                 move(world, obj, distanceMoved.x, distanceMoved.y, distanceMoved.z);
@@ -278,10 +280,11 @@ public class PhysicSystem {
             moved = tuple2.t1();
             hitbox = tuple2.t2();
         }
-        return new Tuple3<>(moved, hitbox, tuple.t5());
+        var wasBlocked = Math.abs(distanceMoved.x) + EPSILON < Math.abs(speed);
+        return new Tuple4<>(moved, hitbox, tuple.t5(), wasBlocked);
     }
 
-    private static Tuple3<Boolean, AABB, Integer> moveVertical(World world, GameObject go, AABB hitbox, float speed, boolean correctMovement){
+    private static Tuple4<Boolean, AABB, Byte, Boolean> moveVertical(World world, GameObject go, AABB hitbox, float speed, boolean correctMovement){
         boolean moved;
 
         var nHB = hitbox.transform(0, 0, speed);
@@ -332,10 +335,11 @@ public class PhysicSystem {
             moved = tuple2.t1();
             hitbox = tuple2.t2();
         }
-        return new Tuple3<>(moved, hitbox, flag);
+        var wasBlocked = Math.abs(distanceMoved.x) + EPSILON < Math.abs(speed);
+        return new Tuple4<>(moved, hitbox, flag, wasBlocked);
     }
 
-    private static Tuple3<Boolean, AABB, Integer> moveHeight(World world, GameObject go, AABB hitbox, float speed){
+    private static Tuple3<Boolean, AABB, Byte> moveHeight(World world, GameObject go, AABB hitbox, float speed){
         boolean moved;
 
         var nHB = hitbox.transform(0, speed, 0);
@@ -377,12 +381,13 @@ public class PhysicSystem {
                 }
             }
         }
-
         return new Tuple3<>(moved, hitbox, flag);
     }
 
     private static List<AABB> getHitboxes(World world, GameObject go, AABB sHB, AABB nHB){
-        var list = new ArrayList<>(mapGrid.getMatchingMapGridObjets(go).stream().filter(obj -> !obj.equals(go) && obj.getComponent(PhysicComponent.class).isCollision()).map(obj -> obj.getComponent(PhysicComponent.class).getHitbox()).toList());
+        var list = new ArrayList<AABB>();
+        if(go.getComponent(PhysicComponent.class).isCollision())
+            list.addAll(mapGrid.getMatchingMapGridObjets(go).stream().filter(obj -> !obj.equals(go) && obj.getComponent(PhysicComponent.class).isCollision()).map(obj -> obj.getComponent(PhysicComponent.class).getHitbox()).toList());
         var tiles = new ArrayList<AABB>();
         for(var x = (int) Math.min(sHB.getMinX(), nHB.getMinX()); x <= Math.max(Math.ceil(sHB.getMaxX()), Math.ceil(nHB.getMaxX())); x++)
             for(var z = (int) Math.min(sHB.getMinZ(), nHB.getMinZ()); z <= Math.max(Math.ceil(sHB.getMaxZ()), Math.ceil(nHB.getMaxZ())); z++){
@@ -407,7 +412,7 @@ public class PhysicSystem {
      * - AABB (new Hitbox)
      * - moved distance
      */
-    private static Tuple5<Boolean, Boolean, AABB, Vector3f, Integer> checkNewPosition(List<AABB> hitboxes, AABB sHB, AABB nHB, MoveDirection dir){
+    private static Tuple5<Boolean, Boolean, AABB, Vector3f, Byte> checkNewPosition(List<AABB> hitboxes, AABB sHB, AABB nHB, MoveDirection dir){
         var moved = false;
         var check = true;
         var fromTile = false;
@@ -416,7 +421,7 @@ public class PhysicSystem {
         var upshiftTest = false;
         var upshift = 0f;
 
-        var flag = 0;
+        var flag = (byte) 0;
 
         while (check) {
             check = false;
@@ -530,7 +535,7 @@ public class PhysicSystem {
                 moved = true;
             }
         }
-        var distanceMoved = sHB.getDistance(nHB);
+        var distanceMoved = moved ? sHB.getDistance(nHB) : new Vector3f();
         return new Tuple5<>(moved, fromTile, moved ? nHB : sHB, distanceMoved, flag);
     }
 
@@ -605,18 +610,21 @@ public class PhysicSystem {
 
     private static ArrayList<AABB> getPlainHitboxes(World world, GameObject go){
         var list = new ArrayList<AABB>();
-        var hb = go.getComponent(PhysicComponent.class).getHitbox();
+        var comp = go.getComponent(PhysicComponent.class);
+        var hb = comp.getHitbox();
         hb = hb.transform(0, -hb.getY(), 0).resize(hb.getWidth(), Float.POSITIVE_INFINITY);
-        var objects = mapGrid.getMatchingMapGridObjets(go);
-        for(var obj: objects){
-            if(obj.equals(go))
-                continue;
-            var comp = obj.getComponent(PhysicComponent.class);
-            if(!comp.isCollision())
-                continue;
-            var oHB = comp.getHitbox();
-            if(oHB.intersects(hb))
-                list.add(oHB);
+        if(comp.isCollision()) {
+            var objects = mapGrid.getMatchingMapGridObjets(go);
+            for (var obj : objects) {
+                if (obj.equals(go))
+                    continue;
+                var oComp = obj.getComponent(PhysicComponent.class);
+                if (!oComp.isCollision())
+                    continue;
+                var oHB = oComp.getHitbox();
+                if (oHB.intersects(hb))
+                    list.add(oHB);
+            }
         }
         for(var x = (int) Math.min(hb.getMinX(), hb.getMinX()); x <= Math.max(Math.ceil(hb.getMaxX()), Math.ceil(hb.getMaxX())); x++)
             for(var z = (int) Math.min(hb.getMinZ(), hb.getMinZ()); z <= Math.max(Math.ceil(hb.getMaxZ()), Math.ceil(hb.getMaxZ())); z++){
@@ -624,7 +632,7 @@ public class PhysicSystem {
                 if(tile == null)
                     continue;
                 var thb = tile.getHitbox();
-                if(thb.intersects(hb))
+                if(thb.intersectsPlain(hb))
                     list.add(thb);
             }
         return list;

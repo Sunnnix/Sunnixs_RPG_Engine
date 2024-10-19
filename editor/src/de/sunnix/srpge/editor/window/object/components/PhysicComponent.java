@@ -26,7 +26,7 @@ public class PhysicComponent extends Component{
     private boolean hasShadow = true;
 
     @Getter
-    private float baseMoveSpeed = .35f;
+    private float baseMoveSpeed = .035f;
 
     public PhysicComponent() {
         super("physic");
@@ -48,7 +48,7 @@ public class PhysicComponent extends Component{
         platform = dso.getBool("platform", false);
         canClimb = dso.getBool("can_climb", false);
         hasShadow = dso.getBool("has_shadow", true);
-        baseMoveSpeed = dso.getFloat("base_ms", .35f);
+        baseMoveSpeed = dso.getFloat("base_ms", .035f);
         return dso;
     }
 

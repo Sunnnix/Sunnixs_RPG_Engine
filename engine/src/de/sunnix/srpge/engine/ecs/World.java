@@ -182,6 +182,11 @@ public class World {
     }
 
     public void render(){
+        if(parallax != null && !parallax.isOnTop()) {
+            GL11.glDisable(GL11.GL_DEPTH_TEST);
+            parallax.render();
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+        }
         FunctionUtils.checkForOpenGLErrors("GameplayState - Pre render map");
         map.render();
         FunctionUtils.checkForOpenGLErrors("GameplayState - Post render map");
@@ -195,7 +200,7 @@ public class World {
             PhysicSystem.renderHitboxes();
             FunctionUtils.checkForOpenGLErrors("GameplayState - Post render hitboxes");
         }
-        if(parallax != null)
+        if(parallax != null && parallax.isOnTop())
             parallax.render();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         gameObjects.values().forEach(GameObject::postRender);

@@ -5,6 +5,7 @@ import de.sunnix.srpge.engine.graphics.*;
 import de.sunnix.srpge.engine.memory.MemoryCategory;
 import de.sunnix.srpge.engine.memory.MemoryHolder;
 import de.sunnix.srpge.engine.resources.Resources;
+import lombok.Getter;
 
 import static de.sunnix.srpge.engine.memory.MemoryCategory.PARALLAX;
 import static org.lwjgl.opengl.GL11.*;
@@ -14,6 +15,8 @@ public class Parallax extends MemoryHolder {
     private static Shader PARALLAX_SHADER;
 
     protected String textureID;
+    @Getter
+    protected boolean onTop;
     protected float vSpeed, hSpeed;
 
     private Mesh mesh;
@@ -23,6 +26,7 @@ public class Parallax extends MemoryHolder {
 
     public void load(DataSaveObject dso){
         textureID = dso.getString("tex", null);
+        onTop = dso.get("on_top", true);
         var tempo = dso.getFloatArray("tempo", 2);
         vSpeed = tempo[0];
         hSpeed = tempo[1];

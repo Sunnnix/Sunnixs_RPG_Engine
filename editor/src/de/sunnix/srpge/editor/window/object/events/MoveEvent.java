@@ -99,9 +99,6 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
     public Runnable createEventEditDialog(Window window, GameData gameData, MapData map, GameObject currentObject, JPanel content) {
         JSpinner tf_x, tf_y, tf_z, tf_speed;
 
-        var oList = new ArrayList<>(map.getObjects());
-        oList.add(0, window.getPlayer());
-
         var objects = new ObjectPicker(window, map, true, currentObject, object);
 
         tf_x = new JSpinner(new SpinnerNumberModel(movX, -10000, 10000, .1f));
@@ -174,11 +171,6 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
         gbc.gridwidth = 2;
         var jumpCheck = new JCheckBox("Jump", jump);
-        if(new ObjChain<>(objects.getGameObject()).next(o -> o.getComponent(PhysicComponent.class)).get() == null){
-            jumpCheck.setSelected(false);
-            jumpCheck.setEnabled(false);
-        } else
-            jumpCheck.setEnabled(true);
         content.add(jumpCheck, gbc);
 
         gbc.gridx += 2;

@@ -10,9 +10,14 @@ import java.awt.*;
 
 public class Parallax extends de.sunnix.srpge.engine.Parallax {
 
+    public Parallax(){
+        onTop = true;
+    }
+
     public DataSaveObject save(DataSaveObject dso){
-        dso.putString("tex", textureID);
-        dso.putArray("tempo", new float[]{ vSpeed, hSpeed });
+        dso.put("tex", textureID);
+        dso.put("on_top", onTop);
+        dso.put("tempo", new float[]{ vSpeed, hSpeed });
         return dso;
     }
 
@@ -42,6 +47,12 @@ public class Parallax extends de.sunnix.srpge.engine.Parallax {
         gbc.gridx++;
         var vSpeedSpinner = new JSpinner(new SpinnerNumberModel(vSpeed, -10f, 10f, .1f));
         content.add(vSpeedSpinner, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        gbc.gridwidth = 2;
+        var onTopCheck = new JCheckBox("On top", onTop);
+        content.add(onTopCheck, gbc);
 
         // set values
         if(textureID == null)
@@ -60,6 +71,7 @@ public class Parallax extends de.sunnix.srpge.engine.Parallax {
             textureID = catSelect.getSelectedIndex() < 1 ? null : catSelect.getSelectedItem() + "/" + texSelect.getSelectedItem();
             hSpeed = ((Number)hSpeedSpinner.getValue()).floatValue();
             vSpeed = ((Number)vSpeedSpinner.getValue()).floatValue();
+            onTop = onTopCheck.isSelected();
         };
     }
 

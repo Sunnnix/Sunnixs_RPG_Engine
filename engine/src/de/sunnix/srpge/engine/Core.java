@@ -94,6 +94,8 @@ public class Core {
     public static final int MINOR_VERSION = 8;
     public static final String VERSION = String.format("%s.%s", MAJOR_VERSION, MINOR_VERSION);
 
+    public static final int PLAYER_ID = 999;
+
     public enum CoreStage {
         PRE_INIT, INITED, WINDOW_CREATED, STARTING, STARTED
     }
