@@ -1,10 +1,10 @@
 package de.sunnix.srpge.editor.window.object.events;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
-import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.editor.window.customswing.ObjectPicker;
 import de.sunnix.srpge.editor.window.object.components.PhysicComponent;
@@ -12,7 +12,6 @@ import de.sunnix.srpge.engine.util.ObjChain;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 
 import static de.sunnix.srpge.engine.ecs.event.MoveEvent.MoveEventHandle.*;
 
@@ -74,12 +73,12 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        var txt = Language.getString("event.move.info", object.getText(window, map), movX, movY, movZ, speed, Math.max(Math.abs(movX), Math.abs(movZ)) / speed / 60);
+        var txt = "move " + varText(object.getText(window, map)) + " by " + varText(String.format("(%.1f, %.1f, %.1f)", movX, movY, movZ)) + " speed: " + varText(speed) + varText(String.format(" %.2fs", Math.abs(movZ) / speed / 60));
         if(jump)
-            txt += getVarColoring(" jump");
+            txt += varText(" jump");
         txt = switch (onBlockHandle){
-            case CANCEL_MOVEMENT -> txt + " " + getVarColoring("cancel");
-            case WAIT_FOR_COMPLETION -> txt + " " + getVarColoring("wait");
+            case CANCEL_MOVEMENT -> txt + " " + varText("cancel");
+            case WAIT_FOR_COMPLETION -> txt + " " + varText("wait");
             default -> txt;
         };
         return txt;
@@ -87,7 +86,7 @@ public class MoveEvent extends de.sunnix.srpge.engine.ecs.event.MoveEvent implem
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

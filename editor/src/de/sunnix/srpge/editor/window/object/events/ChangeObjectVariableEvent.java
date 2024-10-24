@@ -32,9 +32,9 @@ public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.
     @Override
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder();
-        sb.append(getVarColoring(String.format("[%01d]", index)));
+        sb.append(varText(String.format("/[%01d/]", index)));
         sb.append(" of ");
-        sb.append(getVarColoring(objectID.getText(window, map)));
+        sb.append(varText(objectID.getText(window, map)));
 
         switch (operation) {
             case SET -> sb.append(" to ");
@@ -42,13 +42,13 @@ public class ChangeObjectVariableEvent extends de.sunnix.srpge.engine.ecs.event.
             case DEC -> sb.append(" decrease by ");
         }
 
-        sb.append(getVarColoring(value));
+        sb.append(varText(value));
         return sb.toString();
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

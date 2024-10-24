@@ -40,14 +40,14 @@ public class ChangeTileEvent extends de.sunnix.srpge.engine.ecs.event.ChangeTile
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        return getVarColoring(String.format("(%s, %s)", x, y)) +
+        return varText(String.format("(%s, %s)", x, y)) +
                 " changes: " +
-                getVarColoring(changedTextures.size());
+                varText(changedTextures.size());
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

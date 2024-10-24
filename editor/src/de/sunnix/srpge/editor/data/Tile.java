@@ -104,13 +104,16 @@ public class Tile implements Cloneable{
     }
 
     public void saveTile(DataSaveObject dso) {
-        dso.putInt("g-tex", groundTex);
-        dso.putArray("w-tex", wallTex);
-        dso.putShort("height", (short)((groundY << 8) + wallHeight));
-
-        dso.putBool("blocking", blocking);
-
-        dso.putByte("slope-dir", slopeDirection);
+        if(groundTex != 0)
+            dso.putInt("g-tex", groundTex);
+        if(wallTex.length > 0)
+            dso.putArray("w-tex", wallTex);
+        if(groundY > 0 || wallHeight > 0)
+            dso.putShort("height", (short)((groundY << 8) + wallHeight));
+        if(blocking)
+            dso.putBool("blocking", true);
+        if(slopeDirection != SLOPE_DIRECTION_NONE)
+            dso.putByte("slope-dir", slopeDirection);
     }
 
     public void loadTile(DataSaveObject dso, int[] version){

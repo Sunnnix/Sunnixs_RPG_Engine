@@ -37,13 +37,13 @@ public class CopyObjectEvent extends de.sunnix.srpge.engine.ecs.event.CopyObject
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        var sb = new StringBuilder(getVarColoring(object.getText(window, map)));
+        var sb = new StringBuilder(varText(object.getText(window, map)));
         switch (saveIDType){
             case GLOBAL -> sb.append(" to global variable ")
-                    .append(getVarColoring(String.format("[%s]: %s", variable, Variables.getIntName(variable))));
+                    .append(varText(String.format("/[%s/]: %s", variable, Variables.getIntName(variable))));
             case LOCAL -> sb.append(" to local variable ")
-                    .append(getVarColoring(varObject.getText(window, map)))
-                    .append(getVarColoring(String.format("[%s]", variable)));
+                    .append(varText(varObject.getText(window, map)))
+                    .append(varText(String.format("/[%s/]", variable)));
         }
         return sb.toString();
     }

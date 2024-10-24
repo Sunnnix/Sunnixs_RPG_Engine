@@ -22,7 +22,7 @@ public class NULLEvent extends de.sunnix.srpge.engine.ecs.event.NULLEvent implem
 
     @Override
     public String getMainColor() {
-        return "/c333";
+        return "#333";
     }
 
     @Override

@@ -34,19 +34,19 @@ public class ChangeStateEvent extends de.sunnix.srpge.engine.ecs.event.ChangeSta
     @Override
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder(" of ");
-        sb.append(getVarColoring(objectID.getText(window, map)));
+        sb.append(varText(objectID.getText(window, map)));
         if(add)
             sb.append(" add ");
         else
             sb.append(" remove ");
         var s = States.getState(state);
-        sb.append(getVarColoring(String.format("%s [%s]", s.id(), s.priority())));
+        sb.append(varText(String.format("%s /[%s/]", s.id(), s.priority())));
         return sb.toString();
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

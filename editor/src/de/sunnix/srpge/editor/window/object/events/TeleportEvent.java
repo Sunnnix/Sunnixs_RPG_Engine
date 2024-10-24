@@ -71,22 +71,22 @@ public class TeleportEvent extends de.sunnix.srpge.engine.ecs.event.TeleportEven
     @Override
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder();
-        sb.append("object ").append(getVarColoring(object.getText(window, map)));
+        sb.append("object ").append(varText(object.getText(window, map)));
         if(this.map != -1 && this.map != map.getID())
-            sb.append(" to map ").append(getVarColoring(window.getSingleton(GameData.class).getMap(this.map)));
+            sb.append(" to map ").append(varText(window.getSingleton(GameData.class).getMap(this.map)));
         sb.append(" to ");
         if(toObject)
-            sb.append(getVarColoring(other.getText(window, map))).append(" + ");
-        sb.append(getVarColoring(String.format("(%.2f, %.2f, %.2f)", x, y, z)));
-        sb.append(". Transition: ").append(getVarColoring(transitionType));
+            sb.append(varText(other.getText(window, map))).append(" + ");
+        sb.append(varText(String.format("(%.2f, %.2f, %.2f)", x, y, z)));
+        sb.append(". Transition: ").append(varText(transitionType));
         if(transitionTime > 0)
-            sb.append(", in ").append(getVarColoring(transitionTime)).append(" ms");
+            sb.append(", in ").append(varText(transitionTime)).append(" ms");
         return sb.toString();
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

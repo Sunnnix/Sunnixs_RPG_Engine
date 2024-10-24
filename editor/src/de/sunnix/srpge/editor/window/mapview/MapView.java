@@ -135,7 +135,7 @@ public class MapView extends JPanel {
 
                 button = e.getButton();
 
-                if(window.getCurrentMapModule().onMousePresses(MapView.this, mapData, e, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
+                if(window.getCurrentMapModule().onMousePresses(MapView.this, mapData, e, (int)mapPos[0], (int)mapPos[1], tilePos[0], tilePos[1]))
                     repaint(0, 0, getWidth(), getHeight());
             }
 
@@ -154,7 +154,7 @@ public class MapView extends JPanel {
 
                 button = e.getButton();
 
-                if(window.getCurrentMapModule().onMouseReleased(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
+                if(window.getCurrentMapModule().onMouseReleased(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, (int)mapPos[0], (int)mapPos[1], tilePos[0], tilePos[1]))
                     repaint(0, 0, getWidth(), getHeight());
             }
 
@@ -168,7 +168,7 @@ public class MapView extends JPanel {
                 var mapPos = transScreenCoordToMapCoord(screenX, screenY);
                 var tilePos = transMapCoordToTileCoord(mapPos[0], mapPos[1]);
 
-                window.getCurrentMapModule().onMouseMoved(MapView.this, mapData, screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]);
+                window.getCurrentMapModule().onMouseMoved(MapView.this, mapData, screenX, screenY, (int)mapPos[0], (int)mapPos[1], tilePos[0], tilePos[1]);
             }
 
             @Override
@@ -198,7 +198,7 @@ public class MapView extends JPanel {
                 preTileX = tilePos[0];
                 preTileY = tilePos[1];
 
-                if(window.getCurrentMapModule().onMouseDragged(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1], sameTile))
+                if(window.getCurrentMapModule().onMouseDragged(MapView.this, mapData, button, e.getModifiersEx(), screenX, screenY, (int)mapPos[0], (int)mapPos[1], tilePos[0], tilePos[1], sameTile))
                     repaint(0, 0, getWidth(), getHeight());
             }
 
@@ -231,21 +231,27 @@ public class MapView extends JPanel {
                 var mapPos = transScreenCoordToMapCoord(screenX, screenY);
                 var tilePos = transMapCoordToTileCoord(mapPos[0], mapPos[1]);
 
-                if(window.getCurrentMapModule().omMouseWheelMoved(MapView.this, mapData, e.getModifiersEx(), e.getWheelRotation() > 0, screenX, screenY, mapPos[0], mapPos[1], tilePos[0], tilePos[1]))
+                if(window.getCurrentMapModule().omMouseWheelMoved(MapView.this, mapData, e.getModifiersEx(), e.getWheelRotation() > 0, screenX, screenY, (int)mapPos[0], (int)mapPos[1], (int)tilePos[0], (int)tilePos[1]))
                     repaint(0, 0, getWidth(), getHeight());
             }
 
-            private int[] transScreenCoordToMapCoord(int x, int y){
+            private float[] transScreenCoordToMapCoord(int x, int y){
                 var mapData = window.getSingleton(GameData.class).getMap(mapID);
                 if(mapData == null)
-                    return new int[2];
-                var xStart = getWidth() / 2 - (int)(mapData.getWidth() * Window.TILE_WIDTH / 2 * zoom);
-                var yStart = getHeight() / 2 - (int)(mapData.getHeight() * Window.TILE_HEIGHT / 2 * zoom);
-                return new int[] {x - xStart - (int)offsetX, y - yStart - (int)offsetY};
+                    return new float[2];
+                var xStart = getWidth() / 2f - mapData.getWidth() * Window.TILE_WIDTH / 2f * zoom;
+                var yStart = getHeight() / 2f - mapData.getHeight() * Window.TILE_HEIGHT / 2f * zoom;
+                return new float[] {x - xStart - offsetX, y - yStart - offsetY};
             }
 
-            private int[] transMapCoordToTileCoord(int x, int y){
-                return new int[]{ (int)Math.floor((x / (float) Core.TILE_WIDTH + .5f) / zoom), (int)Math.floor((y / (float) Core.TILE_HEIGHT + .5f) / zoom)};
+            private int[] transMapCoordToTileCoord(float x, float y){
+                var nX = x / Core.TILE_WIDTH;
+                nX = nX / zoom;
+                nX = nX + .5f;
+                var nY = y / Core.TILE_HEIGHT;
+                nY = nY / zoom;
+                nY = nY + .5f;
+                return new int[]{ (int) Math.floor(nX), (int)Math.floor(nY)};
             }
         };
     }

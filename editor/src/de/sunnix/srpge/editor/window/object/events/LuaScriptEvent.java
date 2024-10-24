@@ -26,12 +26,12 @@ public class LuaScriptEvent extends de.sunnix.srpge.engine.ecs.event.LuaScriptEv
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        return script;
+        return varText(script);
     }
 
     @Override
     public String getMainColor() {
-        return "/cd6f";
+        return "#d6f";
     }
 
     @Override

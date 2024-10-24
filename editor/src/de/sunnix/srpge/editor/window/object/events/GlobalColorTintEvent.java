@@ -12,6 +12,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import static de.sunnix.srpge.editor.util.StringToHTMLConverter.color;
 import static org.joml.Math.lerp;
 
 public class GlobalColorTintEvent extends de.sunnix.srpge.engine.ecs.event.GlobalColorTintEvent implements IEvent {
@@ -31,12 +32,15 @@ public class GlobalColorTintEvent extends de.sunnix.srpge.engine.ecs.event.Globa
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        return String.format("color /cv00 /b (%.2f, %.2f, %.2f, %.2f) /n /cx in /cv00 /b %s /n /cx frames", color[0], color[1], color[2], color[3], maxDelay);
+        return String.format(
+                "color " + varText("(" + color(Color.RED, "%s%%") + ", " + color(Color.GREEN, "%s%%") + ", " + color(Color.BLUE, "%s%%") + ", %s%%)") + " in " + varText("%s") + " frames",
+                (int)(color[0] * 100), (int)(color[1] * 100), (int)(color[2] * 100), (int)(color[3] * 100), maxDelay
+        );
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

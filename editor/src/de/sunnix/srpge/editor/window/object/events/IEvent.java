@@ -1,14 +1,16 @@
 package de.sunnix.srpge.editor.window.object.events;
 
+import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
-import de.sunnix.sdso.DataSaveObject;
 import de.sunnix.srpge.editor.window.Window;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static de.sunnix.srpge.editor.util.StringToHTMLConverter.*;
 
 /**
  * The IEvent interface represents an editable version of an engine {@link de.sunnix.srpge.engine.ecs.event.Event Event}
@@ -22,6 +24,9 @@ import java.awt.*;
  * engine events.
  */
 public interface IEvent extends Cloneable {
+
+    Color PANEL_BG = UIManager.getColor("Panel.background");
+    Color PANEL_BG_B = PANEL_BG.brighter();
 
     /**
      * Returns the unique identifier for this event.
@@ -83,12 +88,44 @@ public interface IEvent extends Cloneable {
      * Combines the event's main color and its display name with additional
      * details to provide a formatted string for the event in the GUI.
      *
-     * @param window the editor main window where the event is being displayed
-     * @param map the map data in which the event is defined
+     * @param window   the editor main window where the event is being displayed
+     * @param map      the map data in which the event is defined
      * @return a string containing a formatted representation of the event
      */
-    default String getString(Window window, MapData map){
-        return getMainColor() + "/b" + getEventDisplayName() + "/n " + getGUIText(window, map);
+    default String getDisplayText(Window window, MapData map){
+        var mc = getMainColor();
+        var text = fat(getEventDisplayName()) + " " + getGUIText(window, map);
+        if(mc != null && !mc.isBlank())
+            text = color(mc.substring(1), text);
+        text = formatSimpleToHTML(text);
+        return text;
+    }
+
+    default EventListTreeView.EventNode getTreeNode(){
+        return new EventListTreeView.EventNode(this);
+    }
+
+    default boolean onChangeEvent(EventListTreeView.EventNode node){return false;}
+
+    default Color getColor() {
+        String mc = getMainColor();
+        if (mc == null || mc.isBlank())
+            return null;
+        try {
+            return switch (mc.length()) {
+                case 7 -> Color.decode(mc);
+                case 4 -> Color.decode(convertShortHex(mc));
+                default -> null;
+            };
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String convertShortHex(String shortHex) {
+        return "#" + shortHex.charAt(1) + shortHex.charAt(1) +
+                shortHex.charAt(2) + shortHex.charAt(2) +
+                shortHex.charAt(3) + shortHex.charAt(3);
     }
 
     /**
@@ -140,6 +177,10 @@ public interface IEvent extends Cloneable {
      */
     default String getVarColoring(Object text){
         return "/cv00 /b " + text + " /n /cx";
+    }
+
+    default String varText(Object text){
+        return fat(color(Color.CYAN, text));
     }
 
 }

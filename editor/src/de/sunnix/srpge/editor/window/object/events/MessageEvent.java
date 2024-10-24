@@ -4,6 +4,7 @@ import de.sunnix.srpge.editor.data.GameData;
 import de.sunnix.srpge.editor.data.GameObject;
 import de.sunnix.srpge.editor.data.MapData;
 import de.sunnix.srpge.editor.lang.Language;
+import de.sunnix.srpge.editor.util.StringToHTMLConverter;
 import de.sunnix.srpge.editor.window.Window;
 import de.sunnix.srpge.engine.graphics.gui.SpeechBox;
 import de.sunnix.srpge.engine.graphics.gui.text.Text;
@@ -13,6 +14,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
+
+import static de.sunnix.srpge.editor.util.StringToHTMLConverter.fat;
 
 public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent implements IEvent {
 
@@ -47,22 +50,55 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        String text;
-        if(name.isEmpty())
-            text = message;
-        else
-            text = String.format("%s: %s", name, message);
-        return Language.getString("event.msg.info", text.length() > 80 ? (text.substring(0, 80).trim() + "...") : text);
+        return varText(!name.isBlank() ? name + ":" : "");
     }
 
     @Override
     public String getMainColor() {
-        return "/c8c3";
+        return "#8c3";
     }
 
     @Override
     public String getEventDisplayName() {
         return yesNoOption ? "Yes No Message" : Language.getString("event.msg.name");
+    }
+
+    public EventListTreeView.EventNode getTreeNode(){
+        var node = new EventListTreeView.EventNode(this);
+        onChangeEvent(node);
+        return node;
+    }
+
+    private String getText(int row){
+        var lines = message.split("\n");
+        if(row >= lines.length)
+            return "- ";
+        return "- " + varText(lines[row]);
+    }
+
+    @Override
+    public boolean onChangeEvent(EventListTreeView.EventNode node) {
+        if(yesNoOption && (node.getChildCount() == 0 || node.getChildCount() == 3)){
+            node.removeAllChildren();
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML(getText(0))));
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML(getText(1))));
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML(getText(2))));
+            node.add(onYes.genListNode(StringToHTMLConverter.formatSimpleToHTML("[" + getMainColor() + ":" + fat("Yes:") + "]")));
+            node.add(onNo.genListNode(StringToHTMLConverter.formatSimpleToHTML("[" + getMainColor() + ":" + fat("No:") + "]")));
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML("[" + getMainColor() + ":" + fat("End") + "]")));
+            return true;
+        } else if(!yesNoOption && (node.getChildCount() == 0 || node.getChildCount() > 3)) {
+            node.removeAllChildren();
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML(getText(0))));
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML(getText(1))));
+            node.add(new EventListTreeView.EmptyNode(StringToHTMLConverter.formatSimpleToHTML(getText(2))));
+            return true;
+        } else {
+            ((EventListTreeView.EmptyNode)node.getChildAt(0)).name = StringToHTMLConverter.formatSimpleToHTML(getText(0));
+            ((EventListTreeView.EmptyNode)node.getChildAt(1)).name = StringToHTMLConverter.formatSimpleToHTML(getText(1));
+            ((EventListTreeView.EmptyNode)node.getChildAt(2)).name = StringToHTMLConverter.formatSimpleToHTML(getText(2));
+            return true;
+        }
     }
 
     @Override
@@ -137,30 +173,6 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
         yesNoProperties.add(yesNoOptionCheck, gbc);
         gbc.gridy++;
 
-
-        var elYes = onYes == null ? new EventList() : onYes.clone();
-        var elNo = onNo == null ? new EventList() : onNo.clone();
-        var elYesPanel = elYes.genSmallGUI(window, map, yesNoProperties, currentObject);
-        var elNoPanel = elNo.genSmallGUI(window, map, yesNoProperties, currentObject);
-        elYesPanel.setPreferredSize(new Dimension(0, 150));
-        elNoPanel.setPreferredSize(new Dimension(0, 150));
-        yesNoProperties.add(new JLabel("On Yes:"), gbc);
-        gbc.gridy++;
-        yesNoProperties.add(elYesPanel, gbc);
-        gbc.gridy++;
-        yesNoProperties.add(new JLabel("On No:"), gbc);
-        gbc.gridy++;
-        yesNoProperties.add(elNoPanel, gbc);
-        gbc.gridy++;
-
-        elYesPanel.getViewport().getView().setEnabled(false);
-        elNoPanel.getViewport().getView().setEnabled(false);
-
-        yesNoOptionCheck.addActionListener(l -> {
-            elYesPanel.getViewport().getView().setEnabled(yesNoOptionCheck.isSelected());
-            elNoPanel.getViewport().getView().setEnabled(yesNoOptionCheck.isSelected());
-        });
-
         if(yesNoOption)
             yesNoOptionCheck.doClick();
 
@@ -170,10 +182,15 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
             message = text.getText();
             this.name = name.getText();
             this.soundType = (SpeechBox.SoundType) soundType.getSelectedItem();
-            this.yesNoOption = yesNoOptionCheck.isSelected();
-            if(this.yesNoOption){
-                onYes = elYes;
-                onNo = elNo;
+            if(this.yesNoOption != yesNoOptionCheck.isSelected()){
+                this.yesNoOption = !this.yesNoOption;
+                if(this.yesNoOption) {
+                    onYes = new EventList();
+                    onNo = new EventList();
+                } else {
+                    onYes = null;
+                    onNo = null;
+                }
             }
         };
     }
@@ -190,5 +207,15 @@ public class MessageEvent extends de.sunnix.srpge.engine.ecs.event.MessageEvent 
             area.grabFocus();
         });
         return b;
+    }
+
+    @Override
+    public Object clone() {
+        var clone = (MessageEvent) super.clone();
+        if(yesNoOption) {
+            clone.onYes = onYes.clone();
+            clone.onNo = onNo.clone();
+        }
+        return clone;
     }
 }

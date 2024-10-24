@@ -1,69 +1,65 @@
 package de.sunnix.srpge.editor.util;
 
+import java.awt.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class StringToHTMLConverter {
 
-    public static final String[] colors = {
-            "0ff"
-    };
+    public static String formatSimpleToHTML(String text){
+        text = escapeHTML(text);
 
-    public static String convertToHTML(String text){
-        StringBuilder html = new StringBuilder("<html>");
-        int i = 0;
-        while (i < text.length()) {
-            if (text.charAt(i) == '/' && i + 1 < text.length()) {
-                switch (text.charAt(i + 1)){
-                    case 'c', 'C': // Color
-                        i += 2; // Skip /c
-                        if (i < text.length()) {
-                            char nextChar = text.charAt(i);
-                            if (nextChar == 'x') {
-                                html.append("</span>");
-                                i++;
-                            } else if (nextChar == 'v' && i + 2 < text.length()) {
-                                String varIdStr = text.substring(i + 1, i + 3);
-                                try {
-                                    int varId = Integer.parseInt(varIdStr);
-                                    String colorCode = varId >= 0 && varId < colors.length ? colors[varId] : null;
-                                    if (colorCode != null) {
-                                        html.append("<span style='color:#").append(colorCode).append(";'>");
-                                    } else {
-                                        html.append("</span>");
-                                    }
-                                } catch (NumberFormatException e) {
-                                    // Falls die Variable keine gültige Zahl ist, ignorieren wir sie und machen weiter.
-                                }
-                                i += 3;
-                            } else if (i + 2 < text.length()) {
-                                String colorCode = text.substring(i, i + 3);
-                                html.append("<span style='color:#").append(colorCode).append(";'>");
-                                i += 3;
-                            }
-                        }
-                        break;
-                    case 'b', 'B': // Bold
-                        html.append("<b>");
-                        i += 2;
-                        break;
-                    case 'i', 'I': // Italic
-                        html.append("<i>");
-                        i += 2;
-                        break;
-                    case 'n', 'N': // Normal
-                        html.append("</b></i>");
-                        i += 2;
-                        break;
-                    default:
-                        html.append(text.charAt(i + 1));
-                        i++;
-                        continue;
-                }
-            } else {
-                html.append(text.charAt(i));
-                i++;
-            }
+        text = text.replaceAll("\\*\\*(.+?)\\*\\*", "<b>$1</b>");
+        text = text.replaceAll("\\*(.+?)\\*", "<i>$1</i>");
+
+        text = replaceCommand("(?<!\\/)\\[#([0-9a-fA-F]{3}):(.*?)(?<!\\/)\\]", text, "<span style='color:#%s'>%s</span>"); // color hex 3
+        text = replaceCommand("(?<!\\/)\\[#([0-9a-fA-F]{6}):(.*?)(?<!\\/)\\]", text, "<span style='color:#%s'>%s</span>"); // color hex 6
+
+        text = text.replaceAll("\\/\\[", "[");
+        text = text.replaceAll("\\/]", "]");
+
+        return "<html>" + text + "</html>";
+    }
+
+    public static String escapeHTML(String text) {
+        return text
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    private static String replaceCommand(String regex, String text, String replacement) {
+        var pattern = Pattern.compile(regex);
+        var matcher = pattern.matcher(text);
+
+        while (matcher.find()) {
+            var command = matcher.group(1);
+            var innerText = matcher.group(2);
+
+            var replaced = String.format(replacement, command, innerText);
+
+            text = matcher.replaceFirst(Matcher.quoteReplacement(replaced));
+            matcher = pattern.matcher(text);
         }
-        html.append("</html>");
-        return html.toString();
+        return text;
+    }
+
+    public static String fat(Object text){
+        return "**" +  text + "**";
+    }
+
+    public static String italic(Object text){
+        return "*" +  text + "*";
+    }
+
+    public static String color(String hex, Object text){
+        return "[#" + hex + ":" +  text + "]";
+    }
+
+    public static String color(Color color, Object text){
+        return color(Integer.toHexString(color.getRGB()).substring(2, 8), text);
     }
 
 }

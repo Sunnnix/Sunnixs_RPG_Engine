@@ -20,12 +20,12 @@ public class WaitEvent extends de.sunnix.srpge.engine.ecs.event.WaitEvent implem
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        return Language.getString("event.wait.info", frames);
+        return varText(frames) + " frames";
     }
 
     @Override
     public String getMainColor() {
-        return "/ca0a";
+        return "#a0a";
     }
 
     @Override

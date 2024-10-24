@@ -30,15 +30,15 @@ public class PlaySoundEvent extends de.sunnix.srpge.engine.ecs.event.PlaySoundEv
     public String getGUIText(Window window, MapData map) {
         String s;
         if(useLocation)
-            s = Language.getString("event.play_sound.info_with_location", sound, (int)(gain * 100), posX, posY, posZ, waitForEnd);
+            s = varText(sound) + " with gain " + varText((int)(gain * 100) + "%") + " at " + varText(String.format("(%.1f, %.1f, %.1f)", posX, posY, posZ)) + ". wait: " + varText(waitForEnd);
         else
-            s = Language.getString("event.play_sound.info_no_location", sound, (int)(gain * 100), waitForEnd);
+            s = varText(sound) + " with gain " + varText((int)(gain * 100) + "%") + ". wait: " + varText(waitForEnd);
         return s;
     }
 
     @Override
     public String getMainColor() {
-        return "/c4c4";
+        return "#4c4";
     }
 
     @Override

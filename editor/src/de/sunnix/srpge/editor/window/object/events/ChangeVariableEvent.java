@@ -26,7 +26,7 @@ public class ChangeVariableEvent extends de.sunnix.srpge.engine.ecs.event.Change
     @Override
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder();
-        sb.append(getVarColoring(switch (array){
+        sb.append(varText(switch (array){
             case INT -> String.format("I [%03d] %s", index, Variables.getIntName(index));
             case FLOAT -> String.format("F [%03d] %s", index, Variables.getFloatName(index));
             case BOOL -> String.format("B [%03d] %s", index, Variables.getBoolName(index));
@@ -34,9 +34,9 @@ public class ChangeVariableEvent extends de.sunnix.srpge.engine.ecs.event.Change
         if(array == Array.BOOL){
             if(operation == Operation.SET) {
                 sb.append(" to ");
-                sb.append(getVarColoring(value.intValue() != 0));
+                sb.append(varText(value.intValue() != 0));
             } else
-                sb.append(getVarColoring(" invert"));
+                sb.append(varText(" invert"));
         } else {
             switch (operation) {
                 case SET -> sb.append(" to ");
@@ -44,16 +44,16 @@ public class ChangeVariableEvent extends de.sunnix.srpge.engine.ecs.event.Change
                 case DEC -> sb.append(" decrease by ");
             }
             if(array == Array.INT)
-                sb.append(getVarColoring(value.intValue()));
+                sb.append(varText(value.intValue()));
             else
-                sb.append(getVarColoring(value.floatValue()));
+                sb.append(varText(value.floatValue()));
         }
         return sb.toString();
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

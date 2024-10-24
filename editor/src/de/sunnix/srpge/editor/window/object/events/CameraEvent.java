@@ -34,17 +34,17 @@ public class CameraEvent extends de.sunnix.srpge.engine.ecs.event.CameraEvent im
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder();
         if(attachObject)
-            sb.append("attach to ").append(getVarColoring(objectID.getText(window, map)));
+            sb.append("attach to ").append(varText(objectID.getText(window, map)));
         else
             sb.append("don't attach to object");
         if(moveCamera)
-            sb.append(" move to ").append(getVarColoring(String.format("(%.2f, %.2f, %.2f)", x, y, z)));
+            sb.append(" move to ").append(varText(String.format("(%.2f, %.2f, %.2f)", x, y, z)));
         return sb.toString();
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

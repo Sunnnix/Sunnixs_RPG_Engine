@@ -115,15 +115,17 @@ public class MoveEvent extends Event{
         cPosY = pos.y;
         cPosZ = pos.z;
 
-        if(!firstRun && obj.getComponent(PhysicComponent.class).isMovementBlocked()) {
+        if(!firstRun) {
             if (onBlockHandle == MoveEventHandle.WAIT_FOR_COMPLETION) {
-                if(movX != 0)
+                if (movX != 0)
                     rMovX += pPosX - cPosX;
-                if(movY != 0)
+                if (movY != 0)
                     rMovY += pPosY - cPosY;
-                if(movZ != 0)
+                if (movZ != 0)
                     rMovZ += pPosZ - cPosZ;
-            } else if(onBlockHandle == MoveEventHandle.CANCEL_MOVEMENT) {
+            }
+            if (onBlockHandle == MoveEventHandle.CANCEL_MOVEMENT &&
+                    new ObjChain<>(obj.getComponent(PhysicComponent.class)).next(PhysicComponent::isMovementBlocked).orElse(false)) {
                 rMovX = 0;
                 rMovY = 0;
                 rMovZ = 0;

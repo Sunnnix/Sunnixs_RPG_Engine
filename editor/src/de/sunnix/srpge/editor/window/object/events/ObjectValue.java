@@ -69,11 +69,11 @@ public class ObjectValue implements Cloneable{
             case ID, LOCAL_VAR -> {
                 var s = "";
                 if(type == Type.LOCAL_VAR)
-                    s += "Object of local variable [" + index + "] of ";
+                    s += "Object of local variable /[" + index + "/] of ";
                 s += Objects.toString(object == -1 ? "Self" : object == 999 ? window.getPlayer() : map.getObject(object));
                 yield s;
             }
-            case GLOBAL_VAR -> "Object of global variable [" + index + "]";
+            case GLOBAL_VAR -> "Object of global variable /[" + index + "/]";
         };
     }
 

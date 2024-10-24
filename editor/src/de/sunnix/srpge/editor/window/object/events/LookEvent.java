@@ -39,16 +39,16 @@ public class LookEvent extends de.sunnix.srpge.engine.ecs.event.LookEvent implem
     public String getGUIText(Window window, MapData map) {
         var sb = new StringBuilder("at ");
         if(staticLook)
-            sb.append(getVarColoring(direction));
+            sb.append(varText(direction));
         else
-            sb.append(getVarColoring(lookAtObjID.getText(window, map)));
-        sb.append(" with ").append(getVarColoring(objectID.getText(window, map)));
+            sb.append(varText(lookAtObjID.getText(window, map)));
+        sb.append(" with ").append(varText(objectID.getText(window, map)));
         return sb.toString();
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override

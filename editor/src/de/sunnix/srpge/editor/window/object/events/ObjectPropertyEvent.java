@@ -30,12 +30,12 @@ public class ObjectPropertyEvent extends de.sunnix.srpge.engine.ecs.event.Object
 
     @Override
     public String getGUIText(Window window, MapData map) {
-        return " set " + getVarColoring(objectID.getText(window, map)) + " " + getVarColoring(enabled ? "enabled" : "disabled");
+        return " set " + varText(objectID.getText(window, map)) + " " + varText(enabled ? "enabled" : "disabled");
     }
 
     @Override
     public String getMainColor() {
-        return "/cff8";
+        return "#ff8";
     }
 
     @Override
